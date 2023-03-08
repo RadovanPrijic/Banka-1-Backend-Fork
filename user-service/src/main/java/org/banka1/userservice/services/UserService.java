@@ -88,6 +88,11 @@ public class UserService implements UserDetailsService {
         emailService.sendEmail(user.getEmail(), "Reset password", text);
     }
 
+    public UserDto findUserById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundExceptions("user not found"));
+    }
+
     public UserDto findUserByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundExceptions("user not found"));
