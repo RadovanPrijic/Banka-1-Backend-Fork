@@ -57,6 +57,7 @@ public class UserService implements UserDetailsService {
         if(!positionFlag && filterRequest.getPosition() == ""){ // Ako u filterima nije navedena pozicija, napravi upit bez pozicije
             userList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCase(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), PageRequest.of(page, size, Sort.by("firstName").descending()));
         }
+
         return new PageImpl<>(userList.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()));
     }
 
