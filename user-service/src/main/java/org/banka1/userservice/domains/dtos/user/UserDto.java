@@ -1,0 +1,25 @@
+package org.banka1.userservice.domains.dtos.user;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.banka1.userservice.domains.entities.Position;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDto {
+
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String jmbg;
+    private Position position;
+    private String phoneNumber;
+
+    private List<String> roles;
+
+}
