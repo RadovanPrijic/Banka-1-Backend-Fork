@@ -16,7 +16,7 @@ import java.util.Map;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private static String SECRET_KEY;
+    private String SECRET_KEY;
 
     public Claims extractAllClaims(String token) {
         return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
