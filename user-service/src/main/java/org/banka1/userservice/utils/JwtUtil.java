@@ -15,9 +15,8 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    //@Value("${jwt.secret}")
-    private final String SECRET_KEY = "SECRET_KEY";
-    //Ovo je samo menjano da bih mogao da se ulogujem dok se ne resi problem sa citanjem iz app.properties
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     public Claims extractAllClaims(String token) {
         return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
