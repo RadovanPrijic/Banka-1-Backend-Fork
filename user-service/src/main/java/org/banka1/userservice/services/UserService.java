@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,25 +42,22 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Page<User> getUsers(UserFilterRequest filterRequest, Integer page, Integer size) {
+    public Page<UserDto> getUsers(UserFilterRequest filterRequest, Integer page, Integer size) {
         List<User> userList = new ArrayList<>();
-        Page<User> paginatedUserList = new PageImpl<>(userList);
-
         Position position; // Ovaj objekat i donji flag postoje samo jer je problematicno raditi sa enum-ima u bazi
         boolean positionFlag = false;
 
         for(Position pos : Position.values()){ // Provera u for-u da li je u nasim filterima navedena neka od postojecih pozicija
             if(filterRequest.getPosition().toUpperCase().equals(pos.toString())){
                 position = Position.valueOf(filterRequest.getPosition().toUpperCase());
-                paginatedUserList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCaseAndPositionIs(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), position, PageRequest.of(page, size, Sort.by("firstName").descending()));
+                userList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCaseAndPositionIs(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), position, PageRequest.of(page, size, Sort.by("firstName").descending()));
                 positionFlag = true;
             }
         }
-        if(!positionFlag){ // Ako u filterima nije navedena nijedna od postojecih pozicija, pretrazuj bez pozicije
-            paginatedUserList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCase(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), PageRequest.of(page, size, Sort.by("firstName").descending()));
+        if(!positionFlag && filterRequest.getPosition() == ""){ // Ako u filterima nije navedena pozicija, napravi upit bez pozicije
+            userList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCase(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), PageRequest.of(page, size, Sort.by("firstName").descending()));
         }
-        //System.err.println(paginatedUserList);
-        return paginatedUserList;
+        return new PageImpl<>(userList.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()));
     }
 
     public UserDto createUser(UserCreateDto userCreateDto) {
