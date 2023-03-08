@@ -3,6 +3,7 @@ package org.banka1.userservice.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.userservice.domains.dtos.user.*;
+import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
@@ -10,12 +11,17 @@ import org.banka1.userservice.domains.mappers.UserMapper;
 import org.banka1.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,8 +41,25 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Page<User> getUsers(UserFilterRequest filterRequest) {
-        return null;
+    public Page<User> getUsers(UserFilterRequest filterRequest, Integer page, Integer size) {
+        List<User> userList = new ArrayList<>();
+        Page<User> paginatedUserList = new PageImpl<>(userList);
+
+        Position position; // Ovaj objekat i donji flag postoje samo jer je problematicno raditi sa enum-ima u bazi
+        boolean positionFlag = false;
+
+        for(Position pos : Position.values()){ // Provera u for-u da li je u nasim filterima navedena neka od postojecih pozicija
+            if(filterRequest.getPosition().toUpperCase().equals(pos.toString())){
+                position = Position.valueOf(filterRequest.getPosition().toUpperCase());
+                paginatedUserList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCaseAndPositionIs(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), position, PageRequest.of(page, size, Sort.by("firstName").descending()));
+                positionFlag = true;
+            }
+        }
+        if(!positionFlag){ // Ako u filterima nije navedena nijedna od postojecih pozicija, pretrazuj bez pozicije
+            paginatedUserList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCase(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), PageRequest.of(page, size, Sort.by("firstName").descending()));
+        }
+        //System.err.println(paginatedUserList);
+        return paginatedUserList;
     }
 
     public UserDto createUser(UserCreateDto userCreateDto) {

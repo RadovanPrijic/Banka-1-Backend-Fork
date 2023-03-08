@@ -40,9 +40,8 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<?> getUsers(@Valid @RequestBody UserFilterRequest filterRequest) {
-        //TODO
-        return null;
+    public ResponseEntity<?> getUsers(@Valid @RequestBody UserFilterRequest filterRequest, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+        return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

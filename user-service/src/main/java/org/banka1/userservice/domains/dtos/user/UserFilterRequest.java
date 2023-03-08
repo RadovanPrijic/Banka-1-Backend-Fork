@@ -13,7 +13,6 @@ public class UserFilterRequest {
     private String firstName;
     private String lastName;
     private String email;
-    private String jmbg;
-    private Position position;
+    private String position;
 
 }
