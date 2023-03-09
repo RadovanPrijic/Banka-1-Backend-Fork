@@ -38,20 +38,22 @@ public class UserController {
         return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(userService.findUserByEmail(loginRequest.getEmail()))));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
-    public ResponseEntity<?> getUsers(@Valid @RequestBody UserFilterRequest filterRequest) {
-        //TODO
-        return null;
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping
+    public ResponseEntity<?> getUsers(@RequestBody UserFilterRequest filterRequest,
+                                      @RequestParam(defaultValue = "0") Integer page,
+                                      @RequestParam(defaultValue = "10") Integer size) {
+
+        return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
         return ResponseEntity.ok(userService.createUser(userCreateDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateDto, @PathVariable Long id) {
         return ResponseEntity.ok(userService.updateUser(userUpdateDto, id));

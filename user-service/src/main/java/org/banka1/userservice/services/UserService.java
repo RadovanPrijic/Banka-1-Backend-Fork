@@ -10,6 +10,9 @@ import org.banka1.userservice.domains.mappers.UserMapper;
 import org.banka1.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,14 +33,26 @@ public class UserService implements UserDetailsService {
     @Value("${password.reset.endpoint}")
     private String passwordResetEndpoint;
 
+    @Value("${password.forgot.endpoint}")
+    private String passwordForgotEndpoint;
+
     public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Page<User> getUsers(UserFilterRequest filterRequest) {
-        return null;
+    public Page<UserDto> getUsers(UserFilterRequest filterRequest, Integer page, Integer size) {
+        Page<User> users = userRepository.findAll(
+                filterRequest.getPredicate(),
+                PageRequest.of(page, size)
+        );
+
+        return new PageImpl<>(
+                users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
+                PageRequest.of(page, size),
+                users.getContent().size()
+        );
     }
 
     public UserDto createUser(UserCreateDto userCreateDto) {
@@ -65,7 +81,7 @@ public class UserService implements UserDetailsService {
     public void resetUserPassword(PasswordDto passwordDto, Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundExceptions("user not found"));
 
-        if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getPassword()))
+        if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getSecretKey()))
             throw new BadRequestException("invalid secret key");
 
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
@@ -77,14 +93,11 @@ public class UserService implements UserDetailsService {
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found"));
 
-        if(user.getSecretKey() != null)
-            throw new BadRequestException("check your email, we have already sent secret key to you");
-
         String secretKey = RandomStringUtils.randomAlphabetic(6);
         user.setSecretKey(secretKey);
         userRepository.save(user);
 
-        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordResetEndpoint + "/" + user.getId();
+        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordForgotEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Reset password", text);
     }
 
