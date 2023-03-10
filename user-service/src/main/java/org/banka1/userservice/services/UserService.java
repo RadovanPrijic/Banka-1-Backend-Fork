@@ -3,10 +3,10 @@ package org.banka1.userservice.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.userservice.domains.dtos.user.*;
-import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
+import org.banka1.userservice.domains.exceptions.ValidationException;
 import org.banka1.userservice.domains.mappers.UserMapper;
 import org.banka1.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,9 +20,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +35,13 @@ public class UserService implements UserDetailsService {
     @Value("${password.reset.endpoint}")
     private String passwordResetEndpoint;
 
+    @Value("${password.activate.endpoint}")
+    private String passwordActivateEndpoint;
+
+    private final Pattern emailPattern = Pattern.compile("^[a-z0-9_.-]+@(.+)$");
+    private final Pattern jmbgPattern = Pattern.compile("[0-9]{13}");
+
+
     public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.emailService = emailService;
@@ -43,34 +49,36 @@ public class UserService implements UserDetailsService {
     }
 
     public Page<UserDto> getUsers(UserFilterRequest filterRequest, Integer page, Integer size) {
-        List<User> userList = new ArrayList<>();
-        Position position; // Ovaj objekat i donji flag postoje samo jer je problematicno raditi sa enum-ima u bazi
-        boolean positionFlag = false;
+        Page<User> users = userRepository.findAll(
+                filterRequest.getPredicate(),
+                PageRequest.of(page, size)
+        );
 
-        for(Position pos : Position.values()){ // Provera u for-u da li je u nasim filterima navedena neka od postojecih pozicija
-            if(filterRequest.getPosition().toUpperCase().equals(pos.toString())){
-                position = Position.valueOf(filterRequest.getPosition().toUpperCase());
-                userList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCaseAndPositionIs(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), position, PageRequest.of(page, size, Sort.by("firstName").descending()));
-                positionFlag = true;
-            }
-        }
-        if(!positionFlag && filterRequest.getPosition() == ""){ // Ako u filterima nije navedena pozicija, napravi upit bez pozicije
-            userList = userRepository.findByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndEmailContainingIgnoreCase(filterRequest.getFirstName(), filterRequest.getLastName(), filterRequest.getEmail(), PageRequest.of(page, size, Sort.by("firstName").descending()));
-        }
-
-        return new PageImpl<>(userList.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()));
+        return new PageImpl<>(
+                users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
+                PageRequest.of(page, size),
+                users.getContent().size()
+        );
     }
 
     public UserDto createUser(UserCreateDto userCreateDto) {
+        // validate email and jmbg
+        if(!emailPattern.matcher(userCreateDto.getEmail()).matches()) {
+            throw new ValidationException("invalid email");
+        }
+        if(!jmbgPattern.matcher(userCreateDto.getJmbg()).matches()) {
+            throw new ValidationException("invalid jmbg");
+        }
+
         User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
-        String secretKey = RandomStringUtils.randomAlphabetic(6);
+        String secretKey = RandomStringUtils.randomNumeric(6);
 
         user.setActive(true);
         user.setSecretKey(secretKey);
 
         userRepository.save(user);
 
-        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordResetEndpoint + "/" + user.getId();
+        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordActivateEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Activate account", text);
 
         return UserMapper.INSTANCE.userToUserDto(user);
@@ -87,7 +95,7 @@ public class UserService implements UserDetailsService {
     public void resetUserPassword(PasswordDto passwordDto, Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundExceptions("user not found"));
 
-        if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getPassword()))
+        if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getSecretKey()))
             throw new BadRequestException("invalid secret key");
 
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
@@ -99,20 +107,12 @@ public class UserService implements UserDetailsService {
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found"));
 
-        if(user.getSecretKey() != null)
-            throw new BadRequestException("check your email, we have already sent secret key to you");
-
         String secretKey = RandomStringUtils.randomAlphabetic(6);
         user.setSecretKey(secretKey);
         userRepository.save(user);
 
         String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordResetEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Reset password", text);
-    }
-
-    public UserDto findUserById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundExceptions("user not found"));
     }
 
     public UserDto findUserByEmail(String email) {
