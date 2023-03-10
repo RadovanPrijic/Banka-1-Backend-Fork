@@ -67,14 +67,9 @@ public class UserController {
         return ResponseEntity.ok(userService.returnUserProfile());
     }
 
-    //Dodati logiku u servisu za vec postojecu rutu /my-profile. Pomocu SecurityContexHoldera iscupati trenutno
-    // logovanog usera, ima u komentaru kako i to ce vratiti njegov mail i samo ga izvuci iz baze po mail-u
-    // i vratiti UserDto
-
     @PutMapping("/my-profile/update/{id}")
     public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto, @PathVariable Long id) {
-        //ime, prezime, telefon
-        return null;
+        return ResponseEntity.ok(userService.updateUserProfile(userUpdateMyProfileDto, id));
     }
 
     @PostMapping("/reset-password/{id}")
