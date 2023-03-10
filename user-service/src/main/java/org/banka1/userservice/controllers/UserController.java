@@ -64,10 +64,12 @@ public class UserController {
 
     @GetMapping("/my-profile")
     public ResponseEntity<?> aboutMe() {
-        // u servisu iscupaci email iz security contex-a
-        // ovako: SecurityContextHolder.getContext().getAuthentication().getName()
-        return null;
+        return ResponseEntity.ok(userService.returnUserProfile());
     }
+
+    //Dodati logiku u servisu za vec postojecu rutu /my-profile. Pomocu SecurityContexHoldera iscupati trenutno
+    // logovanog usera, ima u komentaru kako i to ce vratiti njegov mail i samo ga izvuci iz baze po mail-u
+    // i vratiti UserDto
 
     @PutMapping("/my-profile/update/{id}")
     public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto, @PathVariable Long id) {
