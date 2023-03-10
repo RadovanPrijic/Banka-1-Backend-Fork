@@ -63,8 +63,8 @@ public class UserController {
         return null;
     }
 
-    @PutMapping("/my-profile/update")
-    public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto) {
+    @PutMapping("/my-profile/update/{id}")
+    public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto, @PathVariable Long id) {
         //ime, prezime, telefon
         return null;
     }
