@@ -44,6 +44,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findUserById(id));
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
@@ -66,11 +72,6 @@ public class UserController {
     @PutMapping("/my-profile/update/{id}")
     public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto, @PathVariable Long id) {
         //ime, prezime, telefon
-        return null;
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findUserById(@PathVariable Long id) {
         return null;
     }
 
