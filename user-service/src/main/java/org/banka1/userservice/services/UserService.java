@@ -6,6 +6,7 @@ import org.banka1.userservice.domains.dtos.user.*;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
+import org.banka1.userservice.domains.exceptions.ValidationException;
 import org.banka1.userservice.domains.mappers.UserMapper;
 import org.banka1.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,8 +35,12 @@ public class UserService implements UserDetailsService {
     @Value("${password.reset.endpoint}")
     private String passwordResetEndpoint;
 
-    @Value("${password.forgot.endpoint}")
-    private String passwordForgotEndpoint;
+    @Value("${password.activate.endpoint}")
+    private String passwordActivateEndpoint;
+
+    private final Pattern emailPattern = Pattern.compile("^[a-z0-9_.-]+@(.+)$");
+    private final Pattern jmbgPattern = Pattern.compile("[0-9]{13}");
+
 
     public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -56,15 +62,23 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDto createUser(UserCreateDto userCreateDto) {
+        // validate email and jmbg
+        if(!emailPattern.matcher(userCreateDto.getEmail()).matches()) {
+            throw new ValidationException("invalid email");
+        }
+        if(!jmbgPattern.matcher(userCreateDto.getJmbg()).matches()) {
+            throw new ValidationException("invalid jmbg");
+        }
+
         User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
-        String secretKey = RandomStringUtils.randomAlphabetic(6);
+        String secretKey = RandomStringUtils.randomNumeric(6);
 
         user.setActive(true);
         user.setSecretKey(secretKey);
 
         userRepository.save(user);
 
-        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordResetEndpoint + "/" + user.getId();
+        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordActivateEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Activate account", text);
 
         return UserMapper.INSTANCE.userToUserDto(user);
@@ -97,7 +111,7 @@ public class UserService implements UserDetailsService {
         user.setSecretKey(secretKey);
         userRepository.save(user);
 
-        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordForgotEndpoint + "/" + user.getId();
+        String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordResetEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Reset password", text);
     }
 
