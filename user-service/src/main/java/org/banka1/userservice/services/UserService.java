@@ -41,7 +41,9 @@ public class UserService implements UserDetailsService {
 
     private final Pattern emailPattern = Pattern.compile("^[a-z0-9_.-]+@(.+)$");
     private final Pattern jmbgPattern = Pattern.compile("[0-9]{13}");
-
+    private final Pattern passwordPattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?!.* ).{8,}$");
+    // Lozinka mora sadrzati barem po jedno malo slovo, veliko slovo, broj, specijalni karakter
+    // i mora imati duzinu barem 8 karaktera
 
     public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
