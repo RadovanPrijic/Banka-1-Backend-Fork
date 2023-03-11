@@ -17,6 +17,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(path = "/api/users")
 @AllArgsConstructor
+@CrossOrigin
 public class UserController {
 
     private final AuthenticationManager authenticationManager;
