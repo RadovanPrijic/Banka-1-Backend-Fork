@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
-//dodati indexe
+@Table(name = "users",
+        indexes = { @Index(name = "email_index", columnList = "email"),
+                    @Index(name = "jmbg_index", columnList = "jmbg") })
 public class User {
 
     public static final String USER_ADMIN = UserRole.ROLE_ADMIN.name();

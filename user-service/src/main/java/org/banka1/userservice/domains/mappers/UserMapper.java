@@ -3,6 +3,7 @@ package org.banka1.userservice.domains.mappers;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
 import org.banka1.userservice.domains.dtos.user.UserDto;
 import org.banka1.userservice.domains.dtos.user.UserUpdateDto;
+import org.banka1.userservice.domains.dtos.user.UserUpdateMyProfileDto;
 import org.banka1.userservice.domains.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -19,5 +20,7 @@ public interface UserMapper {
     User userCreateDtoToUser(UserCreateDto userCreateDto);
 
     void updateUserFromUserUpdateDto(@MappingTarget User user, UserUpdateDto userUpdateDto);
+
+    void updateUserFromUserUpdateMyProfileDto(@MappingTarget User user, UserUpdateMyProfileDto userUpdateMyProfileDto);
 
 }

@@ -3,10 +3,7 @@ package org.banka1.userservice.controllers;
 import lombok.AllArgsConstructor;
 import org.banka1.userservice.domains.dtos.login.LoginRequest;
 import org.banka1.userservice.domains.dtos.login.LoginResponse;
-import org.banka1.userservice.domains.dtos.user.PasswordDto;
-import org.banka1.userservice.domains.dtos.user.UserCreateDto;
-import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
-import org.banka1.userservice.domains.dtos.user.UserUpdateDto;
+import org.banka1.userservice.domains.dtos.user.*;
 import org.banka1.userservice.services.UserService;
 import org.banka1.userservice.utils.JwtUtil;
 import org.springframework.http.ResponseEntity;
@@ -38,23 +35,41 @@ public class UserController {
         return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(userService.findUserByEmail(loginRequest.getEmail()))));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
-    public ResponseEntity<?> getUsers(@Valid @RequestBody UserFilterRequest filterRequest) {
-        //TODO
-        return null;
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping
+    public ResponseEntity<?> getUsers(@RequestBody UserFilterRequest filterRequest,
+                                      @RequestParam(defaultValue = "0") Integer page,
+                                      @RequestParam(defaultValue = "10") Integer size) {
+
+        return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findUserById(id));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
         return ResponseEntity.ok(userService.createUser(userCreateDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateDto, @PathVariable Long id) {
         return ResponseEntity.ok(userService.updateUser(userUpdateDto, id));
+    }
+
+    @GetMapping("/my-profile")
+    public ResponseEntity<?> aboutMe() {
+        return ResponseEntity.ok(userService.returnUserProfile());
+    }
+
+    @PutMapping("/my-profile/update/{id}")
+    public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto, @PathVariable Long id) {
+        return ResponseEntity.ok(userService.updateUserProfile(userUpdateMyProfileDto, id));
     }
 
     @PostMapping("/reset-password/{id}")

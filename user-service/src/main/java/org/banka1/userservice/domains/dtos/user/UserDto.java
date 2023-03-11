@@ -19,6 +19,7 @@ public class UserDto {
     private String jmbg;
     private Position position;
     private String phoneNumber;
+    private boolean active;
 
     private List<String> roles;
 
