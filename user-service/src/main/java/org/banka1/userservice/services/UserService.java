@@ -109,6 +109,12 @@ public class UserService implements UserDetailsService {
         if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getSecretKey()))
             throw new BadRequestException("invalid secret key");
 
+        if(!passwordPattern.matcher(passwordDto.getPassword()).matches()) {
+            throw new ValidationException("Invalid password format. Password has to contain" +
+                    " at least one of each: uppercase letter, lowercase letter, number, and special character. " +
+                    "It also has to be at least 8 characters long.");
+        }
+
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
         user.setSecretKey(null);
 
