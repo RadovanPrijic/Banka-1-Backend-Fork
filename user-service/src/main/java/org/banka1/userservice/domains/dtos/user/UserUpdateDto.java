@@ -17,6 +17,7 @@ public class UserUpdateDto {
     private String email;
     private Position position;
     private String phoneNumber;
+    private String password;
     private boolean active;
 
     private List<String> roles;

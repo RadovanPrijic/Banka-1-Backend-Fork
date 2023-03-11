@@ -41,9 +41,9 @@ public class UserService implements UserDetailsService {
 
     private final Pattern emailPattern = Pattern.compile("^[a-z0-9_.-]+@(.+)$");
     private final Pattern jmbgPattern = Pattern.compile("[0-9]{13}");
-    private final Pattern passwordPattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?!.* ).{8,}$");
     // Lozinka mora sadrzati barem po jedno malo slovo, veliko slovo, broj, specijalni karakter
     // i mora imati duzinu barem 8 karaktera
+    private final Pattern passwordPattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?!.* ).{8,}$");
 
     public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -89,7 +89,18 @@ public class UserService implements UserDetailsService {
 
     public UserDto updateUser(UserUpdateDto userUpdateDto, Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundExceptions("user not found"));
+
+        if(userUpdateDto.getPassword() != null && !passwordPattern.matcher(userUpdateDto.getPassword()).matches()) {
+            throw new ValidationException("Invalid password format. Password has to contain" +
+                    " at least one of each: uppercase letter, lowercase letter, number, and special character. " +
+                    "It also has to be at least 8 characters long.");
+        }
+
         UserMapper.INSTANCE.updateUserFromUserUpdateDto(user, userUpdateDto);
+
+        if(userUpdateDto.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
 
         userRepository.save(user);
         return UserMapper.INSTANCE.userToUserDto(user);
@@ -104,15 +115,16 @@ public class UserService implements UserDetailsService {
     }
 
     public void resetUserPassword(PasswordDto passwordDto, Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundExceptions("user not found"));
-
-        if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getSecretKey()))
-            throw new BadRequestException("invalid secret key");
-
         if(!passwordPattern.matcher(passwordDto.getPassword()).matches()) {
             throw new ValidationException("Invalid password format. Password has to contain" +
                     " at least one of each: uppercase letter, lowercase letter, number, and special character. " +
                     "It also has to be at least 8 characters long.");
+        }
+
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundExceptions("user not found"));
+
+        if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getSecretKey())) {
+            throw new BadRequestException("invalid secret key");
         }
 
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
