@@ -106,8 +106,9 @@ public class UserService implements UserDetailsService {
         return UserMapper.INSTANCE.userToUserDto(user);
     }
 
-    public UserDto updateUserProfile(UserUpdateMyProfileDto userUpdateMyProfileDto, Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundExceptions("user not found"));
+    public UserDto updateUserProfile(UserUpdateMyProfileDto userUpdateMyProfileDto) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new NotFoundExceptions("user not found"));
         UserMapper.INSTANCE.updateUserFromUserUpdateMyProfileDto(user, userUpdateMyProfileDto);
 
         userRepository.save(user);

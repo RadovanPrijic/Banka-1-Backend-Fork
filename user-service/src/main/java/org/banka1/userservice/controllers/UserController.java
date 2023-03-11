@@ -68,9 +68,9 @@ public class UserController {
         return ResponseEntity.ok(userService.returnUserProfile());
     }
 
-    @PutMapping("/my-profile/update/{id}")
-    public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto, @PathVariable Long id) {
-        return ResponseEntity.ok(userService.updateUserProfile(userUpdateMyProfileDto, id));
+    @PutMapping("/my-profile/update")
+    public ResponseEntity<?> updateMyself(@RequestBody UserUpdateMyProfileDto userUpdateMyProfileDto) {
+        return ResponseEntity.ok(userService.updateUserProfile(userUpdateMyProfileDto));
     }
 
     @PostMapping("/reset-password/{id}")
