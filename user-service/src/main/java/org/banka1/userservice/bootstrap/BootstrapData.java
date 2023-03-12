@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-@Profile("test")
+@Profile("local")
 public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;

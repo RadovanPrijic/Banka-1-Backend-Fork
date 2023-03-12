@@ -25,10 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 //@AutoConfigureTestDatabase
 @Transactional
-@TestPropertySource(
-        value = "/application-test_it.properties",
-        properties = {"spring.cloud.bootstrap.enabled = false"}
-)
+@TestPropertySource(value = "/application-test_it.properties")
 @AutoConfigureMockMvc
 @ActiveProfiles("test_it")
 public abstract class IntegrationTest {
@@ -77,7 +74,7 @@ public abstract class IntegrationTest {
                 .jmbg("2222222222")
                 .phoneNumber("063*********")
                 .password(passwordEncoder.encode("user1"))
-                .roles(List.of("ROLE_MODERATOR"))
+                .roles(List.of(User.USER_MODERATOR))
                 .active(true)
                 .build();
 
@@ -89,7 +86,7 @@ public abstract class IntegrationTest {
                 .jmbg("3333333333")
                 .phoneNumber("063*********")
                 .password(passwordEncoder.encode("user3"))
-                .roles(List.of("ROLE_MODERATOR"))
+                .roles(List.of(User.USER_MODERATOR))
                 .active(true)
                 .build();
 
@@ -101,7 +98,7 @@ public abstract class IntegrationTest {
                 .jmbg("4444444444")
                 .phoneNumber("063*********")
                 .password(passwordEncoder.encode("user3"))
-                .roles(List.of("ROLE_MODERATOR"))
+                .roles(List.of(User.USER_MODERATOR))
                 .active(true)
                 .build();
 
