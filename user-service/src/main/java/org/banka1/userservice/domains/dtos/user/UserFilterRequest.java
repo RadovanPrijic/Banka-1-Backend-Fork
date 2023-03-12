@@ -1,5 +1,6 @@
 package org.banka1.userservice.domains.dtos.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.querydsl.core.BooleanBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +18,10 @@ public class UserFilterRequest {
     private String email;
     private Position position;
 
+    @JsonIgnore
     QUser qUser = QUser.user;
 
+    @JsonIgnore
     public BooleanBuilder getPredicate() {
         BooleanBuilder predicate = new BooleanBuilder();
         if(firstName != null)

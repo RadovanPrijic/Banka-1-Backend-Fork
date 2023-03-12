@@ -60,7 +60,7 @@ public class UserService implements UserDetailsService {
         return new PageImpl<>(
                 users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
                 PageRequest.of(page, size),
-                users.getContent().size()
+                users.getTotalElements()
         );
     }
 
