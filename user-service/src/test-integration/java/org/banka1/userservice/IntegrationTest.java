@@ -63,10 +63,10 @@ public abstract class IntegrationTest {
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
-                .email("admin@admin.com")
+                .email("test@test.com")
                 .position(Position.ADMINISTRATOR)
                 .phoneNumber("111222333")
-                .password(passwordEncoder.encode("admin1234"))
+                .password(passwordEncoder.encode("test1234"))
                 .roles(List.of(User.USER_ADMIN))
                 .build();
 
@@ -80,8 +80,8 @@ public abstract class IntegrationTest {
                             .contentType("application/json")
                             .content("""
                                     {
-                                        "email": "admin@admin.com",
-                                        "password": "admin1234"
+                                        "email": "test@test.com",
+                                        "password": "test1234"
                                     }"""))
                     .andExpect(status().isOk())
                     .andReturn();
