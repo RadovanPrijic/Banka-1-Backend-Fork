@@ -1,29 +1,22 @@
 package org.banka1.userservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import org.aspectj.lang.annotation.Before;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.repositories.UserRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import javax.transaction.Transactional;
-import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -32,7 +25,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 //@AutoConfigureTestDatabase
 @Transactional
-@TestPropertySource("/application-test_it.properties")
+@TestPropertySource(
+        value = "/application-test_it.properties",
+        properties = {"spring.cloud.bootstrap.enabled = false"}
+)
 @AutoConfigureMockMvc
 @ActiveProfiles("test_it")
 public abstract class IntegrationTest {
@@ -47,6 +43,9 @@ public abstract class IntegrationTest {
     @Autowired
     protected PasswordEncoder passwordEncoder;
 
+    @Autowired
+    protected ObjectMapper objectMapper;
+
     protected String token;
     private boolean isInitialized;
 
@@ -55,11 +54,11 @@ public abstract class IntegrationTest {
         if (isInitialized) return;
         isInitialized = true;
 
-        initUser();
+        initUsers();
         initToken();
     }
 
-    private void initUser() {
+    private void initUsers() {
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
@@ -70,7 +69,43 @@ public abstract class IntegrationTest {
                 .roles(List.of(User.USER_ADMIN))
                 .build();
 
-        userRepository.save(admin);
+        User user1 = User.builder()
+                .firstName("User1")
+                .lastName("User1")
+                .email("user1@user1.com")
+                .position(Position.EMPLOYEE)
+                .jmbg("2222222222")
+                .phoneNumber("063*********")
+                .password(passwordEncoder.encode("user1"))
+                .roles(List.of("ROLE_MODERATOR"))
+                .active(true)
+                .build();
+
+        User user2 = User.builder()
+                .firstName("User2")
+                .lastName("User2")
+                .email("user2@user2.com")
+                .position(Position.EMPLOYEE)
+                .jmbg("3333333333")
+                .phoneNumber("063*********")
+                .password(passwordEncoder.encode("user3"))
+                .roles(List.of("ROLE_MODERATOR"))
+                .active(true)
+                .build();
+
+        User user3 = User.builder()
+                .firstName("User3")
+                .lastName("User3")
+                .email("user3@user3.com")
+                .position(Position.EMPLOYEE)
+                .jmbg("4444444444")
+                .phoneNumber("063*********")
+                .password(passwordEncoder.encode("user3"))
+                .roles(List.of("ROLE_MODERATOR"))
+                .active(true)
+                .build();
+
+        userRepository.saveAll(List.of(admin, user1, user2, user3));
         userRepository.flush();
     }
 
