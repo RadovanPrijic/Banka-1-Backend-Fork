@@ -21,7 +21,6 @@ public class UserDto {
     private String phoneNumber;
     private boolean active;
 
-
     private List<String> roles;
 
 }
