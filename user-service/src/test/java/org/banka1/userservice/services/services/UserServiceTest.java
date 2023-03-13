@@ -128,6 +128,49 @@ class UserServiceTest {
     }
 
     @Test
+    void returnUserProfileSuccessfully() {
+        //given
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        //when
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.returnUserProfile();
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void returnUserProfileThrowsNotFoundException() {
+        //given
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundExceptions.class, () -> userService.returnUserProfile());
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+
+
+
+    @Test
     void createUserSuccessfully() {
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
         var userCreateDto = new UserCreateDto("Test", "Test", "email@gmail.com",
