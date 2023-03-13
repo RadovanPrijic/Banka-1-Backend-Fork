@@ -30,8 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -94,6 +93,37 @@ class UserServiceTest {
         assertThrows(NotFoundExceptions.class, () -> userService.findUserById(1L));
 
         verify(userRepository, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void findUserByEmailSuccessfully() {
+        //given
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.findUserByEmail("email@gmail.com");
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void findUserByEmailThrowsNotFoundException() {
+        //given
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundExceptions.class, () -> userService.findUserByEmail("email@gmail.com"));
+
+        verify(userRepository, times(1)).findByEmail(anyString());
         verifyNoMoreInteractions(userRepository);
     }
 
