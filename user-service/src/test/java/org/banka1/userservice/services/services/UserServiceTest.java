@@ -167,8 +167,45 @@ class UserServiceTest {
         verifyNoMoreInteractions(userRepository);
     }
 
+    @Test
+    void loadUserByUsernameSuccessfully() {
+        //given
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test")
+                .roles(List.of("ADMINISTRATOR")).password(password).build();
+
+        //when
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
+        //when
+        var result = userService.loadUserByUsername("email@gmail.com");
+
+        //then
+        assertEquals("email@gmail.com", result.getUsername());
+        assertEquals(password, result.getPassword());
+        assertTrue(result.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ADMINISTRATOR")));
 
 
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void loadUserByUsernameThrowsUsernameNotFoundException() {
+        //given
+//        String password = passwordEncoder.encode("admin1234");
+//        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test")
+//                .roles(List.of("ADMINISTRATOR")).password(password).build();
+
+        //when
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+        //when
+        //then
+        assertThrows(NotFoundExceptions.class, () -> userService.loadUserByUsername("email@gmail.com"));
+
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(userRepository);
+    }
 
     @Test
     void createUserSuccessfully() {
@@ -376,4 +413,6 @@ class UserServiceTest {
         }
         return userPage;
     }
+
+
 }
