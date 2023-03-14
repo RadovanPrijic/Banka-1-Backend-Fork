@@ -1,7 +1,5 @@
-package org.banka1.userservice.units;
+package org.banka1.userservice.services;
 
-import org.banka1.userservice.services.EmailService;
-import org.banka1.userservice.services.UserService;
 import org.banka1.userservice.domains.dtos.user.PasswordDto;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
 import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
