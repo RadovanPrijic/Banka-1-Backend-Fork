@@ -1,4 +1,4 @@
-package org.banka1.userservice.services.integrations;
+package org.banka1.userservice.integrations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;

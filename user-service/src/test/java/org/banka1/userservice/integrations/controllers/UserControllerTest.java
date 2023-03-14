@@ -1,4 +1,4 @@
-package org.banka1.userservice.services.integrations.controllers;
+package org.banka1.userservice.integrations.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
@@ -6,7 +6,7 @@ import org.banka1.userservice.domains.dtos.user.UserDto;
 import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
-import org.banka1.userservice.services.integrations.IntegrationTest;
+import org.banka1.userservice.integrations.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
