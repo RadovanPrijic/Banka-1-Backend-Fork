@@ -1,4 +1,4 @@
-package org.banka1.userservice.services.services;
+package org.banka1.userservice.services.units;
 
 import org.banka1.userservice.domains.dtos.user.PasswordDto;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
