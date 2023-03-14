@@ -1,5 +1,7 @@
-package org.banka1.userservice.services.units;
+package org.banka1.userservice.units;
 
+import org.banka1.userservice.services.EmailService;
+import org.banka1.userservice.services.UserService;
 import org.banka1.userservice.domains.dtos.user.PasswordDto;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
 import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
@@ -11,8 +13,6 @@ import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.userservice.domains.exceptions.ValidationException;
 import org.banka1.userservice.repositories.UserRepository;
-import org.banka1.userservice.services.EmailService;
-import org.banka1.userservice.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
