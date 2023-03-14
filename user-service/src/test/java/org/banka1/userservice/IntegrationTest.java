@@ -1,4 +1,4 @@
-package org.banka1.userservice.integrations;
+package org.banka1.userservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -56,6 +57,9 @@ public abstract class IntegrationTest {
     }
 
     private void initUsers() {
+        List<String> roles = new ArrayList<>();
+        roles.add(User.USER_ADMIN);
+
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
@@ -63,46 +67,10 @@ public abstract class IntegrationTest {
                 .position(Position.ADMINISTRATOR)
                 .phoneNumber("111222333")
                 .password(passwordEncoder.encode("test1234"))
-                .roles(List.of(User.USER_ADMIN))
+                .roles(roles)
                 .build();
 
-        User user1 = User.builder()
-                .firstName("User1")
-                .lastName("User1")
-                .email("user1@user1.com")
-                .position(Position.EMPLOYEE)
-                .jmbg("2222222222")
-                .phoneNumber("063*********")
-                .password(passwordEncoder.encode("user1"))
-                .roles(List.of(User.USER_MODERATOR))
-                .active(true)
-                .build();
-
-        User user2 = User.builder()
-                .firstName("User2")
-                .lastName("User2")
-                .email("user2@user2.com")
-                .position(Position.EMPLOYEE)
-                .jmbg("3333333333")
-                .phoneNumber("063*********")
-                .password(passwordEncoder.encode("user3"))
-                .roles(List.of(User.USER_MODERATOR))
-                .active(true)
-                .build();
-
-        User user3 = User.builder()
-                .firstName("User3")
-                .lastName("User3")
-                .email("user3@user3.com")
-                .position(Position.EMPLOYEE)
-                .jmbg("4444444444")
-                .phoneNumber("063*********")
-                .password(passwordEncoder.encode("user3"))
-                .roles(List.of(User.USER_MODERATOR))
-                .active(true)
-                .build();
-
-        userRepository.saveAll(List.of(admin, user1, user2, user3));
+        userRepository.save(admin);
         userRepository.flush();
     }
 

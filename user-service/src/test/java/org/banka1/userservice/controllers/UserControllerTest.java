@@ -1,12 +1,10 @@
-package org.banka1.userservice.integrations.controllers;
+package org.banka1.userservice.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.banka1.userservice.domains.dtos.user.UserCreateDto;
-import org.banka1.userservice.domains.dtos.user.UserDto;
-import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
+import org.banka1.userservice.domains.dtos.user.*;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
-import org.banka1.userservice.integrations.IntegrationTest;
+import org.banka1.userservice.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -65,6 +63,21 @@ public class UserControllerTest extends IntegrationTest {
         assertEquals("1111112222225", userDto.getJmbg());
         assertEquals("063*******", userDto.getPhoneNumber());
         assertTrue(userDto.getRoles().contains(User.USER_MODERATOR));
+    }
+
+    @Test
+    public void getUserByIdNotFoundException() throws Exception {
+        Long id = -1L;
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/users/" + id)
+                        .header("Authorization", "Bearer " + token))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        Map<String, String> response = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), new TypeReference<Map<String, String>>() {});
+
+        assertEquals("user not found", response.get("message"));
     }
 
     @Test
@@ -185,6 +198,75 @@ public class UserControllerTest extends IntegrationTest {
         assertEquals(Position.ADMINISTRATOR, userDto.getPosition());
         assertEquals("111222333", userDto.getPhoneNumber());
         assertTrue(userDto.getRoles().contains(User.USER_ADMIN));
+    }
+
+    @Test
+    public void updateUserByIdSuccessfully() throws Exception {
+        Long id = userRepository.findByEmail("test@test.com").get().getId();
+
+        UserUpdateDto updateDto = new UserUpdateDto();
+        updateDto.setFirstName("Novi Admin");
+        updateDto.setLastName("Novi Admin");
+        updateDto.setPhoneNumber("069*******");
+
+        MvcResult mvcResult = mockMvc.perform(put("/api/users/update/" + id)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto userDto = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), UserDto.class);
+
+        assertEquals("Novi Admin", userDto.getFirstName());
+        assertEquals("Novi Admin", userDto.getLastName());
+        assertEquals("069*******", userDto.getPhoneNumber());
+
+    }
+
+    @Test
+    public void updateUserByIdInvalidPassword() throws Exception {
+        Long id = userRepository.findByEmail("test@test.com").get().getId();
+
+        UserUpdateDto updateDto = new UserUpdateDto();
+        updateDto.setPassword("test123");
+
+        MvcResult mvcResult = mockMvc.perform(put("/api/users/update/" + id)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        Map<String, String> response = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), new TypeReference<>() {});
+        assertEquals("Invalid password format. " +
+                "Password has to contain at least one of each: uppercase letter, lowercase letter, number, and special character. " +
+                "It also has to be at least 8 characters long.", response.get("message"));
+    }
+
+    @Test
+    public void updateMyselfSuccessfully() throws Exception {
+        UserUpdateMyProfileDto updateDto = new UserUpdateMyProfileDto();
+        updateDto.setFirstName("Novi Admin");
+        updateDto.setLastName("Novi Admin");
+        updateDto.setPhoneNumber("069*******");
+
+        MvcResult mvcResult = mockMvc.perform(put("/api/users/my-profile/update")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto userDto = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), UserDto.class);
+
+        assertEquals("Novi Admin", userDto.getFirstName());
+        assertEquals("Novi Admin", userDto.getLastName());
+        assertEquals("069*******", userDto.getPhoneNumber());
+
     }
 
 }
