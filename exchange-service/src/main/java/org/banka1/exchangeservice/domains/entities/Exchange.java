@@ -28,7 +28,7 @@ public class Exchange {
     @NotBlank
     private String excAcronym;
 
-    @Column(name = "exc_mic_code")
+    @Column(name = "exc_mic_code",unique = true)
     @NotBlank
     private String excMicCode;
 
