@@ -8,6 +8,7 @@ import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@Slf4j
+@Profile("local")
 public class BootstrapData implements CommandLineRunner {
 
     //Fajl se nalazi u resource folderu
