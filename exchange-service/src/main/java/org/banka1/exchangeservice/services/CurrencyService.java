@@ -6,6 +6,7 @@ import org.banka1.exchangeservice.domains.entities.Currency;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,14 +22,17 @@ public class CurrencyService {
 
     public void persistCurrencies(List<CurrencyCsvBean> currencyCsvBeanList) {
 
+        List<Currency> currenciesToSave = new ArrayList<>();
+
         for(CurrencyCsvBean currencyCsvBean : currencyCsvBeanList) {
             Currency currency = new Currency();
 
             currency.setCurrencyCode(currencyCsvBean.getCurrencyCode());
             currency.setCurrencyName(currencyCsvBean.getCurrencyName());
 
+            java.util.Currency c;
             try {
-                java.util.Currency c = java.util.Currency.getInstance(currency.getCurrencyCode());
+                c = java.util.Currency.getInstance(currency.getCurrencyCode());
                 if (c != null)
                     currency.setCurrencySymbol(c.getSymbol(Locale.US));
 
@@ -36,10 +40,14 @@ public class CurrencyService {
                 currency.setPolity(locale.getDisplayCountry(Locale.US));
 
             } catch (Exception e) {
-                e.printStackTrace();
+                currency.setCurrencySymbol("Doesn't exist");
+                currency.setPolity("Doesn't exist");
             }
-            currencyRepository.save(currency);
+
+            currenciesToSave.add(currency);
         }
+
+        currencyRepository.saveAll(currenciesToSave);
     }
 }
 

@@ -22,7 +22,6 @@ public class Currency {
     @Column(unique = true)
     private String currencyCode;
 
-    @Column(unique = true)
     private String currencySymbol;
 
     private String polity;
