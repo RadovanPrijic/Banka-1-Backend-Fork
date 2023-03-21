@@ -12,34 +12,47 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
+import lombok.AllArgsConstructor;
+import org.banka1.exchangeservice.domains.dtos.CurrencyCsvBean;
+import org.banka1.exchangeservice.services.CurrencyService;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.List;
+
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Component
+@AllArgsConstructor
 @Profile("local")
 public class BootstrapData implements CommandLineRunner {
 
-    //Fajl se nalazi u resource folderu
-    private String exchangeCSVPath = "classpath:exchange.csv";
-
     private final ExchangeRepository exchangeRepository;
-
-    public BootstrapData(ExchangeRepository exchangeRepository) {
-        this.exchangeRepository = exchangeRepository;
-    }
+    private final CurrencyService currencyService;
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Initializing data...");
-        //Proba za unos u bazu hardkodirano
-
-//        Exchange exchange1 = new Exchange(null,"Jakarta Futures Exchange (bursa Berjangka Jakarta)","BBJ","XBBJ","Indonesia","Indonesian Rupiah","Asia/Jakarta", "09:00", "17:30");
-//        Exchange exchange2 = new Exchange(null,"Asx - Trade24","SFE","XSFE","Australia","Australian Dollar","Australia/Melbourne", "10:00", "16:00");
-//        exchangeRepository.save(exchange1);
-//        exchangeRepository.save(exchange2);
+        String exchangeCSVPath = "classpath:exchange.csv";
+    
+        System.out.println("Loading Currency Data ...");
 
 
+        List<CurrencyCsvBean> currencyCsvBeanList =
+                getCurrencies("https://www.alphavantage.co/physical_currency_list/");
+        currencyService.persistCurrencies(currencyCsvBeanList);
+        System.out.println("Currency Data Loaded!");
+        
+        
         List<Exchange> exchanges = new ArrayList<>();
 
         List<ExchangeCSV> exchangeCSV = new CsvToBeanBuilder<ExchangeCSV>(new FileReader(ResourceUtils.getFile(exchangeCSVPath)))
@@ -64,6 +77,29 @@ public class BootstrapData implements CommandLineRunner {
             exchanges.add(exchange);
         }
         exchangeRepository.saveAll(exchanges);
-        System.out.println("Data loaded");
+        System.out.println("Exchange Data loaded");
+        
+    }
+
+    public List<CurrencyCsvBean> getCurrencies(String fileUrl) throws IOException {
+        FileOutputStream fileOutputStream = null;
+        try {
+            URL currencyListUrl = new URL(fileUrl);
+            ReadableByteChannel readableByteChannel = Channels.newChannel(currencyListUrl.openStream());
+            fileOutputStream = new FileOutputStream("currencies.csv");
+            fileOutputStream.getChannel()
+                    .transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if(fileOutputStream != null)
+                fileOutputStream.close();
+        }
+
+        return new CsvToBeanBuilder<CurrencyCsvBean>(new FileReader("currencies.csv"))
+                .withType(CurrencyCsvBean.class)
+                .withSkipLines(1)
+                .build()
+                .parse();
     }
 }
