@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.Set;
 
 @Entity
 @Data
@@ -51,4 +52,11 @@ public class Exchange {
     @Column(name = "exc_close_time")
     @NotBlank
     private String excCloseTime;
+
+    @OneToMany(mappedBy = "exchange")
+    private Set<Forex> forexes;
+    @OneToMany(mappedBy = "exchange")
+    private Set<FuturesContract> futuresContracts;
+    @OneToMany(mappedBy = "exchange")
+    private Set<Stock> stocks;
 }
