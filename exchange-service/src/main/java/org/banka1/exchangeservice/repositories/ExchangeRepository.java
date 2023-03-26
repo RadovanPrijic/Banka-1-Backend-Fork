@@ -12,7 +12,7 @@ public interface ExchangeRepository extends JpaRepository<Exchange, Long> {
 
     List<Exchange> findByExcNameLike(String excName);
 
-    Exchange findByExcAcronym(String excAcronym);
-
     Exchange findByExcMicCode(String excMicCode);
+
+    Exchange findByExcAcronym(String excAcronym);
 }

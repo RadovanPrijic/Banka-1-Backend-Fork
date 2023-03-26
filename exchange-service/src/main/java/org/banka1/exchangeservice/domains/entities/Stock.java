@@ -22,8 +22,6 @@ import java.util.Set;
 @Table(name = "stocks")
 public class Stock extends Listing{
 
-    //private Long outstandingShares;
-    private Double dividendYield; //nemamo permisiju za ovaj endpoint
     private String symbol;
     @ManyToOne
     @JoinColumn(name = "exchange")

@@ -8,9 +8,11 @@ import org.apache.commons.csv.CSVRecord;
 import org.banka1.exchangeservice.domains.dtos.PriceDto;
 import org.banka1.exchangeservice.domains.dtos.StockResponseDto;
 import org.banka1.exchangeservice.domains.dtos.TimeSeriesStockResponseDto;
+import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -20,6 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +31,10 @@ public class StockService {
 
     private final ExchangeRepository exchangeRepository;
     private final StockRepository stockRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Value("${alpha.vantage.api.key}")
+    private String apiKey;
 
     public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
         this.exchangeRepository = exchangeRepository;
@@ -45,19 +52,10 @@ public class StockService {
         System.out.println(csvParser.getHeaderNames());
         List<CSVRecord> csvRecords = csvParser.getRecords();
 
-        int i = 0;
+        Exchange exchange = exchangeRepository.findByExcAcronym("NASDAQ");
+        List<Stock> stocksToSave = new ArrayList<>();
         for(CSVRecord record: csvRecords) {
-            if(i > 10)
-                break;
 
-            System.out.println("----------------------");
-            System.out.println(record.get("symbol"));
-            System.out.println(record.get("name"));
-            System.out.println(record.get("currency"));
-            System.out.println(record.get("exchange"));
-            System.out.println("----------------------");
-
-            i++;
         }
     }
 
@@ -72,7 +70,6 @@ public class StockService {
         HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
         String jsonStock = response.body();
-        ObjectMapper objectMapper = new ObjectMapper();
 
         StockResponseDto stockResponseDto = objectMapper.readValue(jsonStock, StockResponseDto.class);
         var exchange = exchangeRepository.findByExcId(536L);
