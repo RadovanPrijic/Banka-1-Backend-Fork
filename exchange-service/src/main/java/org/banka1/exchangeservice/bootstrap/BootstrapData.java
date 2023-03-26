@@ -37,20 +37,21 @@ public class BootstrapData implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         // CURRENCY DATA
-        List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
-        currencyService.persistCurrencies(currencyCsvBeanList);
-        System.out.println("Currency Data Loaded!");
-
-
-        // EXCHANGE DATA
-        loadExchangeData();
-        System.out.println("Exchange Data loaded");
-
-        //LISTING
-        forexService.loadForexes();
-        System.out.println("Forexes loaded");
-        stockService.loadStocks();
-        System.out.println("Stocks loaded");
+//        List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
+//        currencyService.persistCurrencies(currencyCsvBeanList);
+//        System.out.println("Currency Data Loaded!");
+//
+//
+//        // EXCHANGE DATA
+//        loadExchangeData();
+//        System.out.println("Exchange Data loaded");
+//
+//        //LISTING
+//        forexService.loadForexes();
+//        System.out.println("Forexes loaded");
+//        stockService.loadStocks();
+//        System.out.println("Stocks loaded");
+        stockService.loadStocksFromFile();
     }
 
     public List<CurrencyCsvBean> getCurrencies() throws IOException {

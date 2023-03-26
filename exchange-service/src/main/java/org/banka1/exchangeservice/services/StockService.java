@@ -2,6 +2,9 @@ package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.banka1.exchangeservice.domains.dtos.PriceDto;
 import org.banka1.exchangeservice.domains.dtos.StockResponseDto;
 import org.banka1.exchangeservice.domains.dtos.TimeSeriesStockResponseDto;
@@ -9,13 +12,15 @@ import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -27,6 +32,33 @@ public class StockService {
     public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
         this.exchangeRepository = exchangeRepository;
         this.stockRepository = stockRepository;
+    }
+
+    public void loadStocksFromFile() throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:csv/stocks.csv")));
+
+        CSVParser csvParser = new CSVParser(reader, CSVFormat.newFormat(';')
+                .withFirstRecordAsHeader()
+                .withIgnoreHeaderCase()
+                .withTrim());
+
+        System.out.println(csvParser.getHeaderNames());
+        List<CSVRecord> csvRecords = csvParser.getRecords();
+
+        int i = 0;
+        for(CSVRecord record: csvRecords) {
+            if(i > 10)
+                break;
+
+            System.out.println("----------------------");
+            System.out.println(record.get("symbol"));
+            System.out.println(record.get("name"));
+            System.out.println(record.get("currency"));
+            System.out.println(record.get("exchange"));
+            System.out.println("----------------------");
+
+            i++;
+        }
     }
 
     public void loadStocks() throws IOException, InterruptedException {
