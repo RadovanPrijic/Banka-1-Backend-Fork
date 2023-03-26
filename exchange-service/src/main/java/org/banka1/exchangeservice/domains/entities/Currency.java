@@ -3,6 +3,7 @@ package org.banka1.exchangeservice.domains.entities;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
@@ -26,5 +27,10 @@ public class Currency {
 
     private String polity;
 
+
+    @OneToMany(mappedBy = "baseCurrency")
+    private Set<Forex> baseForexes;
+    @OneToMany(mappedBy = "quoteCurrency")
+    private Set<Forex> quoteForexes;
 }
 
