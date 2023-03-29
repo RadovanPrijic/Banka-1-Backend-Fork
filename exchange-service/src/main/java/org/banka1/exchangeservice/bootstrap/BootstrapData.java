@@ -47,7 +47,7 @@ public class BootstrapData implements CommandLineRunner {
         System.out.println("Exchange Data loaded");
 
         //LISTING
-        forexService.loadForexes();
+//        forexService.loadForexes();
         System.out.println("Forexes loaded");
         stockService.loadStocks();
         System.out.println("Stocks loaded");
