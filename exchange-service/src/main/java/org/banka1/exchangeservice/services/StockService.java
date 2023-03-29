@@ -33,9 +33,6 @@ public class StockService {
     private final StockRepository stockRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${alpha.vantage.api.key}")
-    private String apiKey;
-
     public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
         this.exchangeRepository = exchangeRepository;
         this.stockRepository = stockRepository;
@@ -44,14 +41,9 @@ public class StockService {
     public void loadStocksFromFile() throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:csv/stocks.csv")));
 
-        CSVParser csvParser = new CSVParser(reader, CSVFormat.newFormat(';')
-                .withFirstRecordAsHeader()
-                .withIgnoreHeaderCase()
-                .withTrim());
+        CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
 
-        System.out.println(csvParser.getHeaderNames());
         List<CSVRecord> csvRecords = csvParser.getRecords();
-
         Exchange exchange = exchangeRepository.findByExcAcronym("NASDAQ");
         List<Stock> stocksToSave = new ArrayList<>();
         for(CSVRecord record: csvRecords) {
