@@ -2,20 +2,28 @@ package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.banka1.exchangeservice.domains.dtos.PriceDto;
 import org.banka1.exchangeservice.domains.dtos.StockResponseDto;
 import org.banka1.exchangeservice.domains.dtos.TimeSeriesStockResponseDto;
+import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -23,10 +31,24 @@ public class StockService {
 
     private final ExchangeRepository exchangeRepository;
     private final StockRepository stockRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
         this.exchangeRepository = exchangeRepository;
         this.stockRepository = stockRepository;
+    }
+
+    public void loadStocksFromFile() throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:csv/stocks.csv")));
+
+        CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
+
+        List<CSVRecord> csvRecords = csvParser.getRecords();
+        Exchange exchange = exchangeRepository.findByExcAcronym("NASDAQ");
+        List<Stock> stocksToSave = new ArrayList<>();
+        for(CSVRecord record: csvRecords) {
+
+        }
     }
 
     public void loadStocks() throws IOException, InterruptedException {
@@ -40,7 +62,6 @@ public class StockService {
         HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
         String jsonStock = response.body();
-        ObjectMapper objectMapper = new ObjectMapper();
 
         StockResponseDto stockResponseDto = objectMapper.readValue(jsonStock, StockResponseDto.class);
         var exchange = exchangeRepository.findByExcId(536L);

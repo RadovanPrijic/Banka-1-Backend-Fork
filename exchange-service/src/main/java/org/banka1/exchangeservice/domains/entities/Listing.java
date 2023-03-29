@@ -27,6 +27,7 @@ public class Listing {
     private Double high;
     private Double low;
     private Double close;
+    private Double open;
     private Long volume;
 
 }
