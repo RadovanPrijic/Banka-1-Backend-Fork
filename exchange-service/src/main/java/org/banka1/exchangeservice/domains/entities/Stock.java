@@ -1,5 +1,6 @@
 package org.banka1.exchangeservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Stock extends Listing{
     private Double priceChangeInPercentage;
     @ManyToOne
     @JoinColumn(name = "exc_id")
+    @JsonIgnore
     private Exchange exchange;
 
 }
