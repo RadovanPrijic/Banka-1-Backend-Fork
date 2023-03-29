@@ -8,12 +8,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockDto {
-
     private String symbol;
-    private String name;
-    private String currency;
-    private String exchange;
-    private String mic_code;
-    private String country;
-    private String type;
+    private Double price;
+    private Double volume;
+    private Double change;
+    private Double changeInPercentage;
+    private Long lastRefreshedInMillis;
 }

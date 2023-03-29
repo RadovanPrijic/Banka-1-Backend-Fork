@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.banka1.exchangeservice.domains.dtos.PriceDto;
-import org.banka1.exchangeservice.domains.dtos.StockResponseDto;
-import org.banka1.exchangeservice.domains.dtos.TimeSeriesStockResponseDto;
+import org.banka1.exchangeservice.domains.dtos.StockDtoFlask;
+import org.banka1.exchangeservice.domains.dtos.StockResponseDtoFlask;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -38,112 +36,48 @@ public class StockService {
         this.stockRepository = stockRepository;
     }
 
-    public void loadStocksFromFile() throws Exception {
+    public void loadStocks() throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:csv/stocks.csv")));
-
         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
 
         List<CSVRecord> csvRecords = csvParser.getRecords();
+
         Exchange exchange = exchangeRepository.findByExcAcronym("NASDAQ");
         List<Stock> stocksToSave = new ArrayList<>();
+
         for(CSVRecord record: csvRecords) {
-
-        }
-    }
-
-    public void loadStocks() throws IOException, InterruptedException {
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://twelve-data1.p.rapidapi.com/stocks?country=USA&exchange=NASDAQ&format=json"))
-                .header("X-RapidAPI-Key", "cd237bacbbmsh1546e6d11927036p123120jsn3db518ba1ec7")
-                .header("X-RapidAPI-Host", "twelve-data1.p.rapidapi.com")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-
-        String jsonStock = response.body();
-
-        StockResponseDto stockResponseDto = objectMapper.readValue(jsonStock, StockResponseDto.class);
-        var exchange = exchangeRepository.findByExcId(536L);
-
-        HttpRequest requestTime = HttpRequest.newBuilder()
-                .uri(URI.create("https://twelve-data1.p.rapidapi.com/time_series?interval=15min&symbol=AACG&format=json&outputsize=30"))
-                .header("X-RapidAPI-Key", "cd237bacbbmsh1546e6d11927036p123120jsn3db518ba1ec7")
-                .header("X-RapidAPI-Host", "twelve-data1.p.rapidapi.com")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> responseTime = HttpClient.newHttpClient().send(requestTime, HttpResponse.BodyHandlers.ofString());
-
-        String jsonTime = responseTime.body();
-        TimeSeriesStockResponseDto timeSeriesStockResponseDto = objectMapper.readValue(jsonTime, TimeSeriesStockResponseDto.class);
-
-        HttpRequest requestPrice = HttpRequest.newBuilder()
-                .uri(URI.create("https://twelve-data1.p.rapidapi.com/price?symbol=AACG&outputsize=30&format=json"))
-                .header("X-RapidAPI-Key", "cd237bacbbmsh1546e6d11927036p123120jsn3db518ba1ec7")
-                .header("X-RapidAPI-Host", "twelve-data1.p.rapidapi.com")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-
-        HttpResponse<String> responsePrice = HttpClient.newHttpClient().send(requestPrice, HttpResponse.BodyHandlers.ofString());
-
-        String jsonPrice = responsePrice.body();
-        PriceDto priceDto = objectMapper.readValue(jsonPrice, PriceDto.class);
-
-        stockResponseDto.getData().forEach(stockDto -> {
-            Stock stock = Stock.builder()
-                    .symbol(stockDto.getSymbol())
-                    .exchange(exchange)
+            String symbol = record.get("symbol");
+            String url = "http://127.0.0.1:8888/stocks/time-series?symbol=" + symbol + "&time_series=TIME_SERIES_DAILY";
+            System.out.println(url);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-            stock.setHigh(timeSeriesStockResponseDto.getValues().get(0).getHigh());
-            stock.setLow(timeSeriesStockResponseDto.getValues().get(0).getLow());
-            stock.setLow(timeSeriesStockResponseDto.getValues().get(0).getLow());
-            stock.setClose(timeSeriesStockResponseDto.getValues().get(0).getClose());
-            stock.setVolume(timeSeriesStockResponseDto.getValues().get(0).getVolume());
-            stock.setPrice(priceDto.getPrice());
+            if (response.statusCode() != 200)
+                continue;
+
+            String jsonStock = response.body();
+            StockResponseDtoFlask stockResponseDtoFlask = objectMapper.readValue(jsonStock, StockResponseDtoFlask.class);
+            StockDtoFlask stockDtoFlask = stockResponseDtoFlask.getTimeSeries().get(0);
+            StockDtoFlask stockDtoFlask2 = stockResponseDtoFlask.getTimeSeries().get(1);
+            Stock stock = new Stock();
+            stock.setExchange(exchange);
+            stock.setSymbol(symbol);
             stock.setLastRefresh(LocalDateTime.now());
+            stock.setHigh(stockDtoFlask.getHigh());
+            stock.setLow(stockDtoFlask.getLow());
+            stock.setOpen(stockDtoFlask.getOpen());
+            stock.setClose(stockDtoFlask.getClose());
+            stock.setPrice((stockDtoFlask.getHigh() + stockDtoFlask.getLow()) / 2);
+            stock.setPriceChange(stockDtoFlask.getHigh() - stockDtoFlask2.getHigh());
+            stock.setPriceChangeInPercentage(stockDtoFlask.getHigh()*100/stockDtoFlask2.getHigh()-100);
+            stock.setVolume(stockDtoFlask.getVolume());
+            //juceCena:100 = danasCena:x,  danasCena*100 = x*juceCena,   x=(danasCena*100/juceCena)-100
 
-            stockRepository.save(stock);
-        });
-    }
-
-    //@Scheduled(cron = "0 * * * * ?") treba staviti cron da ide na 15min, ovo nije odradjeno da se ne bi probio dozvoljen broj poziva
-    public void timeChanges() throws IOException, InterruptedException {
-        HttpRequest requestTime = HttpRequest.newBuilder()
-                .uri(URI.create("https://twelve-data1.p.rapidapi.com/time_series?interval=15min&symbol=AACG&format=json&outputsize=30"))
-                .header("X-RapidAPI-Key", "cd237bacbbmsh1546e6d11927036p123120jsn3db518ba1ec7")
-                .header("X-RapidAPI-Host", "twelve-data1.p.rapidapi.com")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> responseTime = HttpClient.newHttpClient().send(requestTime, HttpResponse.BodyHandlers.ofString());
-
-        String jsonTime = responseTime.body();
-        ObjectMapper objectMapper = new ObjectMapper();
-        TimeSeriesStockResponseDto timeSeriesStockResponseDto = objectMapper.readValue(jsonTime, TimeSeriesStockResponseDto.class);
-
-        HttpRequest requestPrice = HttpRequest.newBuilder()
-                .uri(URI.create("https://twelve-data1.p.rapidapi.com/price?symbol=AACG&outputsize=30&format=json"))
-                .header("X-RapidAPI-Key", "cd237bacbbmsh1546e6d11927036p123120jsn3db518ba1ec7")
-                .header("X-RapidAPI-Host", "twelve-data1.p.rapidapi.com")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-
-        HttpResponse<String> responsePrice = HttpClient.newHttpClient().send(requestPrice, HttpResponse.BodyHandlers.ofString());
-
-        String jsonPrice = responsePrice.body();
-        PriceDto priceDto = objectMapper.readValue(jsonPrice, PriceDto.class);
-
-        stockRepository.findAll().forEach(stock -> {
-
-            stock.setHigh(timeSeriesStockResponseDto.getValues().get(0).getHigh());
-            stock.setLow(timeSeriesStockResponseDto.getValues().get(0).getLow());
-            stock.setLow(timeSeriesStockResponseDto.getValues().get(0).getLow());
-            stock.setClose(timeSeriesStockResponseDto.getValues().get(0).getClose());
-            stock.setVolume(timeSeriesStockResponseDto.getValues().get(0).getVolume());
-            stock.setPrice(priceDto.getPrice());
-            stock.setLastRefresh(LocalDateTime.now());
-
-            stockRepository.save(stock);
-        });
+            stocksToSave.add(stock);
+        }
+        stockRepository.saveAll(stocksToSave);
     }
 }

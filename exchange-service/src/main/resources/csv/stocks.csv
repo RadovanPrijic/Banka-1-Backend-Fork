@@ -1,7 +1,8 @@
 symbol,name,currency,exchange,mic_code,country,type
 ADGI,"Adagio Therapeutics, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
 AIMDW,"Ainos, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
-ALBT,Avalon GloboCare Corp.,USD,NASDAQ,XNCM,United States,Common Stock
+AAPL,Apple Inc,USD,NASDAQ,XNGS,United States,Common Stock
+AMZN,Amazon.com Inc,USD,NASDAQ,XNGS,United States,Common Stock
 ALSA,Alpha Star Acquisition Corporation,USD,NASDAQ,XNMS,United States,Common Stock
 ALYA,Alithya Group Inc,USD,NASDAQ,XNCM,United States,Common Stock
 ANNX,"Annexon, Inc.",USD,NASDAQ,XNGS,United States,Common Stock
@@ -87,6 +88,7 @@ STEP,StepStone Group Inc.,USD,NASDAQ,XNGS,United States,Common Stock
 STRL,Sterling Construction Co Inc,USD,NASDAQ,XNGS,United States,Common Stock
 SVFAU,SVF Investment Corp.,USD,NASDAQ,XNCM,United States,Unit
 TALS,"Talaris Therapeutics, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+TSLA,Tesla Inc,USD,NASDAQ,XNGS,United States,Common Stock
 TBLD,Thornburg Income Builder Opportunities Trust,USD,NASDAQ,XNGS,United States,Common Stock
 TCBIO,"Texas Capital Bancshares, Inc.",USD,NASDAQ,XNGS,United States,Common Stock
 TMPO,"Tempo Automation Holdings, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
