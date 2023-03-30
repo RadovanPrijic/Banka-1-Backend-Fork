@@ -1,7 +1,7 @@
 package org.banka1.exchangeservice.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.banka1.exchangeservice.domains.dtos.CurrencyCsvBean;
+import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.exchangeservice.domains.entities.Currency;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;

@@ -1,23 +1,19 @@
 package org.banka1.exchangeservice.services;
 
-import org.banka1.exchangeservice.domains.dtos.ExchangeDto;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ExchangeService {
 
     @Autowired
     private ExchangeRepository exchangeRepository;
-
 
 
     public Page<Exchange> getExchanges(Integer page, Integer size){

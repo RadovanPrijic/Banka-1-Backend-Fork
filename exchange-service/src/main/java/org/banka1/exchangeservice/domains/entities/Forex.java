@@ -19,7 +19,7 @@ import java.util.Set;
 @Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "forexes")
-public class Forex{
+public class Forex {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +31,8 @@ public class Forex{
     private Currency toCurrency;
 
     private Double exchangeRate;
-
     private String symbol;
-
     private Double bidPrice;
-
     private Double askPrice;
 
 }

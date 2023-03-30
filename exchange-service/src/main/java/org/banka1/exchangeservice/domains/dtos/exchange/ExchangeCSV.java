@@ -1,4 +1,4 @@
-package org.banka1.exchangeservice.domains.dtos;
+package org.banka1.exchangeservice.domains.dtos.exchange;
 
 import com.opencsv.bean.CsvBindByPosition;
 import lombok.AllArgsConstructor;

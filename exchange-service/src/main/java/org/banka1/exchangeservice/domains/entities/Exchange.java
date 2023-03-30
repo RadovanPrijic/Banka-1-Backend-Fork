@@ -55,10 +55,4 @@ public class Exchange {
     @NotBlank
     private String excCloseTime;
 
-    @OneToMany(mappedBy = "exchange", cascade = {CascadeType.PERSIST})
-    private Set<Forex> forexes;
-    @OneToMany(mappedBy = "exchange", cascade = {CascadeType.PERSIST})
-    private Set<FuturesContract> futuresContracts;
-    @OneToMany(mappedBy = "exchange", cascade = {CascadeType.PERSIST})
-    private Set<Stock> stocks;
 }

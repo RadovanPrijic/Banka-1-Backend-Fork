@@ -1,7 +1,7 @@
 package org.banka1.exchangeservice.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
-import org.banka1.exchangeservice.domains.dtos.ExchangeCSV;
+import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.services.ForexService;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
-import org.banka1.exchangeservice.domains.dtos.CurrencyCsvBean;
+import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.exchangeservice.services.CurrencyService;
 import org.springframework.util.ResourceUtils;
 
@@ -47,7 +47,7 @@ public class BootstrapData implements CommandLineRunner {
         System.out.println("Exchange Data loaded");
 
         //LISTING
-//        forexService.loadForexes();
+        forexService.loadForex();
         System.out.println("Forexes loaded");
         stockService.loadStocks();
         System.out.println("Stocks loaded");

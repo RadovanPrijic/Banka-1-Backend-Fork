@@ -1,4 +1,4 @@
-package org.banka1.exchangeservice.domains.dtos;
+package org.banka1.exchangeservice.domains.dtos.stock;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.banka1.exchangeservice.domains.dtos.StockDtoFlask;
-import org.banka1.exchangeservice.domains.dtos.StockResponseDtoFlask;
+import org.banka1.exchangeservice.domains.dtos.stock.StockDtoFlask;
+import org.banka1.exchangeservice.domains.dtos.stock.StockResponseDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.TimeSeriesEnum;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.entities.Stock;
@@ -36,9 +36,9 @@ public class StockService {
     private final ExchangeRepository exchangeRepository;
     private final StockRepository stockRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Value("${flask.api.timeseries}")
+    @Value("${flask.api.stock.timeseries}")
     private String baseTimeSeriesUrl;
-    @Value("${flask.api.timeseries.intraday}")
+    @Value("${flask.api.stock.timeseries.intraday}")
     private String baseTimeSeriesIntraDayUrl;
 
     public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {

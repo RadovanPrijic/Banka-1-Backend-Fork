@@ -1,4 +1,4 @@
-package org.banka1.exchangeservice.domains.dtos;
+package org.banka1.exchangeservice.domains.dtos.stock;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

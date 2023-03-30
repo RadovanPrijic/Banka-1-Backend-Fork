@@ -1,4 +1,4 @@
-package org.banka1.exchangeservice.domains.dtos;
+package org.banka1.exchangeservice.domains.dtos.currency;
 
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;

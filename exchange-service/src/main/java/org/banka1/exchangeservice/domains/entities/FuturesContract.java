@@ -29,8 +29,5 @@ public class FuturesContract extends Listing{
     private String contractUnit;
     private int openInterest;
     private LocalDate settlementDate;
-    @ManyToOne
-    @JoinColumn(name = "exchange")
-    private Exchange exchange;
 
 }

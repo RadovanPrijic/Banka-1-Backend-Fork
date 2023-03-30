@@ -1,9 +1,8 @@
 package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
-import org.banka1.exchangeservice.domains.dtos.ForexFilterRequest;
+import org.banka1.exchangeservice.domains.dtos.forex.ForexFilterRequest;
 import org.banka1.exchangeservice.services.ForexService;
-import org.banka1.exchangeservice.services.StockService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
