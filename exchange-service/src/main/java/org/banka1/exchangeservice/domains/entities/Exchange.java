@@ -1,5 +1,6 @@
 package org.banka1.exchangeservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,6 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "exchanges")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Exchange {
 
     @Id

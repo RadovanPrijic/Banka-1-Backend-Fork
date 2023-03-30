@@ -1,16 +1,14 @@
 package org.banka1.exchangeservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -19,18 +17,25 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "forexes")
-public class Forex extends Listing{
+public class Forex{
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private LocalDateTime lastRefresh;
     @ManyToOne
-    @JoinColumn(name = "base_currency")
-    private Currency baseCurrency;
+    private Currency fromCurrency;
     @ManyToOne
-    @JoinColumn(name = "quote_currency")
-    private Currency quoteCurrency;
-    @ManyToOne
-    @JoinColumn(name = "exchange")
-    private Exchange exchange;
+    private Currency toCurrency;
+
+    private Double exchangeRate;
+
     private String symbol;
+
+    private Double bidPrice;
+
+    private Double askPrice;
 
 }

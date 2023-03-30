@@ -69,7 +69,7 @@ def get_alpha_vantage(symbol, ts_function):
 def get_alpha_vantage_intraday(symbol, interval):
     api_key = os.getenv('API_KEY')
 
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + symbol + '&interval= ' + \
+    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + symbol + '&interval=' + \
           interval + '&apikey=' + api_key
     av_response = requests.get(url)
     av_data = av_response.json()

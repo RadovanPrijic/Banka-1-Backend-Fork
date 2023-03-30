@@ -1,5 +1,6 @@
 package org.banka1.exchangeservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,6 +13,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "currencies")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Currency {
 
     @Id
@@ -27,10 +29,5 @@ public class Currency {
 
     private String polity;
 
-
-    @OneToMany(mappedBy = "baseCurrency")
-    private Set<Forex> baseForexes;
-    @OneToMany(mappedBy = "quoteCurrency")
-    private Set<Forex> quoteForexes;
 }
 
