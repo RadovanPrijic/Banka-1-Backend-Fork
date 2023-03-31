@@ -5,6 +5,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.userservice.domains.dtos.user.*;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
+import org.banka1.userservice.domains.exceptions.ForbiddenException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.userservice.domains.exceptions.ValidationException;
 import org.banka1.userservice.domains.mappers.UserMapper;
@@ -162,6 +163,10 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found"));
+
+        if(!user.isActive()){
+            throw new ForbiddenException("user not active");
+        }
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.getAuthorities());
     }
