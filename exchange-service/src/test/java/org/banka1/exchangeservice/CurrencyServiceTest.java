@@ -1,17 +1,12 @@
 package org.banka1.exchangeservice;
 
-import com.opencsv.bean.CsvToBeanBuilder;
-import org.banka1.exchangeservice.domains.dtos.CurrencyCsvBean;
-import org.banka1.exchangeservice.domains.entities.Currency;
+import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.banka1.exchangeservice.services.CurrencyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 

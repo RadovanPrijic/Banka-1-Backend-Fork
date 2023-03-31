@@ -1,6 +1,6 @@
-package org.banka1.exchangeservice.domains.dtos;
+package org.banka1.exchangeservice.domains.dtos.stock;
 
-public enum TimeSeriesEnum {
+public enum TimeSeriesStockEnum {
     FIVE_MIN("5min"),
     HOUR("60min"),
     DAILY("TIME_SERIES_DAILY"),
@@ -9,7 +9,7 @@ public enum TimeSeriesEnum {
 
     private String value;
 
-    TimeSeriesEnum(String value) {
+    TimeSeriesStockEnum(String value) {
         this.value = value;
     }
 
