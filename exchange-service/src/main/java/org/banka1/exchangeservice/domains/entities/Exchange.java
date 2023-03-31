@@ -1,9 +1,11 @@
 package org.banka1.exchangeservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.Set;
 
 @Entity
 @Data
@@ -13,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "exchanges")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Exchange {
 
     @Id
@@ -51,4 +54,11 @@ public class Exchange {
     @Column(name = "exc_close_time")
     @NotBlank
     private String excCloseTime;
+
+    @OneToMany(mappedBy = "exchange", cascade = {CascadeType.PERSIST})
+    private Set<Forex> forexes;
+    @OneToMany(mappedBy = "exchange", cascade = {CascadeType.PERSIST})
+    private Set<FuturesContract> futuresContracts;
+    @OneToMany(mappedBy = "exchange", cascade = {CascadeType.PERSIST})
+    private Set<Stock> stocks;
 }

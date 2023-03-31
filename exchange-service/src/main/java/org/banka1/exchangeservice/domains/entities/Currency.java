@@ -1,8 +1,10 @@
 package org.banka1.exchangeservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
@@ -11,6 +13,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "currencies")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Currency {
 
     @Id

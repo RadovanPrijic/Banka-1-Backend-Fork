@@ -4,6 +4,8 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import org.banka1.exchangeservice.domains.dtos.ExchangeCSV;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
+import org.banka1.exchangeservice.services.ForexService;
+import org.banka1.exchangeservice.services.StockService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,8 @@ public class BootstrapData implements CommandLineRunner {
 
     private final ExchangeRepository exchangeRepository;
     private final CurrencyService currencyService;
+    private final ForexService forexService;
+    private final StockService stockService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -41,7 +45,12 @@ public class BootstrapData implements CommandLineRunner {
         // EXCHANGE DATA
         loadExchangeData();
         System.out.println("Exchange Data loaded");
-        
+
+        //LISTING
+//        forexService.loadForexes();
+        System.out.println("Forexes loaded");
+        stockService.loadStocks();
+        System.out.println("Stocks loaded");
     }
 
     public List<CurrencyCsvBean> getCurrencies() throws IOException {

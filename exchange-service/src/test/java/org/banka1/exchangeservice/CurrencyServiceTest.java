@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class CurrencyServiceTest {
 
         currencyService.persistCurrencies(csvBeanList);
 
-        verify(currencyRepository, times(3)).save((any(Currency.class)));
+        verify(currencyRepository, times(1)).saveAll((Mockito.anyCollection()));
         verifyNoMoreInteractions(currencyRepository);
     }
 }
