@@ -2,6 +2,7 @@ package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
 import org.banka1.exchangeservice.domains.dtos.forex.ForexFilterRequest;
+import org.banka1.exchangeservice.domains.dtos.forex.TimeSeriesForexEnum;
 import org.banka1.exchangeservice.services.ForexService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,5 +21,10 @@ public class ForexController {
     public ResponseEntity<?> getForexes(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size,
                                         @RequestBody ForexFilterRequest forexFilterRequest) {
         return ResponseEntity.ok(forexService.getForexes(page, size, forexFilterRequest));
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getForexByTimeSeries(@RequestParam String fromCurrency, @RequestParam String toCurrency, @RequestParam TimeSeriesForexEnum timeSeries) {
+        return ResponseEntity.ok(forexService.getForexByTimeSeries(fromCurrency, toCurrency, timeSeries));
     }
 }
