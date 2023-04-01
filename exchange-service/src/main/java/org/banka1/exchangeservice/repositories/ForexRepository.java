@@ -11,5 +11,5 @@ import java.util.Optional;
 
 @Repository
 public interface ForexRepository extends JpaRepository<Forex, Long>, QuerydslPredicateExecutor<Forex> {
-
+    Forex findBySymbol(String symbol);
 }
