@@ -23,6 +23,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -178,5 +180,53 @@ public class OrderService {
         }
 
         orderRepository.save(order);
+    }
+
+    private void updateBankAccountBalance(String token, String url){
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", token)
+                .method("PUT", HttpRequest.BodyPublishers.noBody())
+                .build();
+        try {
+            HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void rejectOrder(String token, Long orderId) {
+        UserDto userDto = getUserDtoFromUserService(token);
+        if(userDto.getPosition() == Position.ADMINISTRATOR){
+            Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundExceptions("order not found"));
+            order.setOrderStatus(OrderStatus.REJECTED);
+            orderRepository.save(order);
+        }
+    }
+
+    public void approveOrder(String token, Long orderId) {
+        UserDto userDto = getUserDtoFromUserService(token);
+        if(userDto.getPosition() == Position.ADMINISTRATOR){
+            Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundExceptions("order not found"));
+            order.setOrderStatus(OrderStatus.APPROVED);
+            orderRepository.save(order);
+            mockExecutionOfOrder(order, token);
+        }
+    }
+
+    public List<Order> getAllOrders(OrderFilterRequest orderFilterRequest) {
+        Iterable<Order> orderIterable = orderRepository.findAll(orderFilterRequest.getPredicate());
+        List<Order> orders = new ArrayList<>();
+        orderIterable.forEach(orders::add);
+
+        return orders;
+    }
+
+    public List<Order> getOrdersByUser(OrderFilterRequest orderFilterRequest) {
+        Iterable<Order> orderIterable = orderRepository.findAll(orderFilterRequest.getPredicate());
+        List<Order> orders = new ArrayList<>();
+        orderIterable.forEach(orders::add);
+
+        return orders;
     }
 }

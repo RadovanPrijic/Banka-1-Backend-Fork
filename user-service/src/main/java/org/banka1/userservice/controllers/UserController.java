@@ -87,4 +87,13 @@ public class UserController {
         return ResponseEntity.ok(userService.reduceDailyLimit(userId, decreaseLimit));
     }
 
+    @PutMapping("/increase-balance")
+    public ResponseEntity<?> increaseBankBalance(@RequestParam Double increaseAmount) {
+        return ResponseEntity.ok(userService.increaseBankAccountBalance(increaseAmount));
+    }
+
+    @PutMapping("/decrease-balance")
+    public ResponseEntity<?> decreaseBankBalance(@RequestParam Double decreaseAccount) {
+        return ResponseEntity.ok(userService.decreaseBankAccountBalance(decreaseAccount));
+    }
 }

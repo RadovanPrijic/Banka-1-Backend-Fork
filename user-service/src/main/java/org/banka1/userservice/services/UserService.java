@@ -182,6 +182,29 @@ public class UserService implements UserDetailsService {
         return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
     }
 
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto increaseBankAccountBalance(Double increaseAmount) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankAccount bankAccount = bankAccountRepository.findByUser_Email(email);
+        bankAccount.setAccountBalance(bankAccount.getAccountBalance() + increaseAmount);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto decreaseBankAccountBalance(Double decreaseAccount) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankAccount bankAccount = bankAccountRepository.findByUser_Email(email);
+        bankAccount.setAccountBalance(bankAccount.getAccountBalance() - decreaseAccount);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
     @Scheduled(cron = "0 0 8 * * *")  // every day at 8am
     public void resetDailyLimit() {
         List<BankAccount> allBankAccounts = bankAccountRepository.findAll();
