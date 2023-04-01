@@ -3,17 +3,20 @@ package org.banka1.userservice.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.userservice.domains.dtos.user.*;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.ForbiddenException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.userservice.domains.exceptions.ValidationException;
 import org.banka1.userservice.domains.mappers.UserMapper;
+import org.banka1.userservice.repositories.BankAccountRepository;
 import org.banka1.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -30,6 +34,8 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final BankAccountRepository bankAccountRepository;
+
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
@@ -45,8 +51,9 @@ public class UserService implements UserDetailsService {
     // i mora imati duzinu barem 8 karaktera
     private final Pattern passwordPattern = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?!.* ).{8,}$");
 
-    public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, BankAccountRepository bankAccountRepository) {
         this.userRepository = userRepository;
+        this.bankAccountRepository = bankAccountRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -158,6 +165,23 @@ public class UserService implements UserDetailsService {
     public UserDto returnUserProfile(){
         Optional<User> user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
         return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundExceptions("user not found"));
+    }
+
+    public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
+        BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
+        Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
+        bankAccount.setDailyLimit(newLimit);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+    @Scheduled(cron = "0 0 8 * * *")  // every day at 8am
+    public void resetDailyLimit() {
+        List<BankAccount> allBankAccounts = bankAccountRepository.findAll();
+        allBankAccounts.forEach(bankAccount -> bankAccount.setDailyLimit(100000D));
+        bankAccountRepository.saveAll(allBankAccounts);
     }
 
     @Override

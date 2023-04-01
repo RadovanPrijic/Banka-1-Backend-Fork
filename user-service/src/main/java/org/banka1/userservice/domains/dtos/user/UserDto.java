@@ -21,6 +21,8 @@ public class UserDto {
     private String phoneNumber;
     private boolean active;
 
+    private BankAccountDto bankAccount;
+
     private List<String> roles;
 
 }
