@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "user_listings")
+@Table(name = "bank_accounts")
 public class BankAccount {
 
     @Id

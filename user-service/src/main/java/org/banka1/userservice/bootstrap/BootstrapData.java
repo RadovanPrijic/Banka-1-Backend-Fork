@@ -30,8 +30,6 @@ public class BootstrapData implements CommandLineRunner {
                 .dailyLimit(100000D)
                 .build();
 
-        bankAccountRepository.save(bankAccount);
-
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
@@ -42,7 +40,6 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("admin1234"))
                 .roles(List.of("ROLE_ADMIN"))
                 .active(true)
-                .bankAccount(bankAccount)
                 .build();
 
         User user1 = User.builder()
@@ -81,10 +78,15 @@ public class BootstrapData implements CommandLineRunner {
                 .active(true)
                 .build();
 
+        bankAccount.setUser(admin);
+
         userRepository.save(admin);
         userRepository.save(user1);
         userRepository.save(user2);
         userRepository.save(user3);
+
+        bankAccountRepository.save(bankAccount);
+
         System.out.println("Data loaded");
     }
 }
