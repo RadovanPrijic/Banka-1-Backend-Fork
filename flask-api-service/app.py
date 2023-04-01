@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_caching import Cache
 from dotenv import load_dotenv
 from controllers.stocks import stocks_controller
 from controllers.forex import forex_controller
