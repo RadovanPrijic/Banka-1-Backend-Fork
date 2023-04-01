@@ -23,6 +23,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -167,8 +169,11 @@ public class UserService implements UserDetailsService {
         return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundExceptions("user not found"));
     }
 
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
         BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
+        bankAccount.setAccountBalance(bankAccount.getAccountBalance() - decreaseLimit);
         Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
         bankAccount.setDailyLimit(newLimit);
 

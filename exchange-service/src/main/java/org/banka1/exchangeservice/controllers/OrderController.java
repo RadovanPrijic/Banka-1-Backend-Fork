@@ -1,15 +1,15 @@
 package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
+import org.banka1.exchangeservice.domains.dtos.order.OrderFilterRequest;
 import org.banka1.exchangeservice.domains.dtos.order.OrderRequest;
 import org.banka1.exchangeservice.domains.dtos.order.OrderResponse;
 import org.banka1.exchangeservice.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -19,7 +19,6 @@ public class OrderController {
 
 
     private OrderService orderService;
-    // NAPOMENA: IZMENITI RUTE
 
     @GetMapping(value = "/order/{status}/{done}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getOrders(@PathVariable(required = false) String status, @PathVariable(required = false) Boolean done,

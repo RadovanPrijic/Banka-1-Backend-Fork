@@ -1,15 +1,9 @@
 package org.banka1.userservice.controllers;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.banka1.userservice.domains.dtos.login.LoginRequest;
 import org.banka1.userservice.domains.dtos.login.LoginResponse;
 import org.banka1.userservice.domains.dtos.user.*;
-import org.banka1.userservice.services.UserListingService;
 import org.banka1.userservice.services.UserService;
 import org.banka1.userservice.utils.JwtUtil;
 import org.springframework.http.ResponseEntity;
