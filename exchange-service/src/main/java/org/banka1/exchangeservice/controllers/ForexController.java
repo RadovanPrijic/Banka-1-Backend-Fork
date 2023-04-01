@@ -17,13 +17,13 @@ public class ForexController {
     private final ForexService forexService;
 
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE )
+    @PostMapping
     public ResponseEntity<?> getForexes(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size,
                                         @RequestBody ForexFilterRequest forexFilterRequest) {
         return ResponseEntity.ok(forexService.getForexes(page, size, forexFilterRequest));
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     public ResponseEntity<?> getForexByTimeSeries(@RequestParam String fromCurrency, @RequestParam String toCurrency, @RequestParam TimeSeriesForexEnum timeSeries) {
         return ResponseEntity.ok(forexService.getForexByTimeSeries(fromCurrency, toCurrency, timeSeries));
     }
