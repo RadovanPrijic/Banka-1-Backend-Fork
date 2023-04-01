@@ -51,6 +51,7 @@ public class SpringSecurityConfiguration {
     @Bean
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+
     }
 
 }
