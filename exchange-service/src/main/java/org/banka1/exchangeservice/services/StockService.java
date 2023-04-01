@@ -10,6 +10,7 @@ import org.banka1.exchangeservice.domains.dtos.stock.StockResponseDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.entities.Stock;
+import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -104,6 +106,15 @@ public class StockService {
             throw new RuntimeException(e);
         }
         return stocks;
+    }
+
+    public Optional<Stock> getStockById(Long id){
+        if(stockRepository.existsById(id)){
+            return stockRepository.findById(id);
+        }
+        else {
+            throw new NotFoundExceptions("stock not found");
+        }
     }
 
     private StockResponseDtoFlask getStockFromFlask(String symbol, TimeSeriesStockEnum timeSeries) throws IOException, InterruptedException {

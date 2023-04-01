@@ -26,4 +26,9 @@ public class StockController {
     public ResponseEntity<?> getStockTimeSeries(@RequestParam TimeSeriesStockEnum timeSeries, @RequestParam String symbol) {
         return ResponseEntity.ok(stockService.getStockTimeSeries(symbol, timeSeries));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getStock(@PathVariable Long id){
+        return ResponseEntity.ok(stockService.getStockById(id));
+    }
 }
