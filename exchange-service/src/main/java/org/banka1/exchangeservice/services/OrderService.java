@@ -1,6 +1,12 @@
 package org.banka1.exchangeservice.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.banka1.exchangeservice.domains.dtos.order.OrderRequest;
+import org.banka1.exchangeservice.domains.entities.Order;
+import org.banka1.exchangeservice.domains.entities.OrderStatus;
+import org.banka1.exchangeservice.domains.mappers.OrderMapper;
+import org.banka1.exchangeservice.repositories.OrderRepository;
 import org.springframework.stereotype.Service;
 
 @Service

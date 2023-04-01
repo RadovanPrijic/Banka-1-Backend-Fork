@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.banka1.exchangeservice.domains.entities.ListingType;
 import org.banka1.exchangeservice.domains.entities.OrderAction;
+import org.banka1.exchangeservice.domains.entities.OrderType;
 
 @Data
 @AllArgsConstructor
@@ -15,6 +16,7 @@ public class OrderRequest {
     private ListingType listingType;
     private Integer quantity;
     private OrderAction orderAction;
+    private OrderType orderType;
     private Double limitValue;
     private Double stopValue;
     private boolean allOrNoneFlag;
