@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.banka1.userservice.domains.dtos.login.LoginRequest;
 import org.banka1.userservice.domains.dtos.login.LoginResponse;
 import org.banka1.userservice.domains.dtos.user.*;
+import org.banka1.userservice.services.UserListingService;
 import org.banka1.userservice.services.UserService;
 import org.banka1.userservice.utils.JwtUtil;
 import org.springframework.http.ResponseEntity;
@@ -43,10 +44,8 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<?> getUsers(@RequestBody UserFilterRequest filterRequest,
-                                      @RequestParam(defaultValue = "0") Integer page,
+    public ResponseEntity<?> getUsers(@RequestBody UserFilterRequest filterRequest, @RequestParam(defaultValue = "0") Integer page,
                                       @RequestParam(defaultValue = "10") Integer size) {
-
         return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 

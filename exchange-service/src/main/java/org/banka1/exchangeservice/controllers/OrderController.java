@@ -33,14 +33,10 @@ public class OrderController {
         return null;
     }
 
-    @PostMapping(value = "/order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> makeOrder(@RequestAttribute("userId") Long userId, @RequestBody OrderRequest orderRequest){
-//        OrderResponse resp = berzaService.makeOrder(token, orderRequest);
-//        if(resp.getMessage().equals("Error")) {
-//            return ResponseEntity.internalServerError().body(resp);
-//        }
-//        return ResponseEntity.ok(resp);
-        return null;
+    @PostMapping(value = "/make-order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> makeOrder(@RequestHeader("Authorization") String token, @RequestBody OrderRequest orderRequest){
+        orderService.makeOrder(orderRequest, token);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping(value = "/order/approve/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

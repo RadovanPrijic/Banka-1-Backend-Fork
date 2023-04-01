@@ -1,8 +1,10 @@
 package org.banka1.userservice.bootstrap;
 
 import lombok.AllArgsConstructor;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
+import org.banka1.userservice.repositories.BankAccountRepository;
 import org.banka1.userservice.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -18,9 +20,18 @@ public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BankAccountRepository bankAccountRepository;
 
     @Override
     public void run(String... args) throws Exception {
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(300000D)
+                .dailyLimit(100000D)
+                .build();
+
+        bankAccountRepository.save(bankAccount);
+
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
@@ -31,6 +42,7 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("admin1234"))
                 .roles(List.of("ROLE_ADMIN"))
                 .active(true)
+                .bankAccount(bankAccount)
                 .build();
 
         User user1 = User.builder()
