@@ -2,6 +2,7 @@ from flask import Blueprint, request, current_app
 import requests
 import os
 import json
+import cache
 
 stocks_controller = Blueprint('stocks', __name__, url_prefix='/stocks')
 
@@ -17,8 +18,17 @@ def get_time_series():
         return bad_request()
 
     if symbol is not None and ts_function is not None:
-        av_data = get_alpha_vantage(symbol, ts_function)
-        response_data = fix_data(av_data)
+        cache_key = symbol + ts_function
+        cached_value = cache.cache.get(cache_key)
+
+        if cached_value is None:
+            print("fetching...")
+            av_data = get_alpha_vantage(symbol, ts_function)
+            response_data = fix_data(av_data)
+            cache.cache.set(cache_key, response_data)
+        else:
+            print("getting from cache...")
+            response_data = cache.cache.get(cache_key)
 
         response = current_app.response_class(
             response=json.dumps(response_data),
@@ -42,8 +52,17 @@ def get_time_series_intraday():
         return bad_request()
 
     if symbol is not None and interval is not None:
-        av_data = get_alpha_vantage_intraday(symbol, interval)
-        response_data = fix_data(av_data)
+        cache_key = symbol + interval
+        cached_value = cache.cache.get(cache_key)
+
+        if cached_value is None:
+            print("fetching...")
+            av_data = get_alpha_vantage_intraday(symbol, interval)
+            response_data = fix_data(av_data)
+            cache.cache.set(cache_key, response_data)
+        else:
+            print("getting from cache...")
+            response_data = cache.cache.get(cache_key)
 
         response = current_app.response_class(
             response=json.dumps(response_data),
