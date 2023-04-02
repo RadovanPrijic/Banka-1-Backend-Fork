@@ -5,11 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.banka1.exchangeservice.domains.dtos.StockDtoFlask;
-import org.banka1.exchangeservice.domains.dtos.StockResponseDtoFlask;
-import org.banka1.exchangeservice.domains.dtos.TimeSeriesEnum;
+import org.banka1.exchangeservice.domains.dtos.stock.StockDtoFlask;
+import org.banka1.exchangeservice.domains.dtos.stock.StockResponseDtoFlask;
+import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.entities.Stock;
+import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -36,9 +38,9 @@ public class StockService {
     private final ExchangeRepository exchangeRepository;
     private final StockRepository stockRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Value("${flask.api.timeseries}")
+    @Value("${flask.api.stock.timeseries}")
     private String baseTimeSeriesUrl;
-    @Value("${flask.api.timeseries.intraday}")
+    @Value("${flask.api.stock.timeseries.intraday}")
     private String baseTimeSeriesIntraDayUrl;
 
     public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
@@ -58,7 +60,7 @@ public class StockService {
         for(CSVRecord record: csvRecords) {
             String symbol = record.get("symbol");
 
-            StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(symbol, TimeSeriesEnum.DAILY);
+            StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(symbol, TimeSeriesStockEnum.DAILY);
             if (stockResponseDtoFlask == null)
                 continue;
 
@@ -78,7 +80,7 @@ public class StockService {
         for (Stock stock : stocksToCheckForUpdate){
             Duration duration = Duration.between(stock.getLastRefresh(), now);
             if(duration.toMinutes() > 15){
-                StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesEnum.DAILY);
+                StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
                 if (stockResponseDtoFlask == null)
                     continue;
 
@@ -106,7 +108,16 @@ public class StockService {
         return stocks;
     }
 
-    private StockResponseDtoFlask getStockFromFlask(String symbol, TimeSeriesEnum timeSeries) throws IOException, InterruptedException {
+    public Optional<Stock> getStockById(Long id){
+        if(stockRepository.existsById(id)){
+            return stockRepository.findById(id);
+        }
+        else {
+            throw new NotFoundExceptions("stock not found");
+        }
+    }
+
+    private StockResponseDtoFlask getStockFromFlask(String symbol, TimeSeriesStockEnum timeSeries) throws IOException, InterruptedException {
         String url = switch (timeSeries) {
             case HOUR, FIVE_MIN ->
                     baseTimeSeriesIntraDayUrl + "?symbol=" + symbol + "&interval=" + timeSeries.getValue();
@@ -142,7 +153,7 @@ public class StockService {
         stock.setVolume(stockDtoFlask.getVolume());
     }
 
-    public StockResponseDtoFlask getStockTimeSeries(String symbol, TimeSeriesEnum timeSeries) {
+    public StockResponseDtoFlask getStockTimeSeries(String symbol, TimeSeriesStockEnum timeSeries) {
         try {
             return getStockFromFlask(symbol, timeSeries);
         } catch (IOException | InterruptedException e) {

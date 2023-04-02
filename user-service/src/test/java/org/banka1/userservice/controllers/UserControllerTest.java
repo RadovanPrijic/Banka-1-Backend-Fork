@@ -43,6 +43,7 @@ public class UserControllerTest extends IntegrationTest {
                 .position(Position.EMPLOYEE)
                 .phoneNumber("063*******")
                 .roles(List.of(User.USER_MODERATOR))
+                .active(true)
                 .build();
 
         user = userRepository.save(user);

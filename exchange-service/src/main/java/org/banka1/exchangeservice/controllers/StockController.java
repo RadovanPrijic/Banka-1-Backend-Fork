@@ -1,7 +1,7 @@
 package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
-import org.banka1.exchangeservice.domains.dtos.TimeSeriesEnum;
+import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.services.StockService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,12 @@ public class StockController {
     }
 
     @GetMapping(value = "/time-series",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getStockTimeSeries(@RequestParam TimeSeriesEnum timeSeries, @RequestParam String symbol) {
+    public ResponseEntity<?> getStockTimeSeries(@RequestParam TimeSeriesStockEnum timeSeries, @RequestParam String symbol) {
         return ResponseEntity.ok(stockService.getStockTimeSeries(symbol, timeSeries));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getStock(@PathVariable Long id){
+        return ResponseEntity.ok(stockService.getStockById(id));
     }
 }
