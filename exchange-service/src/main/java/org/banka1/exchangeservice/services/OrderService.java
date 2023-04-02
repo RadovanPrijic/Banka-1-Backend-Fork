@@ -55,6 +55,7 @@ public class OrderService {
         order.setEmail(userDto.getEmail());
         order.setUserId(userDto.getId());
         order.setExpectedPrice(expectedPrice);
+        order.setRemainingQuantity(orderRequest.getQuantity());
 
         if(userDto.getBankAccount().getAccountBalance() < expectedPrice) order.setOrderStatus(OrderStatus.REJECTED);
         else if(userDto.getBankAccount().getDailyLimit() - expectedPrice < 0) order.setOrderStatus(OrderStatus.ON_HOLD);
@@ -105,7 +106,7 @@ public class OrderService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", token)
-                .method("GET", HttpRequest.BodyPublishers.noBody())
+                .method("PUT", HttpRequest.BodyPublishers.noBody())
                 .build();
 
         try {
@@ -115,78 +116,86 @@ public class OrderService {
         }
     }
 
-    @Async
+//    @Async
     public void mockExecutionOfOrder(Order order, String token){
-        UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
-        userListingCreateDto.setSymbol(order.getListingSymbol());
-        userListingCreateDto.setQuantity(0);
-        userListingCreateDto.setListingType(order.getListingType());
+        Runnable runnable = () -> {
+            UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
+            userListingCreateDto.setSymbol(order.getListingSymbol());
+            userListingCreateDto.setQuantity(0);
+            userListingCreateDto.setListingType(order.getListingType());
 
-        UserListingDto userListingDto;
-        try {
-            String body = objectMapper.writeValueAsString(userListingCreateDto);
-            String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", token)
-                    .method("POST", HttpRequest.BodyPublishers.ofString(body))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            String jsonUserListing = response.body();
-            userListingDto = objectMapper.readValue(jsonUserListing, UserListingDto.class);
-
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-
-        Long listingId = userListingDto.getId();
-        while(!order.getDone()){
+            UserListingDto userListingDto;
             try {
-                Thread.sleep(10000);
-            } catch (Exception e){
-                e.printStackTrace();
-            }
+                String body = objectMapper.writeValueAsString(userListingCreateDto);
+                String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .header("Authorization", token)
+                        .header("Content-Type", "application/json")
+                        .method("POST", HttpRequest.BodyPublishers.ofString(body))
+                        .build();
 
-            Random random = new Random();
-            int quantity = random.nextInt(order.getRemainingQuantity() + 1);
-            order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
+                HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                String jsonUserListing = response.body();
+                userListingDto = objectMapper.readValue(jsonUserListing, UserListingDto.class);
 
-            if(order.getRemainingQuantity() == 0) {
-                order.setDone(true);
-            }
-
-            Double accountBalanceToUpdate = calculateThePrice(order.getListingType(), order.getListingSymbol(), quantity);
-            String urlBankAccount;
-            if(order.getOrderAction() == OrderAction.BUY)  urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAmount=" + accountBalanceToUpdate;
-            else urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + accountBalanceToUpdate;
-
-            updateBankAccountBalance(token, urlBankAccount);
-
-
-            int newQuantity = order.getQuantity() - order.getRemainingQuantity();
-            String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Authorization", token)
-                    .method("PUT", HttpRequest.BodyPublishers.noBody())
-                    .build();
-            try {
-                HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }
 
-        orderRepository.save(order);
+            Long listingId = userListingDto.getId();
+            while(!order.getDone()){
+                try {
+                    Thread.sleep(10000);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                Random random = new Random();
+                int quantity = random.nextInt(order.getRemainingQuantity() + 1);
+                order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
+
+                if(order.getRemainingQuantity() == 0) {
+                    order.setDone(true);
+                }
+
+                Double accountBalanceToUpdate = calculateThePrice(order.getListingType(), order.getListingSymbol(), quantity);
+                String urlBankAccount;
+                if(order.getOrderAction() == OrderAction.BUY)  urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + accountBalanceToUpdate;
+                else urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
+
+                updateBankAccountBalance(token, urlBankAccount);
+                System.out.println("UPDATED BALANCE ACCOUNT");
+
+                int newQuantity = order.getQuantity() - order.getRemainingQuantity();
+                String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .header("Authorization", token)
+                        .header("Content-Type", "application/json")
+                        .method("PUT", HttpRequest.BodyPublishers.ofString("")) // mozda treba mozda ne treba
+                        .build();
+                try {
+                    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                orderRepository.save(order);
+            }
+
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
-    private void updateBankAccountBalance(String token, String url){
+    public void updateBankAccountBalance(String token, String url){
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", token)
-                .method("PUT", HttpRequest.BodyPublishers.noBody())
+                .header("Content-Type", "application/json")
+                .method("PUT", HttpRequest.BodyPublishers.ofString(""))
                 .build();
         try {
             HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());

@@ -173,7 +173,6 @@ public class UserService implements UserDetailsService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
         BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
-        bankAccount.setAccountBalance(bankAccount.getAccountBalance() - decreaseLimit);
         Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
         bankAccount.setDailyLimit(newLimit);
 

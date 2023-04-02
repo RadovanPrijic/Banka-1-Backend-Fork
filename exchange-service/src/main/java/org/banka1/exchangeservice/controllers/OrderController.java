@@ -19,30 +19,30 @@ public class  OrderController {
     private OrderService orderService;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/all")
     public ResponseEntity<?> getOrders(@RequestBody OrderFilterRequest orderFilterRequest) {
         return ResponseEntity.ok(orderService.getAllOrders(orderFilterRequest));
     }
 
-    @PostMapping(value = "/by-user", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/by-user")
     public ResponseEntity<?> getOrdersByUser(@RequestBody OrderFilterRequest orderFilterRequest, @RequestAttribute("userId") Long userId) {
         orderFilterRequest.setUserId(userId);
         return ResponseEntity.ok(orderService.getOrdersByUser(orderFilterRequest));
     }
 
-    @PostMapping(value = "/make-order", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/make-order")
     public ResponseEntity<?> makeOrder(@RequestHeader("Authorization") String token, @RequestBody OrderRequest orderRequest){
         orderService.makeOrder(orderRequest, token);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping(value = "/approve/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/approve/{orderId}")
     public ResponseEntity<?> approveOrder(@RequestHeader("Authorization") String token, @PathVariable Long orderId){
         orderService.approveOrder(token, orderId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping(value = "/reject/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/reject/{orderId}")
     public ResponseEntity<?> rejectOrder(@RequestHeader("Authorization") String token, @PathVariable Long orderId){
         orderService.rejectOrder(token, orderId);
         return ResponseEntity.status(HttpStatus.OK).build();
