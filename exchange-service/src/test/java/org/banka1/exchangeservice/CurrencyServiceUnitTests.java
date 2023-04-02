@@ -1,22 +1,23 @@
 package org.banka1.exchangeservice;
 
 import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
+import org.banka1.exchangeservice.domains.entities.Currency;
+import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.banka1.exchangeservice.services.CurrencyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-public class CurrencyServiceTest {
+public class CurrencyServiceUnitTests {
 
     private CurrencyRepository currencyRepository;
     private CurrencyService currencyService;
@@ -25,11 +26,6 @@ public class CurrencyServiceTest {
     void setUp() {
         this.currencyRepository = mock(CurrencyRepository.class);
         this.currencyService = new CurrencyService(currencyRepository);
-    }
-
-    @Test
-    public void getCurrenciesSuccessfully () throws IOException {
-
     }
 
     @Test
@@ -42,6 +38,34 @@ public class CurrencyServiceTest {
         currencyService.persistCurrencies(csvBeanList);
 
         verify(currencyRepository, times(1)).saveAll((Mockito.anyCollection()));
+        verifyNoMoreInteractions(currencyRepository);
+    }
+
+    @Test
+    void findCurrencyByCurrencyNameSuccessfully(){
+        var currency = new Currency();
+        currency.setId(1L);
+        currency.setCurrencyName("Euro");
+        currency.setCurrencyCode("EUR");
+        currency.setCurrencySymbol("€");
+
+        when(currencyRepository.findByCurrencyName(anyString())).thenReturn(Optional.of(currency));
+        var result = currencyService.findCurrencyByCurrencyName("Euro");
+
+        assertEquals("Euro", result.getCurrencyName());
+        assertEquals("EUR", result.getCurrencyCode());
+
+        verify(currencyRepository, times(1)).findByCurrencyName(anyString());
+        verifyNoMoreInteractions(currencyRepository);
+    }
+
+    @Test
+    void findCurrencyByCurrencyNameThrowsNotFoundException(){
+        when(currencyRepository.findByCurrencyName(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundExceptions.class, () -> currencyService.findCurrencyByCurrencyName("Euro"));
+
+        verify(currencyRepository, times(1)).findByCurrencyName(anyString());
         verifyNoMoreInteractions(currencyRepository);
     }
 }
