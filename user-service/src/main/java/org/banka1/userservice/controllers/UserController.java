@@ -1,10 +1,5 @@
 package org.banka1.userservice.controllers;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.banka1.userservice.domains.dtos.login.LoginRequest;
 import org.banka1.userservice.domains.dtos.login.LoginResponse;
@@ -43,10 +38,8 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
-    public ResponseEntity<?> getUsers(@RequestBody UserFilterRequest filterRequest,
-                                      @RequestParam(defaultValue = "0") Integer page,
+    public ResponseEntity<?> getUsers(@RequestBody UserFilterRequest filterRequest, @RequestParam(defaultValue = "0") Integer page,
                                       @RequestParam(defaultValue = "10") Integer size) {
-
         return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 
@@ -94,4 +87,13 @@ public class UserController {
         return ResponseEntity.ok(userService.reduceDailyLimit(userId, decreaseLimit));
     }
 
+    @PutMapping("/increase-balance")
+    public ResponseEntity<?> increaseBankBalance(@RequestParam Double increaseAmount) {
+        return ResponseEntity.ok(userService.increaseBankAccountBalance(increaseAmount));
+    }
+
+    @PutMapping("/decrease-balance")
+    public ResponseEntity<?> decreaseBankBalance(@RequestParam Double decreaseAccount) {
+        return ResponseEntity.ok(userService.decreaseBankAccountBalance(decreaseAccount));
+    }
 }

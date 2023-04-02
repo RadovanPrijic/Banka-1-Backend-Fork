@@ -24,6 +24,8 @@ public class User {
 
     public static final String USER_ADMIN = UserRole.ROLE_ADMIN.name();
     public static final String USER_MODERATOR = UserRole.ROLE_MODERATOR.name();
+    public static final String USER_SUPERVISOR = UserRole.ROLE_SUPERVISOR.name();
+    public static final String USER_AGENT = UserRole.ROLE_AGENT.name();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +45,9 @@ public class User {
 
     private String phoneNumber;
 
+    @JsonIgnore
     private String password;
+    @JsonIgnore
     private String secretKey;
 
     private boolean active;

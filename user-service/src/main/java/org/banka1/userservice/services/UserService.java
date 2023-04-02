@@ -23,6 +23,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -167,6 +169,8 @@ public class UserService implements UserDetailsService {
         return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundExceptions("user not found"));
     }
 
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
         BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
         Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
@@ -175,6 +179,29 @@ public class UserService implements UserDetailsService {
         bankAccountRepository.saveAndFlush(bankAccount);
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto increaseBankAccountBalance(Double increaseAmount) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankAccount bankAccount = bankAccountRepository.findByUser_Email(email);
+        bankAccount.setAccountBalance(bankAccount.getAccountBalance() + increaseAmount);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto decreaseBankAccountBalance(Double decreaseAccount) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankAccount bankAccount = bankAccountRepository.findByUser_Email(email);
+        bankAccount.setAccountBalance(bankAccount.getAccountBalance() - decreaseAccount);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findByEmail(email).orElseThrow(() -> new NotFoundExceptions("user not found")));
     }
 
     @Scheduled(cron = "0 0 8 * * *")  // every day at 8am
