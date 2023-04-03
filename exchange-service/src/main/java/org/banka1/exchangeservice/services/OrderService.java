@@ -230,6 +230,7 @@ public class OrderService {
         Iterable<Order> orderIterable = orderRepository.findAll(orderFilterRequest.getPredicate());
         List<Order> orders = new ArrayList<>();
         orderIterable.forEach(orders::add);
+        orders.forEach(order -> order.setExpectedPrice(calculateThePrice(order.getListingType(), order.getListingSymbol(), order.getQuantity())));
 
         return orders;
     }
@@ -238,6 +239,7 @@ public class OrderService {
         Iterable<Order> orderIterable = orderRepository.findAll(orderFilterRequest.getPredicate());
         List<Order> orders = new ArrayList<>();
         orderIterable.forEach(orders::add);
+        orders.forEach(order -> order.setExpectedPrice(calculateThePrice(order.getListingType(), order.getListingSymbol(), order.getQuantity())));
 
         return orders;
     }
