@@ -3,12 +3,15 @@ package org.banka1.exchangeservice.services;
 import lombok.extern.slf4j.Slf4j;
 import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.exchangeservice.domains.entities.Currency;
+import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
+import org.banka1.exchangeservice.domains.mappers.CurrencyMapper;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -48,6 +51,11 @@ public class CurrencyService {
         }
 
         currencyRepository.saveAll(currenciesToSave);
+    }
+
+    public CurrencyCsvBean findCurrencyByCurrencyName(String currencyName) {
+        Optional<Currency> currency = currencyRepository.findByCurrencyName(currencyName);
+        return currency.map(CurrencyMapper.INSTANCE::currencyToCurrencyCsvBean).orElseThrow(() -> new NotFoundExceptions("currency not found"));
     }
 }
 
