@@ -2,8 +2,7 @@ package org.banka1.exchangeservice.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
-import org.banka1.exchangeservice.domains.entities.Exchange;
-import org.banka1.exchangeservice.repositories.ExchangeRepository;
+import org.banka1.exchangeservice.services.ExchangeService;
 import org.banka1.exchangeservice.services.ForexService;
 import org.banka1.exchangeservice.services.StockService;
 import org.springframework.boot.CommandLineRunner;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 @Profile("local")
 public class BootstrapData implements CommandLineRunner {
 
-    private final ExchangeRepository exchangeRepository;
+    private final ExchangeService exchangeService;
     private final CurrencyService currencyService;
     private final ForexService forexService;
     private final StockService stockService;
@@ -43,7 +42,8 @@ public class BootstrapData implements CommandLineRunner {
 
 
         // EXCHANGE DATA
-        loadExchangeData();
+        List<ExchangeCSV> exchangeCSVList = getExchangeData();
+        exchangeService.persistExchanges(exchangeCSVList);
         System.out.println("Exchange Data loaded");
 
         //LISTING
@@ -61,30 +61,14 @@ public class BootstrapData implements CommandLineRunner {
                 .parse();
     }
 
-    public void loadExchangeData() throws FileNotFoundException {
-        List<Exchange> exchanges = new ArrayList<>();
+    public List<ExchangeCSV> getExchangeData() throws FileNotFoundException {
 
-        List<ExchangeCSV> exchangeCSV = new CsvToBeanBuilder<ExchangeCSV>(new FileReader(ResourceUtils.getFile("classpath:csv/exchange.csv")))
+        return new CsvToBeanBuilder<ExchangeCSV>(new FileReader(ResourceUtils.getFile("classpath:csv/exchange.csv")))
                 .withType(ExchangeCSV.class)
                 .withSkipLines(1)
                 .build()
                 .parse();
 
-        for(ExchangeCSV csv : exchangeCSV) {
-
-            Exchange exchange = Exchange.builder()
-                    .excName(csv.getExchangeName())
-                    .excAcronym(csv.getExchangeAcronym())
-                    .excMicCode(csv.getExchangeMicCode())
-                    .excCountry(csv.getCountry())
-                    .excCurrency(csv.getCurrency())
-                    .excTimeZone(csv.getTimeZone())
-                    .excOpenTime(csv.getOpenTime())
-                    .excCloseTime(csv.getCloseTime())
-                    .build();
-
-            exchanges.add(exchange);
-        }
-        exchangeRepository.saveAll(exchanges);
+//
     }
 }

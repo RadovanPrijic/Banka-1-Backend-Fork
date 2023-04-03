@@ -1,5 +1,8 @@
 package org.banka1.exchangeservice.services;
 
+import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
+import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
+import org.banka1.exchangeservice.domains.entities.Currency;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
@@ -8,7 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -21,6 +26,26 @@ public class ExchangeService {
         this.exchangeRepository = exchangeRepository;
     }
 
+
+    public void persistExchanges(List<ExchangeCSV> exchangeCSVList) {
+        List<Exchange> exchanges = new ArrayList<>();
+
+        for(ExchangeCSV csv : exchangeCSVList) {
+            Exchange exchange = Exchange.builder()
+                    .excName(csv.getExchangeName())
+                    .excAcronym(csv.getExchangeAcronym())
+                    .excMicCode(csv.getExchangeMicCode())
+                    .excCountry(csv.getCountry())
+                    .excCurrency(csv.getCurrency())
+                    .excTimeZone(csv.getTimeZone())
+                    .excOpenTime(csv.getOpenTime())
+                    .excCloseTime(csv.getCloseTime())
+                    .build();
+
+            exchanges.add(exchange);
+        }
+        exchangeRepository.saveAll(exchanges);
+    }
 
     public List<Exchange> getExchanges(Integer page, Integer size){
         return (exchangeRepository.findAll(PageRequest.of(page, size))).getContent();
