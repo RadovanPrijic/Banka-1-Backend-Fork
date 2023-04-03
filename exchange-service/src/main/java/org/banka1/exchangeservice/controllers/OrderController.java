@@ -32,8 +32,7 @@ public class  OrderController {
 
     @PostMapping(value = "/make-order")
     public ResponseEntity<?> makeOrder(@RequestHeader("Authorization") String token, @RequestBody OrderRequest orderRequest){
-        orderService.makeOrder(orderRequest, token);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(orderService.makeOrder(orderRequest, token));
     }
 
     @PostMapping(value = "/approve/{orderId}")
