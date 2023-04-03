@@ -68,6 +68,7 @@ public abstract class IntegrationTest {
                 .phoneNumber("111222333")
                 .password(passwordEncoder.encode("test1234"))
                 .roles(roles)
+                .active(true)
                 .build();
 
         userRepository.save(admin);

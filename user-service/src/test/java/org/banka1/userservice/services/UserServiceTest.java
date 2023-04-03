@@ -10,6 +10,7 @@ import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.userservice.domains.exceptions.ValidationException;
+import org.banka1.userservice.repositories.BankAccountRepository;
 import org.banka1.userservice.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.when;
 class UserServiceTest {
 
     private UserRepository userRepository;
+    private BankAccountRepository bankAccountRepository;
     private EmailService emailService;
     private PasswordEncoder passwordEncoder;
     private UserService userService;
@@ -46,9 +48,10 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         this.userRepository = mock(UserRepository.class);
+        this.bankAccountRepository = mock(BankAccountRepository.class);
         this.emailService = mock(EmailService.class);
         this.passwordEncoder = new BCryptPasswordEncoder();
-        this.userService = new UserService(userRepository, emailService, passwordEncoder);
+        this.userService = new UserService(userRepository, emailService, passwordEncoder, bankAccountRepository);
     }
 
 
@@ -169,7 +172,7 @@ class UserServiceTest {
     void loadUserByUsernameSuccessfully() {
         //given
         String password = passwordEncoder.encode("admin1234");
-        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test")
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").active(true)
                 .roles(List.of("ADMINISTRATOR")).password(password).build();
 
         //when
@@ -219,7 +222,7 @@ class UserServiceTest {
         assertEquals("Test", result.getLastName());
         assertTrue(result.isActive());
 
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).saveAndFlush(any(User.class));
         verifyNoMoreInteractions(userRepository);
     }
 

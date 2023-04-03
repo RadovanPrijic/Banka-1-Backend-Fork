@@ -1,4 +1,8 @@
 package org.banka1.exchangeservice.domains.entities;
 
-public class InflationRate {
+public enum OrderAction {
+
+    BUY,
+    SELL
+
 }
