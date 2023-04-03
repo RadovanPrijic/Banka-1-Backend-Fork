@@ -1,11 +1,14 @@
 package org.banka1.exchangeservice;
 
+import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
+import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
 import org.banka1.exchangeservice.domains.entities.Exchange;
 import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.services.ExchangeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +35,23 @@ public class ExchangeServiceTest {
         this.exchangeRepository = mock(ExchangeRepository.class);
         this.exchangeService = new ExchangeService(this.exchangeRepository);
     }
+
+    @Test
+    void persistExchangesSuccessfully(){
+        //given
+
+        var exchange1 = new ExchangeCSV("Jakarta Futures Exchange (bursa Berjangka Jakarta)","BBJ","XBBJ","Indonesia","Indonesian Rupiah","Asia/Jakarta","09:00","17:30");
+        var exchange2 = new ExchangeCSV("Asx - Trade24","SFE","XSFE","Australia","Australian Dollar","Australia/Melbourne","10:00","16:00");
+        var exchange3 = new ExchangeCSV("Cboe Edga U.s. Equities Exchange Dark","EDGADARK","EDGD","United States","United States Dollar","America/New_York","09:30", "16:00");
+        List<ExchangeCSV> csvBeanList = List.of(exchange1, exchange2, exchange3);
+
+        //when
+        exchangeService.persistExchanges(csvBeanList);
+
+        verify(exchangeRepository, times(1)).saveAll((Mockito.anyCollection()));
+        verifyNoMoreInteractions(exchangeRepository);
+    }
+
 
     @Test
     void getExchangesSuccessfully(){
