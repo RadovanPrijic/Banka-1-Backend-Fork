@@ -24,6 +24,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -56,6 +57,7 @@ public class OrderService {
         order.setUserId(userDto.getId());
         order.setExpectedPrice(expectedPrice);
         order.setRemainingQuantity(orderRequest.getQuantity());
+        order.setLastModified(new Date());
 
         if(userDto.getBankAccount().getAccountBalance() < expectedPrice) order.setOrderStatus(OrderStatus.REJECTED);
         else if(userDto.getBankAccount().getDailyLimit() - expectedPrice < 0) order.setOrderStatus(OrderStatus.ON_HOLD);
@@ -181,6 +183,7 @@ public class OrderService {
                     throw new RuntimeException(e);
                 }
 
+                order.setLastModified(new Date());
                 orderRepository.save(order);
             }
 
