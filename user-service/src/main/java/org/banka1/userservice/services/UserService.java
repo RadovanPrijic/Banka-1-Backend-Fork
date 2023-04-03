@@ -88,7 +88,16 @@ public class UserService implements UserDetailsService {
         user.setActive(true);
         user.setSecretKey(secretKey);
 
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
+
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(200000D)
+                .dailyLimit(100000D)
+                .user(user)
+                .build();
+
+        bankAccountRepository.save(bankAccount);
 
         String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordActivateEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Activate account", text);

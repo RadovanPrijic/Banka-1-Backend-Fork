@@ -18,7 +18,7 @@ public class  OrderController {
 
     private OrderService orderService;
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERVISOR')")
     @PostMapping(value = "/all")
     public ResponseEntity<?> getOrders(@RequestBody OrderFilterRequest orderFilterRequest) {
         return ResponseEntity.ok(orderService.getAllOrders(orderFilterRequest));
@@ -35,12 +35,14 @@ public class  OrderController {
         return ResponseEntity.ok(orderService.makeOrder(orderRequest, token));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERVISOR')")
     @PostMapping(value = "/approve/{orderId}")
     public ResponseEntity<?> approveOrder(@RequestHeader("Authorization") String token, @PathVariable Long orderId){
         orderService.approveOrder(token, orderId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SUPERVISOR')")
     @PostMapping(value = "/reject/{orderId}")
     public ResponseEntity<?> rejectOrder(@RequestHeader("Authorization") String token, @PathVariable Long orderId){
         orderService.rejectOrder(token, orderId);

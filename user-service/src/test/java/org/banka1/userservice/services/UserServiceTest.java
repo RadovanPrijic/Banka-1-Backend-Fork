@@ -222,7 +222,7 @@ class UserServiceTest {
         assertEquals("Test", result.getLastName());
         assertTrue(result.isActive());
 
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).saveAndFlush(any(User.class));
         verifyNoMoreInteractions(userRepository);
     }
 
