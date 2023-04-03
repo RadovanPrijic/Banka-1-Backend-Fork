@@ -17,15 +17,15 @@ import javax.annotation.security.PermitAll;
 public class ExchangeController {
 
 
-    private ExchangeService exchangeService;
-
-    //Ukoliko hocete da testirate preko postmana a baca vam unauthorized zakomentarisite security dependencije u pom.xml
-    @GetMapping(value = "/get-all",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getExchanges(@RequestParam(defaultValue = "0") Integer page,
-                                      @RequestParam(defaultValue = "10") Integer size) {
-
-        System.out.println("page size");
-        return ResponseEntity.ok(exchangeService.getExchanges(page, size));
-    }
+//    private ExchangeService exchangeService;
+//
+//    //Ukoliko hocete da testirate preko postmana a baca vam unauthorized zakomentarisite security dependencije u pom.xml
+//    @GetMapping(value = "/get-all",
+//            produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> getExchanges(@RequestParam(defaultValue = "0") Integer page,
+//                                      @RequestParam(defaultValue = "10") Integer size) {
+//
+//        System.out.println("page size");
+//        return ResponseEntity.ok(exchangeService.getExchanges(page, size));
+//    }
 }
