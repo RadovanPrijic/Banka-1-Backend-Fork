@@ -1,0 +1,31 @@
+version: '3.3'
+ 
+services:
+
+  db-user:
+    image: mysql
+    ports:
+      - "5555:5555"
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASSWORD:
+      MYSQL_DB: mysql
+    volumes:
+      - db-user:/var/lib/mysql/data
+    profiles: ["all", "core"]
+
+  user-service:
+    image: harbor.k8s.elab.rs/banka-1/user-service:latest
+    build: ./user-service
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:mysql://localhost:5555/mysql
+    ports:
+      - "8080:8080"
+    links:
+      - db-user
+    depends_on:
+      - db-user
+    profiles: ["all"]
+
+volumes:
+  db-user:
