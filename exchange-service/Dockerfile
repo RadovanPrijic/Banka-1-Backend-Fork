@@ -16,5 +16,8 @@ ARG SERVICE_NAME="exchange-service"
 
 COPY --from=builder /usr/app/target/$SERVICE_NAME-$VERSION.jar /app.jar
 
+RUN mkdir -p /exchange-service/csv-files
+COPY csv-files /exchange-service/csv-files
+
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "/app.jar"]

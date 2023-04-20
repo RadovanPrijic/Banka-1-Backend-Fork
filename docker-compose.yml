@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3'
  
 services:
 
@@ -24,9 +24,9 @@ services:
     links:
       - mysql-db
     depends_on:
-      mysql-db:
-        condition: service_completed_successfully
-    profiles: ["all"]
+      - mysql-db
+    restart: on-failure
+#    profiles: ["all"]
 
   flask-api-service:
     image: harbor.k8s.elab.rs/banka-1/flask-api-service:latest
@@ -43,12 +43,12 @@ services:
       - "8081:8081"
     links:
       - mysql-db
+      - flask-api-service
     depends_on:
-      mysql-db:
-        condition: service_completed_successfully
-      flask-api-service:
-        condition: service_completed_successfully
-    profiles: [ "all" ]
+      - mysql-db
+      - flask-api-service
+    restart: on-failure
+#    profiles: [ "all" ]
 
-#volumes:
-#  db-user:
+volumes:
+  mysql-db:

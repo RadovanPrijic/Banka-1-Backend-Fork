@@ -49,7 +49,7 @@ public class StockService {
     }
 
     public void loadStocks() throws IOException, InterruptedException {
-        BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("./exchange-service/csv-files/stocks_test.csv")));
+        BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("exchange-service/csv-files/stocks_test.csv")));
         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
 
         List<CSVRecord> csvRecords = csvParser.getRecords();
