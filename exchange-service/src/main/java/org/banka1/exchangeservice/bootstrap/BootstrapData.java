@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 @Component
 @AllArgsConstructor
-@Profile("local")
+//@Profile("local")
 public class BootstrapData implements CommandLineRunner {
 
     private final ExchangeService exchangeService;
@@ -54,7 +54,7 @@ public class BootstrapData implements CommandLineRunner {
     }
 
     public List<CurrencyCsvBean> getCurrencies() throws IOException {
-        return new CsvToBeanBuilder<CurrencyCsvBean>(new FileReader(ResourceUtils.getFile("classpath:csv/currencies.csv")))
+        return new CsvToBeanBuilder<CurrencyCsvBean>(new FileReader(ResourceUtils.getFile("./exchange-service/csv-files/currencies.csv")))
                 .withType(CurrencyCsvBean.class)
                 .withSkipLines(1)
                 .build()
@@ -63,7 +63,7 @@ public class BootstrapData implements CommandLineRunner {
 
     public List<ExchangeCSV> getExchangeData() throws FileNotFoundException {
 
-        return new CsvToBeanBuilder<ExchangeCSV>(new FileReader(ResourceUtils.getFile("classpath:csv/exchange.csv")))
+        return new CsvToBeanBuilder<ExchangeCSV>(new FileReader(ResourceUtils.getFile("./exchange-service/csv-files/exchange.csv")))
                 .withType(ExchangeCSV.class)
                 .withSkipLines(1)
                 .build()
