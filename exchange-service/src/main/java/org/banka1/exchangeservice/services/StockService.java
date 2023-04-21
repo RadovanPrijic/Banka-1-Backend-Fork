@@ -80,31 +80,30 @@ public class StockService {
         for (Stock stock : stocksToCheckForUpdate){
             Duration duration = Duration.between(stock.getLastRefresh(), now);
             if(duration.toMinutes() > 15){
-                StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
-                if (stockResponseDtoFlask == null)
-                    continue;
-
-                updateStockFromFlask(stock,stockResponseDtoFlask);
-                stocks.add(stock);
+                try {
+                    StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
+                    if(stockResponseDtoFlask != null) {
+                        updateStockFromFlask(stock,stockResponseDtoFlask);
+                        stocks.add(stock);
+                    }
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-        if(!stocks.isEmpty()){
-            stockRepository.saveAll(stocks);
-        }
+
+        if(!stocks.isEmpty()) stockRepository.saveAll(stocks);
     }
 
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
         Page<Stock> stocks;
-        if (symbol == null){
+        if (symbol == null) {
             stocks = stockRepository.findAll(PageRequest.of(page, size));
-        }else {
+        } else {
             stocks = stockRepository.getAllBySymbolContainsIgnoreCase(symbol, PageRequest.of(page, size, Sort.by("symbol").ascending()));
         }
-        try {
-            updateStocks(stocks.getContent());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
+        updateStocks(stocks.getContent());
         return stocks;
     }
 
