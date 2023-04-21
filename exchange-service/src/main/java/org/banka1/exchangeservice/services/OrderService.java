@@ -166,6 +166,57 @@ public class OrderService {
 
                 Random random = new Random();
                 int quantity = random.nextInt(order.getRemainingQuantity() + 1);
+                if (order.isAllOrNone() && quantity != order.getQuantity()) continue;
+
+                double askPrice = 0;
+                double bidPrice = 0;
+                if (order.getListingType() == ListingType.FOREX) {
+                    Forex forex = forexRepository.findBySymbol(order.getListingSymbol());
+                    forexService.updateForexes(Collections.singletonList(forex));
+
+                    askPrice = forex.getAskPrice();
+                    bidPrice = forex.getBidPrice();
+                } else if (order.getListingType() == ListingType.STOCK) {
+                    Stock stock = stockRepository.findBySymbol(order.getListingSymbol());
+                    stockService.updateStocks(Collections.singletonList(stock));
+
+                    askPrice = stock.getPrice();
+                    bidPrice = stock.getPrice();
+                }
+
+                switch (order.getOrderType()) {
+                    case STOP_ORDER -> {
+                        if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() < askPrice)
+                                || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() > bidPrice)) {
+                            order.setOrderType(OrderType.MARKET_ORDER);
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    case LIMIT_ORDER -> {
+                        if ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
+                                || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue())) {
+                            continue;
+                        }
+                    }
+                    case STOP_LIMIT_ORDER -> {
+                        if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() > askPrice)
+                                || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() < bidPrice)
+                                || ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
+                                || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue()))) {
+                            continue;
+                        }
+                    }
+                }
+
+                int newQuantity;
+                if(order.getOrderAction() == OrderAction.BUY) {
+                    newQuantity = quantity + userListingDto.getQuantity();
+                } else {
+                    newQuantity = userListingDto.getQuantity() - quantity;
+                }
+
                 order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
                 if(order.getRemainingQuantity() == 0) order.setDone(true);
 

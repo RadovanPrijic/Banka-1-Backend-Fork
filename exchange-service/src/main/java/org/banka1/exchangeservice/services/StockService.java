@@ -73,7 +73,7 @@ public class StockService {
         stockRepository.saveAll(stocksToSave);
     }
 
-    private void updateStocks(List<Stock> stocksToCheckForUpdate) throws IOException, InterruptedException {
+    public void updateStocks(List<Stock> stocksToCheckForUpdate) {
         LocalDateTime now = LocalDateTime.now();
 
         List<Stock> stocks = new ArrayList<>();
