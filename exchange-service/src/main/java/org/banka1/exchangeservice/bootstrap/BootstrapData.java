@@ -2,16 +2,13 @@ package org.banka1.exchangeservice.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
-import org.banka1.exchangeservice.services.ExchangeService;
-import org.banka1.exchangeservice.services.ForexService;
-import org.banka1.exchangeservice.services.StockService;
+import org.banka1.exchangeservice.services.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
 import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
-import org.banka1.exchangeservice.services.CurrencyService;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
@@ -31,6 +28,7 @@ public class BootstrapData implements CommandLineRunner {
     private final CurrencyService currencyService;
     private final ForexService forexService;
     private final StockService stockService;
+    private final OptionService optionService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -51,6 +49,10 @@ public class BootstrapData implements CommandLineRunner {
         System.out.println("Forexes loaded");
         stockService.loadStocks();
         System.out.println("Stocks loaded");
+
+        //OPTIONS
+        optionService.loadOptions();
+        System.out.println("Options loaded");
     }
 
     public List<CurrencyCsvBean> getCurrencies() throws IOException {
