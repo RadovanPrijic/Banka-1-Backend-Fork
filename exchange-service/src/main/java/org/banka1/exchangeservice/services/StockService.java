@@ -49,7 +49,14 @@ public class StockService {
     }
 
     public void loadStocks() throws IOException, InterruptedException {
-        BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:csv/stocks_test.csv")));
+        FileReader fileReader;
+        try {
+            fileReader = new FileReader(ResourceUtils.getFile("exchange-service/csv-files/stocks_test.csv"));
+        } catch (Exception e) {
+            fileReader = new FileReader(ResourceUtils.getFile("classpath:csv/stocks_test.csv"));
+        }
+
+        BufferedReader reader = new BufferedReader(fileReader);
         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
 
         List<CSVRecord> csvRecords = csvParser.getRecords();
@@ -73,38 +80,37 @@ public class StockService {
         stockRepository.saveAll(stocksToSave);
     }
 
-    private void updateStocks(List<Stock> stocksToCheckForUpdate) throws IOException, InterruptedException {
+    public void updateStocks(List<Stock> stocksToCheckForUpdate) {
         LocalDateTime now = LocalDateTime.now();
 
         List<Stock> stocks = new ArrayList<>();
         for (Stock stock : stocksToCheckForUpdate){
             Duration duration = Duration.between(stock.getLastRefresh(), now);
             if(duration.toMinutes() > 15){
-                StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
-                if (stockResponseDtoFlask == null)
-                    continue;
-
-                updateStockFromFlask(stock,stockResponseDtoFlask);
-                stocks.add(stock);
+                try {
+                    StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
+                    if(stockResponseDtoFlask != null) {
+                        updateStockFromFlask(stock,stockResponseDtoFlask);
+                        stocks.add(stock);
+                    }
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-        if(!stocks.isEmpty()){
-            stockRepository.saveAll(stocks);
-        }
+
+        if(!stocks.isEmpty()) stockRepository.saveAll(stocks);
     }
 
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
         Page<Stock> stocks;
-        if (symbol == null){
+        if (symbol == null) {
             stocks = stockRepository.findAll(PageRequest.of(page, size));
-        }else {
+        } else {
             stocks = stockRepository.getAllBySymbolContainsIgnoreCase(symbol, PageRequest.of(page, size, Sort.by("symbol").ascending()));
         }
-        try {
-            updateStocks(stocks.getContent());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
+        updateStocks(stocks.getContent());
         return stocks;
     }
 

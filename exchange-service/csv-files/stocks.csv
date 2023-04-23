@@ -1,0 +1,103 @@
+symbol,name,currency,exchange,mic_code,country,type
+ADGI,"Adagio Therapeutics, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+AIMDW,"Ainos, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+AAPL,Apple Inc,USD,NASDAQ,XNGS,United States,Common Stock
+AMZN,Amazon.com Inc,USD,NASDAQ,XNGS,United States,Common Stock
+ALSA,Alpha Star Acquisition Corporation,USD,NASDAQ,XNMS,United States,Common Stock
+ALYA,Alithya Group Inc,USD,NASDAQ,XNCM,United States,Common Stock
+ANNX,"Annexon, Inc.",USD,NASDAQ,XNGS,United States,Common Stock
+AOGOU,Arogo Capital Acquisition Corp,USD,NASDAQ,XNMS,United States,Unit
+ARYD,ARYA Sciences Acquisition Corp IV,USD,NASDAQ,XNCM,United States,Common Stock
+ATAK,Aurora Technology Acquisition Corp.,USD,NASDAQ,XNMS,United States,Common Stock
+ATCOL,Atlas Corp.,USD,NASDAQ,XNMS,United States,Common Stock
+ATY,AcuityAds Holdings Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+BGFV,Big 5 Sporting Goods Corp,USD,NASDAQ,XNGS,United States,Common Stock
+BIOTU,Biotech Acquisition Company,USD,NASDAQ,XNCM,United States,Unit
+BLZE,"Backblaze, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+BPYPM,Brookfield Property Preferred L.P.,USD,NASDAQ,XNGS,United States,Common Stock
+BRIVU,B. Riley Principal 250 Merger Corp.,USD,NASDAQ,XNCM,United States,Unit
+BROGW,Brooge Energy Limited,USD,NASDAQ,XNCM,United States,Common Stock
+BRSHW,Bruush Oral Care Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+BYTSW,BYTE Acquisition Corp.,USD,NASDAQ,XNCM,United States,Common Stock
+BZUN,Baozun Inc,USD,NASDAQ,XNGS,United States,Depositary Receipt
+CABA,Cabaletta Bio Inc,USD,NASDAQ,XNGS,United States,Common Stock
+CCLD,"CareCloud, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+CDLX,Cardlytics Inc,USD,NASDAQ,XNMS,United States,Common Stock
+CELU,Celularity Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+CHEK,Check Cap Ltd,USD,NASDAQ,XNCM,United States,Common Stock
+CINC,"CinCor Pharma, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+CING,Cingulate Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+CMCSA,Comcast Corp,USD,NASDAQ,XNGS,United States,Common Stock
+CMND,"Caleminder, Inc.",USD,NASDAQ,XNCM,United States,Common Stock
+COMS,ComSovereign Holding Corp.,USD,NASDAQ,XNCM,United States,Common Stock
+CPAQ,Counter Press Acquisition Corporation,USD,NASDAQ,XNMS,United States,Common Stock
+CSBR,Champions Oncology Inc,USD,NASDAQ,XNCM,United States,Common Stock
+DICE,"DICE Therapeutics, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+EMLDU,FTAC Emerald Acquisition Corp. Unit,USD,NASDAQ,XNMS,United States,Unit
+ENCP,Energem Corp.,USD,NASDAQ,XNMS,United States,Common Stock
+ENER,Accretion Acquisition Corp.,USD,NASDAQ,XNMS,United States,Common Stock
+FNVTU,Finnovate Acquisition Corp.,USD,NASDAQ,XNMS,United States,Unit
+FREQ,Frequency Therapeutics Inc,USD,NASDAQ,XNGS,United States,Common Stock
+FTEK,Fuel Tech Inc,USD,NASDAQ,XNCM,United States,Common Stock
+FVCB,FVCBankcorp Inc,USD,NASDAQ,XNCM,United States,Common Stock
+FWBI,"First Wave BioPharma, Inc.",USD,NASDAQ,XNCM,United States,Common Stock
+GEVO,Gevo Inc,USD,NASDAQ,XNCM,United States,Common Stock
+GLLI,Globalink Investment Inc.,USD,NASDAQ,XNMS,United States,Common Stock
+GLSTR,"Global Star Acquisition, Inc. Right",USD,NASDAQ,XNMS,United States,Common Stock
+GMFIU,Aetherium Acquisition Corp,USD,NASDAQ,XNMS,United States,Unit
+GPACU,Global Partner Acquisition Corp II,USD,NASDAQ,XNCM,United States,Unit
+ICLR,ICON PLC,USD,NASDAQ,XNGS,United States,Common Stock
+IDEX,Ideanomics Inc,USD,NASDAQ,XNCM,United States,Common Stock
+IGICW,International General Insurance Holdings Ltd.,USD,NASDAQ,XNCM,United States,Common Stock
+IMAQ,International Media Acquisition Corp.,USD,NASDAQ,XNCM,United States,Common Stock
+IMPPP,Imperial Petroleum Inc. - 8.75%,USD,NASDAQ,XNCM,United States,Preferred Stock
+INBS,Intelligent Bio Solutions Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+IPAXU,Inflection Point Acquisition Corp.,USD,NASDAQ,XNCM,United States,Unit
+KRON,Kronos Bio Inc,USD,NASDAQ,XNGS,United States,Common Stock
+LABP,"Landos Biopharma, Inc.",USD,NASDAQ,XNCM,United States,Common Stock
+LIBYU,Liberty Resources Acquisition Corp.,USD,NASDAQ,XNMS,United States,Unit
+LILAK,Liberty Latin America Ltd,USD,NASDAQ,XNGS,United States,Common Stock
+LITTU,Logistics Innovation Technologies Corp.,USD,NASDAQ,XNMS,United States,Unit
+LNT,Alliant Energy Corp,USD,NASDAQ,XNGS,United States,Common Stock
+LOVE,Lovesac Co-The,USD,NASDAQ,XNMS,United States,Common Stock
+LUNR,"Intuitive Machines, Inc. - Class A Common Stock",USD,NASDAQ,XNMS,United States,Common Stock
+LX,LexinFintech Holdings Ltd,USD,NASDAQ,XNGS,United States,Depositary Receipt
+LYRA,Lyra Therapeutics Inc,USD,NASDAQ,XNMS,United States,Common Stock
+MASS,908 Devices Inc.,USD,NASDAQ,XNMS,United States,Common Stock
+MBTCR,Nocturne Acquisition Corporation,USD,NASDAQ,XNCM,United States,Common Stock
+MCAA,Mountain & Co. I Acquisition Corp.,USD,NASDAQ,XNMS,United States,Common Stock
+MCAGR,Mountain Crest Acquisition Corp. V,USD,NASDAQ,XNMS,United States,Common Stock
+MLEC,MOOLEC SCIENCE SA,USD,NASDAQ,XNCM,United States,Common Stock
+NEGG,"Newegg Commerce, Inc.",USD,NASDAQ,XNCM,United States,Common Stock
+NXGN,NextGen Healthcare Inc,USD,NASDAQ,XNGS,United States,Common Stock
+OEPWU,One Equity Partners Open Water I Corp.,USD,NASDAQ,XNCM,United States,Unit
+ONEW,OneWater Marine Inc,USD,NASDAQ,XNMS,United States,Common Stock
+OXBR,Oxbridge Re Holdings Ltd,USD,NASDAQ,XNCM,United States,Common Stock
+PGR.W,Progress Acquisition Corp.,USD,NASDAQ,XNCM,United States,Common Stock
+PRQR,ProQR Therapeutics NV,USD,NASDAQ,XNCM,United States,Common Stock
+PSNY,Polestar Automotive Holding UK PLC,USD,NASDAQ,XNMS,United States,American Depositary Receipt
+PZZA,Papa John's International Inc,USD,NASDAQ,XNGS,United States,Common Stock
+RKLB,"Rocket Lab USA, Inc.",USD,NASDAQ,XNCM,United States,Common Stock
+ROIV,Roivant Sciences Ltd.,USD,NASDAQ,XNMS,United States,Common Stock
+RVYL,Ryvyl Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+SGEN,Seattle Genetics Inc,USD,NASDAQ,XNGS,United States,Common Stock
+SGH,SMART Global Holdings Inc,USD,NASDAQ,XNGS,United States,Common Stock
+SIEB,Siebert Financial Corp,USD,NASDAQ,XNCM,United States,Common Stock
+SOBR,"SOBR Safe, Inc.",USD,NASDAQ,XNCM,United States,Common Stock
+STEP,StepStone Group Inc.,USD,NASDAQ,XNGS,United States,Common Stock
+STRL,Sterling Construction Co Inc,USD,NASDAQ,XNGS,United States,Common Stock
+SVFAU,SVF Investment Corp.,USD,NASDAQ,XNCM,United States,Unit
+TALS,"Talaris Therapeutics, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+TSLA,Tesla Inc,USD,NASDAQ,XNGS,United States,Common Stock
+TBLD,Thornburg Income Builder Opportunities Trust,USD,NASDAQ,XNGS,United States,Common Stock
+TCBIO,"Texas Capital Bancshares, Inc.",USD,NASDAQ,XNGS,United States,Common Stock
+TMPO,"Tempo Automation Holdings, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+TRIB,Trinity Biotech PLC,USD,NASDAQ,XNGS,United States,Depositary Receipt
+UBSI,United Bankshares Inc-WV,USD,NASDAQ,XNGS,United States,Common Stock
+VCKAU,Vickers Vantage Corp. I,USD,NASDAQ,XNCM,United States,Unit
+VIEW,"View, Inc.",USD,NASDAQ,XNMS,United States,Common Stock
+VII,7GC & Co. Holdings Inc.,USD,NASDAQ,XNCM,United States,Common Stock
+VRTX,Vertex Pharmaceuticals Inc,USD,NASDAQ,XNGS,United States,Common Stock
+WALDW,Waldencast plc,USD,NASDAQ,XNCM,United States,Common Stock
+WKSP,Worksport Ltd.,USD,NASDAQ,XNCM,United States,Common Stock
+WTFC,Wintrust Financial Corp,USD,NASDAQ,XNGS,United States,Common Stock

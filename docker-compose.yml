@@ -1,0 +1,55 @@
+version: '3'
+ 
+services:
+
+  mysql-db:
+    image: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: db_banka1
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DB: mysql
+#    volumes:
+#      - db-user:/var/lib/mysql/data
+    profiles: ["all", "exchange"]
+
+  user-service:
+    image: harbor.k8s.elab.rs/banka-1/user-service:latest
+    build: ./user-service
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:mysql://mysql-db:3306/db_banka1
+    ports:
+      - "8080:8080"
+    links:
+      - mysql-db
+    depends_on:
+      - mysql-db
+    restart: on-failure
+    profiles: ["all", "exchange"]
+
+  flask-api-service:
+    image: harbor.k8s.elab.rs/banka-1/flask-api-service:latest
+    build: ./flask-api-service
+    ports:
+      - "8888:8888"
+    profiles: ["all", "exchange"]
+
+  exchange-service:
+    image: harbor.k8s.elab.rs/banka-1/exchange-service:latest
+    build: ./exchange-service
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:mysql://mysql-db:3306/db_banka1
+    ports:
+      - "8081:8081"
+    links:
+      - mysql-db
+      - flask-api-service
+    depends_on:
+      - mysql-db
+      - flask-api-service
+    restart: on-failure
+    profiles: [ "all" ]
+
+volumes:
+  mysql-db:

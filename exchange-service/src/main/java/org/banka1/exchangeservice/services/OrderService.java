@@ -23,10 +23,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -37,15 +35,21 @@ public class OrderService {
     private final StockRepository stockRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private final ForexService forexService;
+    private final StockService stockService;
 
     @Value("${user.service.endpoint}")
     private String userServiceUrl;
 
 
-    public OrderService(OrderRepository orderRepository, ForexRepository forexRepository, StockRepository stockRepository) {
+    public OrderService(OrderRepository orderRepository, ForexRepository forexRepository,
+                        StockRepository stockRepository, ForexService forexService,
+                        StockService stockService) {
         this.orderRepository = orderRepository;
         this.forexRepository = forexRepository;
         this.stockRepository = stockRepository;
+        this.forexService = forexService;
+        this.stockService = stockService;
     }
 
     public Order makeOrder(OrderRequest orderRequest, String token) {
@@ -119,30 +123,37 @@ public class OrderService {
     }
 
 //    @Async
-    public void mockExecutionOfOrder(Order order, String token){
+    public void mockExecutionOfOrder(Order order, String token) {
         Runnable runnable = () -> {
-            UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
-            userListingCreateDto.setSymbol(order.getListingSymbol());
-            userListingCreateDto.setQuantity(0);
-            userListingCreateDto.setListingType(order.getListingType());
+            UserListingDto userListingDto = getUserListing(order.getUserId(), order.getListingType(), order.getListingSymbol(), token);
+            if(userListingDto == null) {
+                UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
+                userListingCreateDto.setSymbol(order.getListingSymbol());
+                userListingCreateDto.setQuantity(0);
+                userListingCreateDto.setListingType(order.getListingType());
 
-            UserListingDto userListingDto;
-            try {
-                String body = objectMapper.writeValueAsString(userListingCreateDto);
-                String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(url))
-                        .header("Authorization", token)
-                        .header("Content-Type", "application/json")
-                        .method("POST", HttpRequest.BodyPublishers.ofString(body))
-                        .build();
+                try {
+                    String body = objectMapper.writeValueAsString(userListingCreateDto);
+                    String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .uri(URI.create(url))
+                            .header("Authorization", token)
+                            .header("Content-Type", "application/json")
+                            .method("POST", HttpRequest.BodyPublishers.ofString(body))
+                            .build();
 
-                HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-                String jsonUserListing = response.body();
-                userListingDto = objectMapper.readValue(jsonUserListing, UserListingDto.class);
+                    HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                    String jsonUserListing = response.body();
+                    userListingDto = objectMapper.readValue(jsonUserListing, UserListingDto.class);
 
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if(order.getOrderAction() == OrderAction.SELL && order.getQuantity() > userListingDto.getQuantity()) {
+                order.setOrderStatus(OrderStatus.REJECTED);
+                return;
             }
 
             Long listingId = userListingDto.getId();
@@ -155,21 +166,69 @@ public class OrderService {
 
                 Random random = new Random();
                 int quantity = random.nextInt(order.getRemainingQuantity() + 1);
-                order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
+                if (order.isAllOrNone() && quantity != order.getQuantity()) continue;
 
-                if(order.getRemainingQuantity() == 0) {
-                    order.setDone(true);
+                double askPrice = 0;
+                double bidPrice = 0;
+                if (order.getListingType() == ListingType.FOREX) {
+                    Forex forex = forexRepository.findBySymbol(order.getListingSymbol());
+                    forexService.updateForexes(Collections.singletonList(forex));
+
+                    askPrice = forex.getAskPrice();
+                    bidPrice = forex.getBidPrice();
+                } else if (order.getListingType() == ListingType.STOCK) {
+                    Stock stock = stockRepository.findBySymbol(order.getListingSymbol());
+                    stockService.updateStocks(Collections.singletonList(stock));
+
+                    askPrice = stock.getPrice();
+                    bidPrice = stock.getPrice();
                 }
+
+                switch (order.getOrderType()) {
+                    case STOP_ORDER -> {
+                        if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() < askPrice)
+                                || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() > bidPrice)) {
+                            order.setOrderType(OrderType.MARKET_ORDER);
+                        }
+                        else {
+                            continue;
+                        }
+                    }
+                    case LIMIT_ORDER -> {
+                        if ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
+                                || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue())) {
+                            continue;
+                        }
+                    }
+                    case STOP_LIMIT_ORDER -> {
+                        if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() > askPrice)
+                                || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() < bidPrice)
+                                || ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
+                                || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue()))) {
+                            continue;
+                        }
+                    }
+                }
+
+                int newQuantity;
+                if(order.getOrderAction() == OrderAction.BUY) {
+                    newQuantity = quantity + userListingDto.getQuantity();
+                } else {
+                    newQuantity = userListingDto.getQuantity() - quantity;
+                }
+
+                order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
+                if(order.getRemainingQuantity() == 0) order.setDone(true);
 
                 Double accountBalanceToUpdate = calculateThePrice(order.getListingType(), order.getListingSymbol(), quantity);
                 String urlBankAccount;
-                if(order.getOrderAction() == OrderAction.BUY)  urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + accountBalanceToUpdate;
+                if(order.getOrderAction() == OrderAction.BUY) urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + accountBalanceToUpdate;
                 else urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
 
                 updateBankAccountBalance(token, urlBankAccount);
                 System.out.println("UPDATED BALANCE ACCOUNT");
 
-                int newQuantity = order.getQuantity() - order.getRemainingQuantity();
+
                 String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
@@ -178,7 +237,8 @@ public class OrderService {
                         .method("PUT", HttpRequest.BodyPublishers.ofString("")) // mozda treba mozda ne treba
                         .build();
                 try {
-                    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                    HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                    userListingDto = objectMapper.readValue(response.body(), UserListingDto.class);
                 } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -242,5 +302,29 @@ public class OrderService {
         orders.forEach(order -> order.setExpectedPrice(calculateThePrice(order.getListingType(), order.getListingSymbol(), order.getQuantity())));
 
         return orders;
+    }
+
+    private UserListingDto getUserListing(Long userId, ListingType listingType, String symbol, String token) {
+        String url = userServiceUrl + "/user-listings?userId=" + userId;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", token)
+                .method("GET", HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        UserListingDto userListingDto = null;
+        try {
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            UserListingDto[] userListings = objectMapper.readValue(response.body(), UserListingDto[].class);
+
+            userListingDto = Stream.of(userListings)
+                    .filter(ul -> ul.getListingType() == listingType && ul.getSymbol().equals(symbol))
+                    .findFirst()
+                    .orElse(null);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return userListingDto;
     }
 }

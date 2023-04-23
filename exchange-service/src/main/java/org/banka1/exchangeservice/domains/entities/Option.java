@@ -1,0 +1,35 @@
+package org.banka1.exchangeservice.domains.entities;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
+
+import javax.persistence.*;
+import java.time.LocalDate;
+
+@Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "options")
+public class Option {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String symbol;
+    private Double strike;
+    private OptionType optionType;
+    private LocalDate expirationDate;
+    
+    @Transient
+    private Double ask;
+    @Transient
+    private Double bid;
+    @Transient
+    private Double price;
+
+}

@@ -15,7 +15,8 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-@Profile("local")
+//@Profile("local")
+@Profile("!test_it")
 public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;

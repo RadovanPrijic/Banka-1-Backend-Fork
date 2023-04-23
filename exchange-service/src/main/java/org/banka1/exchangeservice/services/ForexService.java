@@ -103,7 +103,14 @@ public class ForexService {
     }
 
     public void loadForex() throws Exception {
-        BufferedReader reader = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:csv/forex-pair-test.csv")));
+        FileReader fileReader;
+        try {
+            fileReader = new FileReader(ResourceUtils.getFile("exchange-service/csv-files/forex-pair-test.csv"));
+        } catch (Exception e) {
+            fileReader = new FileReader(ResourceUtils.getFile("classpath:csv/forex-pair-test.csv"));
+        }
+
+        BufferedReader reader = new BufferedReader(fileReader);
         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
 
         List<CSVRecord> csvRecords = csvParser.getRecords();
