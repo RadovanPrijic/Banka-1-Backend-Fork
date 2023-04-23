@@ -12,7 +12,7 @@ services:
       MYSQL_DB: mysql
 #    volumes:
 #      - db-user:/var/lib/mysql/data
-#    profiles: ["all", "core"]
+    profiles: ["all", "exchange"]
 
   user-service:
     image: harbor.k8s.elab.rs/banka-1/user-service:latest
@@ -26,13 +26,14 @@ services:
     depends_on:
       - mysql-db
     restart: on-failure
-#    profiles: ["all"]
+    profiles: ["all", "exchange"]
 
   flask-api-service:
     image: harbor.k8s.elab.rs/banka-1/flask-api-service:latest
     build: ./flask-api-service
     ports:
       - "8888:8888"
+    profiles: ["all", "exchange"]
 
   exchange-service:
     image: harbor.k8s.elab.rs/banka-1/exchange-service:latest
@@ -48,7 +49,7 @@ services:
       - mysql-db
       - flask-api-service
     restart: on-failure
-#    profiles: [ "all" ]
+    profiles: [ "all" ]
 
 volumes:
   mysql-db:
