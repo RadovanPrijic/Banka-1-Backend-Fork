@@ -126,6 +126,11 @@ public class OrderService {
     public void mockExecutionOfOrder(Order order, String token) {
         Runnable runnable = () -> {
             UserListingDto userListingDto = getUserListing(order.getUserId(), order.getListingType(), order.getListingSymbol(), token);
+            if(userListingDto == null && order.getOrderAction() == OrderAction.SELL) {
+                order.setOrderStatus(OrderStatus.REJECTED);
+                orderRepository.save(order);
+                return;
+            }
             if(userListingDto == null) {
                 UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
                 userListingCreateDto.setSymbol(order.getListingSymbol());
@@ -153,6 +158,7 @@ public class OrderService {
 
             if(order.getOrderAction() == OrderAction.SELL && order.getQuantity() > userListingDto.getQuantity()) {
                 order.setOrderStatus(OrderStatus.REJECTED);
+                orderRepository.save(order);
                 return;
             }
 
