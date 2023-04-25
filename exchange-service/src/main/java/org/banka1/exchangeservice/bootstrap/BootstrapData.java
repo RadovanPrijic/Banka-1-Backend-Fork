@@ -2,16 +2,13 @@ package org.banka1.exchangeservice.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
-import org.banka1.exchangeservice.services.ExchangeService;
-import org.banka1.exchangeservice.services.ForexService;
-import org.banka1.exchangeservice.services.StockService;
+import org.banka1.exchangeservice.services.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
 import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
-import org.banka1.exchangeservice.services.CurrencyService;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
@@ -25,12 +22,14 @@ import java.util.ArrayList;
 @Component
 @AllArgsConstructor
 //@Profile("local")
+@Profile("!test_it")
 public class BootstrapData implements CommandLineRunner {
 
     private final ExchangeService exchangeService;
     private final CurrencyService currencyService;
     private final ForexService forexService;
     private final StockService stockService;
+    private final OptionService optionService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -51,10 +50,21 @@ public class BootstrapData implements CommandLineRunner {
         System.out.println("Forexes loaded");
         stockService.loadStocks();
         System.out.println("Stocks loaded");
+
+        //OPTIONS
+        optionService.loadOptions();
+        System.out.println("Options loaded");
     }
 
     public List<CurrencyCsvBean> getCurrencies() throws IOException {
-        return new CsvToBeanBuilder<CurrencyCsvBean>(new FileReader(ResourceUtils.getFile("exchange-service/csv-files/currencies.csv")))
+        FileReader fileReader;
+        try {
+            fileReader = new FileReader(ResourceUtils.getFile("exchange-service/csv-files/currencies.csv"));
+        } catch (Exception e) {
+            fileReader = new FileReader(ResourceUtils.getFile("classpath:csv/currencies.csv"));
+        }
+
+        return new CsvToBeanBuilder<CurrencyCsvBean>(fileReader)
                 .withType(CurrencyCsvBean.class)
                 .withSkipLines(1)
                 .build()
@@ -62,13 +72,18 @@ public class BootstrapData implements CommandLineRunner {
     }
 
     public List<ExchangeCSV> getExchangeData() throws FileNotFoundException {
+        FileReader fileReader;
+        try {
+            fileReader = new FileReader(ResourceUtils.getFile("exchange-service/csv-files/exchange.csv"));
+        } catch (Exception e) {
+            fileReader = new FileReader(ResourceUtils.getFile("classpath:csv/exchange.csv"));
+        }
 
-        return new CsvToBeanBuilder<ExchangeCSV>(new FileReader(ResourceUtils.getFile("exchange-service/csv-files/exchange.csv")))
+        return new CsvToBeanBuilder<ExchangeCSV>(fileReader)
                 .withType(ExchangeCSV.class)
                 .withSkipLines(1)
                 .build()
                 .parse();
 
-//
     }
 }
