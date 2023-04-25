@@ -62,15 +62,29 @@ public class OrderService {
         order.setExpectedPrice(expectedPrice);
         order.setRemainingQuantity(orderRequest.getQuantity());
         order.setLastModified(new Date());
-
-        if(userDto.getBankAccount().getAccountBalance() < expectedPrice) order.setOrderStatus(OrderStatus.REJECTED);
-        else if(userDto.getBankAccount().getDailyLimit() - expectedPrice < 0) order.setOrderStatus(OrderStatus.ON_HOLD);
-        else order.setOrderStatus(OrderStatus.APPROVED);
-
-        reduceDailyLimitForUser(token, userDto.getId(), expectedPrice);
         OrderMapper.INSTANCE.updateOrderFromOrderRequest(order, orderRequest);
-        orderRepository.save(order);
 
+        if(userDto.getBankAccount().getAccountBalance() < expectedPrice) {
+            order.setOrderStatus(OrderStatus.REJECTED);
+        }
+        else if(userDto.getBankAccount().getDailyLimit() - expectedPrice < 0) {
+            order.setOrderStatus(OrderStatus.ON_HOLD);
+        }
+        else {
+            order.setOrderStatus(OrderStatus.APPROVED);
+        }
+
+        UserListingDto userListingDto = getUserListing(order.getUserId(), order.getListingType(), order.getListingSymbol(), token);
+        if ((userListingDto == null || userListingDto.getQuantity() < order.getQuantity())
+                && order.getOrderAction() == OrderAction.SELL) {
+            order.setOrderStatus(OrderStatus.REJECTED);
+        }
+
+        if(order.getOrderStatus() != OrderStatus.REJECTED) {
+            reduceDailyLimitForUser(token, userDto.getId(), expectedPrice);
+        }
+
+        orderRepository.save(order);
         if(order.getOrderStatus().equals(OrderStatus.APPROVED))
             mockExecutionOfOrder(order, token);
 
@@ -151,11 +165,6 @@ public class OrderService {
                 }
             }
 
-            if(order.getOrderAction() == OrderAction.SELL && order.getQuantity() > userListingDto.getQuantity()) {
-                order.setOrderStatus(OrderStatus.REJECTED);
-                return;
-            }
-
             Long listingId = userListingDto.getId();
             while(!order.getDone()){
                 try {
@@ -227,6 +236,7 @@ public class OrderService {
 
                 updateBankAccountBalance(token, urlBankAccount);
                 System.out.println("UPDATED BALANCE ACCOUNT");
+                System.out.println("URL: " + urlBankAccount);
 
 
                 String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
