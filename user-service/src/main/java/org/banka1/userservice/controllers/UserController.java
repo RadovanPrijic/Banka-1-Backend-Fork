@@ -88,8 +88,8 @@ public class UserController {
     }
 
     @PutMapping("/increase-balance")
-    public ResponseEntity<?> increaseBankBalance(@RequestParam Double increaseAmount) {
-        return ResponseEntity.ok(userService.increaseBankAccountBalance(increaseAmount));
+    public ResponseEntity<?> increaseBankBalance(@RequestParam Double increaseAccount) {
+        return ResponseEntity.ok(userService.increaseBankAccountBalance(increaseAccount));
     }
 
     @PutMapping("/decrease-balance")
