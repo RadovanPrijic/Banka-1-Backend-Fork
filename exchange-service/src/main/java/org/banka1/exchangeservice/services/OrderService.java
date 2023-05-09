@@ -263,6 +263,10 @@ public class OrderService {
         thread.start();
     }
 
+    public void tryExecutingOrder(){
+
+    }
+
     public void updateBankAccountBalance(String token, String url){
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))

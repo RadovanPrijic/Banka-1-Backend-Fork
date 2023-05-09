@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -100,6 +101,27 @@ public class StockService {
         }
 
         if(!stocks.isEmpty()) stockRepository.saveAll(stocks);
+    }
+
+    //TODO @Scheduled(cron = "*/15 * * * *")
+    @Scheduled(fixedRate = 60000)
+    public void refreshStockData() {
+        List<Stock> stocks = stockRepository.findAll();
+
+        stocks.forEach(stock -> {
+            try {
+                StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
+                if(stockResponseDtoFlask != null) {
+                    stock.setLastRefresh(LocalDateTime.now());
+                    updateStockFromFlask(stock,stockResponseDtoFlask);
+                    stocks.add(stock);
+                }
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            stockRepository.save(stock);
+            //TODO Proslediti dati stock forex u MQ
+        });
     }
 
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){

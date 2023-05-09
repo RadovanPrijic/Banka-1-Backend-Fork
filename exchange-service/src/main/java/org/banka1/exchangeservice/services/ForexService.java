@@ -17,6 +17,7 @@ import org.banka1.exchangeservice.repositories.ForexRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -30,6 +31,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -100,6 +102,25 @@ public class ForexService {
         if(!updatedForexesToSave.isEmpty()) {
             forexRepository.saveAll(updatedForexesToSave);
         }
+    }
+
+    //TODO @Scheduled(cron = "*/15 * * * *")
+    @Scheduled(fixedRate = 60000)
+    public void refreshForexData() {
+        List<Forex> forexes = forexRepository.findAll();
+
+        forexes.forEach(forex ->{
+            String url = baseForexUrl + "?from_currency=" + forex.getFromCurrency().getCurrencyCode() + "&to_currency=" + forex.getToCurrency().getCurrencyCode();
+            try {
+                ForexResponseExchangeFlask forexResponseExchangeFlask = getForexFromFlask(url, ForexResponseExchangeFlask.class);
+                forex.setLastRefresh(LocalDateTime.now());
+                ForexMapper.INSTANCE.updateForexFromForexResponseExchangeFlask(forex, forexResponseExchangeFlask);
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            forexRepository.save(forex);
+            //TODO Proslediti dati forex u MQ
+        });
     }
 
     public void loadForex() throws Exception {

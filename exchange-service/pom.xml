@@ -206,6 +206,12 @@
 			<version>0.8.8</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
