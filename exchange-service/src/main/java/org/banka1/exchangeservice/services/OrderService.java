@@ -14,6 +14,8 @@ import org.banka1.exchangeservice.domains.mappers.OrderMapper;
 import org.banka1.exchangeservice.repositories.ForexRepository;
 import org.banka1.exchangeservice.repositories.OrderRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -263,8 +265,16 @@ public class OrderService {
         thread.start();
     }
 
-    public void tryExecutingOrder(){
+    @RabbitListener(queues = "${rabbitmq.queue.forex.name}")
+    public void receivedForex(Forex forex) {
+        System.out.println(forex);
+        System.out.println(forex.getSymbol());
+    }
 
+    @RabbitListener(queues = "${rabbitmq.queue.stock.name}")
+    public void receivedStock(Stock stock) {
+        System.out.println(stock);
+        System.out.println(stock.getPrice());
     }
 
     public void updateBankAccountBalance(String token, String url){

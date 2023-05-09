@@ -14,6 +14,8 @@ import org.banka1.exchangeservice.domains.entities.Forex;
 import org.banka1.exchangeservice.domains.mappers.ForexMapper;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.banka1.exchangeservice.repositories.ForexRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -52,9 +54,16 @@ public class ForexService {
     @Value("${flask.api.forex.timeseries.intraday}")
     private String baseForexTimeSeriesIntraDayUrl;
 
-    public ForexService(ForexRepository forexRepository, CurrencyRepository currencyRepository) {
+    private final RabbitTemplate rabbitTemplate;
+    @Value("${rabbitmq.exchange.name}")
+    private String exchange;
+    @Value("${rabbitmq.routing.forex.key}")
+    private String routingKey;
+
+    public ForexService(ForexRepository forexRepository, CurrencyRepository currencyRepository, @Autowired RabbitTemplate rabbitTemplate) {
         this.forexRepository = forexRepository;
         this.currencyRepository = currencyRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public Page<Forex> getForexes(Integer page, Integer size, ForexFilterRequest forexFilterRequest){
@@ -105,7 +114,7 @@ public class ForexService {
     }
 
     //TODO @Scheduled(cron = "*/15 * * * *")
-    @Scheduled(fixedRate = 60000)
+    //@Scheduled(fixedRate = 60000)
     public void refreshForexData() {
         List<Forex> forexes = forexRepository.findAll();
 
@@ -121,6 +130,13 @@ public class ForexService {
             forexRepository.save(forex);
             //TODO Proslediti dati forex u MQ
         });
+    }
+
+    @Scheduled(fixedRate = 20000)
+    public void sendForex(){
+        Forex forex = new Forex();
+        forex.setSymbol("RSD");
+        rabbitTemplate.convertAndSend(exchange, routingKey, forex);
     }
 
     public void loadForex() throws Exception {

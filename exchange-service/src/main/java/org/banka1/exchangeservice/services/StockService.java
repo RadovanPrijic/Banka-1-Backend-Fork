@@ -9,10 +9,13 @@ import org.banka1.exchangeservice.domains.dtos.stock.StockDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.StockResponseDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.domains.entities.Exchange;
+import org.banka1.exchangeservice.domains.entities.Forex;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,9 +47,16 @@ public class StockService {
     @Value("${flask.api.stock.timeseries.intraday}")
     private String baseTimeSeriesIntraDayUrl;
 
-    public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
+    private final RabbitTemplate rabbitTemplate;
+    @Value("${rabbitmq.exchange.name}")
+    private String exchange;
+    @Value("${rabbitmq.routing.stock.key}")
+    private String routingKey;
+
+    public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository, @Autowired RabbitTemplate rabbitTemplate) {
         this.exchangeRepository = exchangeRepository;
         this.stockRepository = stockRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public void loadStocks() throws IOException, InterruptedException {
@@ -104,7 +114,7 @@ public class StockService {
     }
 
     //TODO @Scheduled(cron = "*/15 * * * *")
-    @Scheduled(fixedRate = 60000)
+    //@Scheduled(fixedRate = 60000)
     public void refreshStockData() {
         List<Stock> stocks = stockRepository.findAll();
 
@@ -122,6 +132,13 @@ public class StockService {
             stockRepository.save(stock);
             //TODO Proslediti dati stock forex u MQ
         });
+    }
+
+    @Scheduled(fixedRate = 15000)
+    public void sendStock(){
+        Stock stock = new Stock();
+        stock.setPrice(15.00);
+        rabbitTemplate.convertAndSend(exchange, routingKey, stock);
     }
 
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
