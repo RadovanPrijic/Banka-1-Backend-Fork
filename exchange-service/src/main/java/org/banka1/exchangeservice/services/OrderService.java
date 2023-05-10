@@ -266,15 +266,15 @@ public class OrderService {
     }
 
     @RabbitListener(queues = "${rabbitmq.queue.forex.name}")
-    public void receivedForex(Forex forex) {
-        System.out.println(forex);
-        System.out.println(forex.getSymbol());
+    public void receiveForex(Forex forex) {
+        System.err.println("FOREX: " + forex.getSymbol() + " - " + forex.getFromCurrency() + " - " + forex.getToCurrency());
+        //TODO Proveravanje ordera
     }
 
     @RabbitListener(queues = "${rabbitmq.queue.stock.name}")
-    public void receivedStock(Stock stock) {
-        System.out.println(stock);
-        System.out.println(stock.getPrice());
+    public void receiveStock(Stock stock) {
+        System.err.println("STOCK: " + stock.getSymbol());
+        //TODO Proveravanje ordera
     }
 
     public void updateBankAccountBalance(String token, String url){

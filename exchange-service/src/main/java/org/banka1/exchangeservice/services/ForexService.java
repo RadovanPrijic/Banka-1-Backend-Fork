@@ -1,6 +1,9 @@
 package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -45,7 +48,8 @@ public class ForexService {
 
     private final ForexRepository forexRepository;
     private final CurrencyRepository currencyRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final ObjectMapper objectMapper;
 
     @Value("${flask.api.forex.exchange}")
     private String baseForexUrl;
@@ -60,10 +64,12 @@ public class ForexService {
     @Value("${rabbitmq.routing.forex.key}")
     private String routingKey;
 
-    public ForexService(ForexRepository forexRepository, CurrencyRepository currencyRepository, @Autowired RabbitTemplate rabbitTemplate) {
+    public ForexService(ForexRepository forexRepository, CurrencyRepository currencyRepository,
+                        @Autowired RabbitTemplate rabbitTemplate, @Autowired ObjectMapper objectMapper) {
         this.forexRepository = forexRepository;
         this.currencyRepository = currencyRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public Page<Forex> getForexes(Integer page, Integer size, ForexFilterRequest forexFilterRequest){
@@ -113,8 +119,7 @@ public class ForexService {
         }
     }
 
-    //TODO @Scheduled(cron = "*/15 * * * *")
-    //@Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "0 0/1 * * * *")
     public void refreshForexData() {
         List<Forex> forexes = forexRepository.findAll();
 
@@ -122,21 +127,16 @@ public class ForexService {
             String url = baseForexUrl + "?from_currency=" + forex.getFromCurrency().getCurrencyCode() + "&to_currency=" + forex.getToCurrency().getCurrencyCode();
             try {
                 ForexResponseExchangeFlask forexResponseExchangeFlask = getForexFromFlask(url, ForexResponseExchangeFlask.class);
-                forex.setLastRefresh(LocalDateTime.now());
-                ForexMapper.INSTANCE.updateForexFromForexResponseExchangeFlask(forex, forexResponseExchangeFlask);
+                if(forexResponseExchangeFlask != null){
+                    forex.setLastRefresh(LocalDateTime.now());
+                    ForexMapper.INSTANCE.updateForexFromForexResponseExchangeFlask(forex, forexResponseExchangeFlask);
+                    forexRepository.save(forex);
+                    rabbitTemplate.convertAndSend(exchange, routingKey, forex);
+                }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            forexRepository.save(forex);
-            //TODO Proslediti dati forex u MQ
         });
-    }
-
-    @Scheduled(fixedRate = 20000)
-    public void sendForex(){
-        Forex forex = new Forex();
-        forex.setSymbol("RSD");
-        rabbitTemplate.convertAndSend(exchange, routingKey, forex);
     }
 
     public void loadForex() throws Exception {

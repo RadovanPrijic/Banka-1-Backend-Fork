@@ -1,6 +1,9 @@
 package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -41,7 +44,8 @@ public class StockService {
 
     private final ExchangeRepository exchangeRepository;
     private final StockRepository stockRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
     @Value("${flask.api.stock.timeseries}")
     private String baseTimeSeriesUrl;
     @Value("${flask.api.stock.timeseries.intraday}")
@@ -53,10 +57,12 @@ public class StockService {
     @Value("${rabbitmq.routing.stock.key}")
     private String routingKey;
 
-    public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository, @Autowired RabbitTemplate rabbitTemplate) {
+    public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository,
+                        @Autowired RabbitTemplate rabbitTemplate, @Autowired ObjectMapper objectMapper) {
         this.exchangeRepository = exchangeRepository;
         this.stockRepository = stockRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public void loadStocks() throws IOException, InterruptedException {
@@ -113,8 +119,7 @@ public class StockService {
         if(!stocks.isEmpty()) stockRepository.saveAll(stocks);
     }
 
-    //TODO @Scheduled(cron = "*/15 * * * *")
-    //@Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "0 0/1 * * * *")
     public void refreshStockData() {
         List<Stock> stocks = stockRepository.findAll();
 
@@ -124,21 +129,13 @@ public class StockService {
                 if(stockResponseDtoFlask != null) {
                     stock.setLastRefresh(LocalDateTime.now());
                     updateStockFromFlask(stock,stockResponseDtoFlask);
-                    stocks.add(stock);
+                    stockRepository.save(stock);
+                    rabbitTemplate.convertAndSend(exchange, routingKey, stock);
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            stockRepository.save(stock);
-            //TODO Proslediti dati stock forex u MQ
         });
-    }
-
-    @Scheduled(fixedRate = 15000)
-    public void sendStock(){
-        Stock stock = new Stock();
-        stock.setPrice(15.00);
-        rabbitTemplate.convertAndSend(exchange, routingKey, stock);
     }
 
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
