@@ -105,7 +105,7 @@ public class OrderService {
     }
 
     public UserDto getUserDtoFromUserService(String token){
-        String url = "http://localhost:8080/api" + "/users/my-profile";
+        String url = userServiceUrl + "/users/my-profile";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", "Bearer " + token)
@@ -124,7 +124,7 @@ public class OrderService {
     }
 
     public void reduceDailyLimitForUser(String token,Long userId, Double decreaseLimit){
-        String url = "http://localhost:8080/api" + "/users/reduce-daily-limit?userId=" + userId + "&decreaseLimit=" + decreaseLimit;
+        String url = userServiceUrl + "/users/reduce-daily-limit?userId=" + userId + "&decreaseLimit=" + decreaseLimit;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", "Bearer " + token)
@@ -153,7 +153,7 @@ public class OrderService {
                     String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
                     HttpRequest request = HttpRequest.newBuilder()
                             .uri(URI.create(url))
-                            .header("Authorization", token)
+                            .header("Authorization", "Bearer " + token)
                             .header("Content-Type", "application/json")
                             .method("POST", HttpRequest.BodyPublishers.ofString(body))
                             .build();
@@ -244,7 +244,7 @@ public class OrderService {
                 String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
-                        .header("Authorization", token)
+                        .header("Authorization", "Bearer " + token)
                         .header("Content-Type", "application/json")
                         .method("PUT", HttpRequest.BodyPublishers.ofString("")) // mozda treba mozda ne treba
                         .build();
@@ -329,7 +329,7 @@ public class OrderService {
     }
 
     public UserListingDto getUserListing(Long userId, ListingType listingType, String symbol, String token) {
-        String url = "http://localhost:8080/api" + "/user-listings?userId=" + userId;
+        String url = userServiceUrl + "/user-listings?userId=" + userId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", "Bearer " + token)
