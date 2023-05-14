@@ -1,7 +1,11 @@
 package org.banka1.exchangeservice.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.banka1.exchangeservice.domains.dtos.option.OptionChainDto;
 import org.banka1.exchangeservice.domains.dtos.option.OptionDto;
 import org.banka1.exchangeservice.domains.dtos.option.OptionFilterRequest;
+import org.banka1.exchangeservice.domains.dtos.option.Response;
+import org.banka1.exchangeservice.domains.dtos.user.UserDto;
 import org.banka1.exchangeservice.domains.entities.Option;
 import org.banka1.exchangeservice.domains.entities.OptionType;
 import org.banka1.exchangeservice.domains.entities.Stock;
@@ -10,7 +14,15 @@ import org.banka1.exchangeservice.repositories.OptionRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +33,7 @@ public class OptionService {
 
     private final OptionRepository optionRepository;
     private final StockRepository stockRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public OptionService(OptionRepository optionRepository, StockRepository stockRepository) {
         this.optionRepository = optionRepository;
@@ -28,41 +41,54 @@ public class OptionService {
     }
 
     public void loadOptions(){
+        stockRepository.findAll().forEach(stock -> {
+            String url = "https://query1.finance.yahoo.com/v7/finance/options/" + stock.getSymbol();
+            saveLoadedOptions(url);
+        });
+    }
+
+    private void saveLoadedOptions(String url) {
         List<Option> options = new ArrayList<>();
-        options.add(createOption("AAPL", 200.0, OptionType.CALL, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 190.0, OptionType.CALL, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 170.0, OptionType.CALL, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 175.0, OptionType.CALL, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 165.0, OptionType.CALL, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 200.0, OptionType.PUT, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 190.0, OptionType.PUT, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 170.0, OptionType.PUT, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 175.0, OptionType.PUT, LocalDate.of(2023, 4, 20)));
-        options.add(createOption("AAPL", 165.0, OptionType.PUT, LocalDate.of(2023, 4, 20)));
 
-        options.add(createOption("AMZN", 220.0, OptionType.CALL, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 220.0, OptionType.CALL, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 220.0, OptionType.CALL, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 180.0, OptionType.CALL, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 180.0, OptionType.CALL, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 220.0, OptionType.PUT, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 220.0, OptionType.PUT, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 220.0, OptionType.PUT, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 180.0, OptionType.PUT, LocalDate.of(2023, 4, 22)));
-        options.add(createOption("AMZN", 180.0, OptionType.PUT, LocalDate.of(2023, 4, 22)));
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .method("GET", HttpRequest.BodyPublishers.noBody())
+                .build();
 
-        options.add(createOption("TSLA", 230.0, OptionType.CALL, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 230.0, OptionType.CALL, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 150.0, OptionType.CALL, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 150.0, OptionType.CALL, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 170.0, OptionType.CALL, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 230.0, OptionType.PUT, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 230.0, OptionType.PUT, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 150.0, OptionType.PUT, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 150.0, OptionType.PUT, LocalDate.of(2023, 4, 24)));
-        options.add(createOption("TSLA", 170.0, OptionType.PUT, LocalDate.of(2023, 4, 24)));
+        Response responseOption = null;
+        try {
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            responseOption = objectMapper.readValue(response.body(), Response.class);
 
+            OptionChainDto optionChainDto = responseOption.getOptionChain();
 
+            optionChainDto.getResult().forEach(resultDto -> {
+
+                resultDto.getOptions().forEach(optionResponseDto -> {
+
+                    optionResponseDto.getCalls().forEach(optionTypeDto -> {
+
+                        Instant instant = Instant.ofEpochMilli(optionTypeDto.getExpiration());
+                        LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+
+                        Option call = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
+                                OptionType.CALL, localDate);
+                        options.add(call);
+                    });
+
+                    optionResponseDto.getPuts().forEach(optionTypeDto -> {
+                        Instant instant = Instant.ofEpochMilli(optionTypeDto.getExpiration());
+                        LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+
+                        Option put = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
+                                OptionType.PUT, localDate);
+                        options.add(put);
+                    });
+                });
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         optionRepository.saveAll(options);
     }
 

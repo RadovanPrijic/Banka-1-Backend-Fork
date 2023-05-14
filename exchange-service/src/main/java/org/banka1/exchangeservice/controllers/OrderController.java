@@ -1,6 +1,7 @@
 package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
+import org.banka1.exchangeservice.domains.dtos.option.BetDto;
 import org.banka1.exchangeservice.domains.dtos.order.OrderFilterRequest;
 import org.banka1.exchangeservice.domains.dtos.order.OrderRequest;
 import org.banka1.exchangeservice.services.OrderService;
@@ -47,5 +48,22 @@ public class  OrderController {
     public ResponseEntity<?> rejectOrder(@RequestHeader("Authorization") String token, @PathVariable Long orderId){
         orderService.rejectOrder(token, orderId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping(value = "/option/bet/{optionId}")
+    public ResponseEntity<?> placeBet(@RequestHeader("Authorization") String token, @PathVariable Long optionId, @RequestBody BetDto betDto){
+        orderService.placeBet(token, optionId, betDto);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @DeleteMapping(value = "/option/reject/{optionBetId}")
+    public ResponseEntity<?> rejectBet(@RequestHeader("Authorization") String token, @PathVariable Long optionBetId){
+        orderService.rejectBet(token, optionBetId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping(value = "/options")
+    public ResponseEntity<?> getMyBets(@RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(orderService.getMyBets(token));
     }
 }
