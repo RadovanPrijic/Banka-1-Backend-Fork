@@ -1,5 +1,6 @@
 package org.banka1.userservice.services;
 
+import com.querydsl.core.types.Predicate;
 import org.banka1.userservice.domains.dtos.user.PasswordDto;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
 import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
@@ -16,6 +17,7 @@ import org.banka1.userservice.repositories.BankAccountRepository;
 import org.banka1.userservice.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +50,7 @@ class UserServiceTest {
     private UserService userService;
     private Page<User> userPage;
 
+    private Page<User> employeesPage;
     @BeforeEach
     void setUp() {
         this.userRepository = mock(UserRepository.class);
@@ -74,7 +77,10 @@ class UserServiceTest {
     @Test
     void findAllUsersSuccessfullyAsASupervisor() {
         //given
-        when(userRepository.findAll( PageRequest.of(0, 10))).thenReturn(getUsers());
+        var filterChain = new UserFilterRequest();
+        filterChain.setPosition(Position.EMPLOYEE);
+
+        when(userRepository.findAll(filterChain.getPredicate(), PageRequest.of(0, 10))).thenReturn(getEmployees());
 
         //when
         var result = userService.superviseUsers(0, 10);
@@ -688,11 +694,20 @@ class UserServiceTest {
     }
     private Page<User> getUsers() {
         if (userPage == null) {
-            var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
-            var user2 = User.builder().id(2L).email("email2@gmail.com").firstName("Test").lastName("Test").build();
+            var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").position(Position.ADMINISTRATOR).build();
+            var user2 = User.builder().id(2L).email("email1@gmail.com").firstName("Test").lastName("Test").position(Position.EMPLOYEE).build();
             userPage = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 10), 2);
         }
         return userPage;
+    }
+
+    private Page<User> getEmployees() {
+        if (employeesPage == null) {
+            var user1 = User.builder().id(3L).email("email2@gmail.com").firstName("Test").lastName("Test").position(Position.EMPLOYEE).build();
+            var user2 = User.builder().id(4L).email("email3@gmail.com").firstName("Test").lastName("Test").position(Position.EMPLOYEE).build();
+            employeesPage = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 10), 2);
+        }
+        return employeesPage;
     }
 
 

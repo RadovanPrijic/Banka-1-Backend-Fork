@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.userservice.domains.dtos.user.*;
 import org.banka1.userservice.domains.entities.BankAccount;
+import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.ForbiddenException;
@@ -74,7 +75,11 @@ public class UserService implements UserDetailsService {
     }
 
     public Page<UserDto> superviseUsers( Integer page, Integer size) {
+        UserFilterRequest filterRequest = new UserFilterRequest();
+        filterRequest.setPosition(Position.EMPLOYEE);
+
         Page<User> users = userRepository.findAll(
+                filterRequest.getPredicate(),
                 PageRequest.of(page, size)
         );
 
