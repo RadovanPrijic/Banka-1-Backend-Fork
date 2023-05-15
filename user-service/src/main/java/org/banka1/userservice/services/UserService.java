@@ -73,6 +73,18 @@ public class UserService implements UserDetailsService {
         );
     }
 
+    public Page<UserDto> superviseUsers( Integer page, Integer size) {
+        Page<User> users = userRepository.findAll(
+                PageRequest.of(page, size)
+        );
+
+        return new PageImpl<>(
+                users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
+                PageRequest.of(page, size),
+                users.getTotalElements()
+        );
+    }
+
     public UserDto createUser(UserCreateDto userCreateDto) {
         // validate email and jmbg
         if(!emailPattern.matcher(userCreateDto.getEmail()).matches()) {
@@ -180,10 +192,39 @@ public class UserService implements UserDetailsService {
 
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto setDailyLimit(Long userId, Double limitAmount) {
+        BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
+        Double newLimit = Math.max(0, limitAmount );
+
+        if(newLimit > bankAccount.getAccountBalance()){
+            throw new BadRequestException("Limit is above current account balance");
+        }
+
+        bankAccount.setDailyLimit(newLimit);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
         BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
         Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
         bankAccount.setDailyLimit(newLimit);
+
+        bankAccountRepository.saveAndFlush(bankAccount);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto resetDailyLimit(Long userId) {
+        BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
+
+        bankAccount.setDailyLimit(100000D);
 
         bankAccountRepository.saveAndFlush(bankAccount);
 
@@ -214,7 +255,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Scheduled(cron = "0 0 8 * * *")  // every day at 8am
-    public void resetDailyLimit() {
+    public void resetDailyLimitScheduled() {
         List<BankAccount> allBankAccounts = bankAccountRepository.findAll();
         allBankAccounts.forEach(bankAccount -> bankAccount.setDailyLimit(100000D));
         bankAccountRepository.saveAll(allBankAccounts);
