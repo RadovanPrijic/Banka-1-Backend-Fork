@@ -1,6 +1,9 @@
 package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -14,9 +17,12 @@ import org.banka1.exchangeservice.domains.entities.Forex;
 import org.banka1.exchangeservice.domains.mappers.ForexMapper;
 import org.banka1.exchangeservice.repositories.CurrencyRepository;
 import org.banka1.exchangeservice.repositories.ForexRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -30,6 +36,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -41,7 +48,8 @@ public class ForexService {
 
     private final ForexRepository forexRepository;
     private final CurrencyRepository currencyRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final ObjectMapper objectMapper;
 
     @Value("${flask.api.forex.exchange}")
     private String baseForexUrl;
@@ -50,9 +58,18 @@ public class ForexService {
     @Value("${flask.api.forex.timeseries.intraday}")
     private String baseForexTimeSeriesIntraDayUrl;
 
-    public ForexService(ForexRepository forexRepository, CurrencyRepository currencyRepository) {
+    private final RabbitTemplate rabbitTemplate;
+    @Value("${rabbitmq.exchange.name}")
+    private String exchange;
+    @Value("${rabbitmq.routing.forex.key}")
+    private String routingKey;
+
+    public ForexService(ForexRepository forexRepository, CurrencyRepository currencyRepository,
+                        @Autowired RabbitTemplate rabbitTemplate, @Autowired ObjectMapper objectMapper) {
         this.forexRepository = forexRepository;
         this.currencyRepository = currencyRepository;
+        this.rabbitTemplate = rabbitTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public Page<Forex> getForexes(Integer page, Integer size, ForexFilterRequest forexFilterRequest){
@@ -100,6 +117,26 @@ public class ForexService {
         if(!updatedForexesToSave.isEmpty()) {
             forexRepository.saveAll(updatedForexesToSave);
         }
+    }
+
+    @Scheduled(cron = "0 0/1 * * * *")
+    public void refreshForexData() {
+        List<Forex> forexes = forexRepository.findAll();
+
+        forexes.forEach(forex ->{
+            String url = baseForexUrl + "?from_currency=" + forex.getFromCurrency().getCurrencyCode() + "&to_currency=" + forex.getToCurrency().getCurrencyCode();
+            try {
+                ForexResponseExchangeFlask forexResponseExchangeFlask = getForexFromFlask(url, ForexResponseExchangeFlask.class);
+                if(forexResponseExchangeFlask != null){
+                    forex.setLastRefresh(LocalDateTime.now());
+                    ForexMapper.INSTANCE.updateForexFromForexResponseExchangeFlask(forex, forexResponseExchangeFlask);
+                    forexRepository.save(forex);
+                    rabbitTemplate.convertAndSend(exchange, routingKey, forex);
+                }
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public void loadForex() throws Exception {

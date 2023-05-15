@@ -14,6 +14,8 @@ import org.banka1.exchangeservice.domains.mappers.OrderMapper;
 import org.banka1.exchangeservice.repositories.ForexRepository;
 import org.banka1.exchangeservice.repositories.OrderRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -91,7 +93,7 @@ public class OrderService {
         return order;
     }
 
-    private Double calculateThePrice(ListingType listingType, String symbol, Integer quantity){
+    public Double calculateThePrice(ListingType listingType, String symbol, Integer quantity){
         if(listingType.equals(ListingType.FOREX)){
          Forex forex = forexRepository.findBySymbol(symbol);
          return forex.getExchangeRate() * quantity;
@@ -102,11 +104,11 @@ public class OrderService {
         return 0.0;
     }
 
-    private UserDto getUserDtoFromUserService(String token){
+    public UserDto getUserDtoFromUserService(String token){
         String url = userServiceUrl + "/users/my-profile";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", token)
+                .header("Authorization", "Bearer " + token)
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -121,11 +123,11 @@ public class OrderService {
         return userDto;
     }
 
-    private void reduceDailyLimitForUser(String token,Long userId, Double decreaseLimit){
+    public void reduceDailyLimitForUser(String token,Long userId, Double decreaseLimit){
         String url = userServiceUrl + "/users/reduce-daily-limit?userId=" + userId + "&decreaseLimit=" + decreaseLimit;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", token)
+                .header("Authorization", "Bearer " + token)
                 .method("PUT", HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -151,7 +153,7 @@ public class OrderService {
                     String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
                     HttpRequest request = HttpRequest.newBuilder()
                             .uri(URI.create(url))
-                            .header("Authorization", token)
+                            .header("Authorization", "Bearer " + token)
                             .header("Content-Type", "application/json")
                             .method("POST", HttpRequest.BodyPublishers.ofString(body))
                             .build();
@@ -242,7 +244,7 @@ public class OrderService {
                 String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
-                        .header("Authorization", token)
+                        .header("Authorization", "Bearer " + token)
                         .header("Content-Type", "application/json")
                         .method("PUT", HttpRequest.BodyPublishers.ofString("")) // mozda treba mozda ne treba
                         .build();
@@ -263,10 +265,22 @@ public class OrderService {
         thread.start();
     }
 
+    @RabbitListener(queues = "${rabbitmq.queue.forex.name}")
+    public void receiveForex(Forex forex) {
+        System.err.println("FOREX: " + forex.getSymbol() + " - " + forex.getFromCurrency() + " - " + forex.getToCurrency());
+        //TODO Proveravanje ordera
+    }
+
+    @RabbitListener(queues = "${rabbitmq.queue.stock.name}")
+    public void receiveStock(Stock stock) {
+        System.err.println("STOCK: " + stock.getSymbol());
+        //TODO Proveravanje ordera
+    }
+
     public void updateBankAccountBalance(String token, String url){
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", token)
+                .header("Authorization", "Bearer " + token)
                 .header("Content-Type", "application/json")
                 .method("PUT", HttpRequest.BodyPublishers.ofString(""))
                 .build();
@@ -314,11 +328,11 @@ public class OrderService {
         return orders;
     }
 
-    private UserListingDto getUserListing(Long userId, ListingType listingType, String symbol, String token) {
+    public UserListingDto getUserListing(Long userId, ListingType listingType, String symbol, String token) {
         String url = userServiceUrl + "/user-listings?userId=" + userId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", token)
+                .header("Authorization", "Bearer " + token)
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
 

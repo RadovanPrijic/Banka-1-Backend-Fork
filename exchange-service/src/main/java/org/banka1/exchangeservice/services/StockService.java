@@ -1,6 +1,9 @@
 package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -9,14 +12,18 @@ import org.banka1.exchangeservice.domains.dtos.stock.StockDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.StockResponseDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.domains.entities.Exchange;
+import org.banka1.exchangeservice.domains.entities.Forex;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -37,15 +44,25 @@ public class StockService {
 
     private final ExchangeRepository exchangeRepository;
     private final StockRepository stockRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
     @Value("${flask.api.stock.timeseries}")
     private String baseTimeSeriesUrl;
     @Value("${flask.api.stock.timeseries.intraday}")
     private String baseTimeSeriesIntraDayUrl;
 
-    public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository) {
+    private final RabbitTemplate rabbitTemplate;
+    @Value("${rabbitmq.exchange.name}")
+    private String exchange;
+    @Value("${rabbitmq.routing.stock.key}")
+    private String routingKey;
+
+    public StockService(ExchangeRepository exchangeRepository, StockRepository stockRepository,
+                        @Autowired RabbitTemplate rabbitTemplate, @Autowired ObjectMapper objectMapper) {
         this.exchangeRepository = exchangeRepository;
         this.stockRepository = stockRepository;
+        this.rabbitTemplate = rabbitTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public void loadStocks() throws IOException, InterruptedException {
@@ -100,6 +117,25 @@ public class StockService {
         }
 
         if(!stocks.isEmpty()) stockRepository.saveAll(stocks);
+    }
+
+    @Scheduled(cron = "0 0/1 * * * *")
+    public void refreshStockData() {
+        List<Stock> stocks = stockRepository.findAll();
+
+        stocks.forEach(stock -> {
+            try {
+                StockResponseDtoFlask stockResponseDtoFlask = getStockFromFlask(stock.getSymbol(), TimeSeriesStockEnum.DAILY);
+                if(stockResponseDtoFlask != null) {
+                    stock.setLastRefresh(LocalDateTime.now());
+                    updateStockFromFlask(stock,stockResponseDtoFlask);
+                    stockRepository.save(stock);
+                    rabbitTemplate.convertAndSend(exchange, routingKey, stock);
+                }
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
