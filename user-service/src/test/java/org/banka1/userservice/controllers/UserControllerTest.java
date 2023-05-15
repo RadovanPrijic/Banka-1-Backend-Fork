@@ -2,6 +2,7 @@ package org.banka1.userservice.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.banka1.userservice.domains.dtos.user.*;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.IntegrationTest;
@@ -25,9 +26,20 @@ public class UserControllerTest extends IntegrationTest {
         filterRequest.setPosition(Position.EMPLOYEE);
 
         mockMvc.perform(post("/api/users?page=0&size=10")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(filterRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void superviseUsersTest() throws Exception {
+
+        mockMvc.perform(get("/api/users/supervise")
+                        .header("Authorization", "Bearer " + supervisorToken)
+                        .contentType("application/json"))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -50,7 +62,7 @@ public class UserControllerTest extends IntegrationTest {
         userRepository.flush();
 
         MvcResult mvcResult = mockMvc.perform(get("/api/users/" + user.getId())
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -71,7 +83,7 @@ public class UserControllerTest extends IntegrationTest {
         Long id = -1L;
 
         MvcResult mvcResult = mockMvc.perform(get("/api/users/" + id)
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andReturn();
@@ -93,7 +105,7 @@ public class UserControllerTest extends IntegrationTest {
         userCreateDto.setRoles(List.of(User.USER_MODERATOR));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -123,7 +135,7 @@ public class UserControllerTest extends IntegrationTest {
         userCreateDto.setRoles(List.of(User.USER_MODERATOR));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -147,7 +159,7 @@ public class UserControllerTest extends IntegrationTest {
         userCreateDto.setRoles(List.of(User.USER_MODERATOR));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -164,7 +176,7 @@ public class UserControllerTest extends IntegrationTest {
         UserCreateDto userCreateDto = new UserCreateDto();
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -186,7 +198,7 @@ public class UserControllerTest extends IntegrationTest {
     @Test
     public void myProfileTest() throws Exception {
         MvcResult mvcResult = mockMvc.perform(get("/api/users/my-profile")
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -211,7 +223,7 @@ public class UserControllerTest extends IntegrationTest {
         updateDto.setPhoneNumber("069*******");
 
         MvcResult mvcResult = mockMvc.perform(put("/api/users/update/" + id)
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -234,7 +246,7 @@ public class UserControllerTest extends IntegrationTest {
         updateDto.setPassword("test123");
 
         MvcResult mvcResult = mockMvc.perform(put("/api/users/update/" + id)
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -255,7 +267,7 @@ public class UserControllerTest extends IntegrationTest {
         updateDto.setPhoneNumber("069*******");
 
         MvcResult mvcResult = mockMvc.perform(put("/api/users/my-profile/update")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -267,6 +279,159 @@ public class UserControllerTest extends IntegrationTest {
         assertEquals("Novi Admin", userDto.getFirstName());
         assertEquals("Novi Admin", userDto.getLastName());
         assertEquals("069*******", userDto.getPhoneNumber());
+
+    }
+
+    @Test
+    public void resetDailyLimitSuccessfully() throws Exception {
+
+
+        User user = User.builder()
+                .firstName("User1")
+                .lastName("User1")
+                .email("myuser2@mail.com")
+                .jmbg("1111112222225")
+                .position(Position.EMPLOYEE)
+                .phoneNumber("063*******")
+                .roles(List.of(User.USER_MODERATOR))
+                .active(true)
+                .build();
+
+
+
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(200000D)
+                .dailyLimit(100000D)
+                .user(user)
+                .build();
+
+        user.setBankAccount(bankAccount);
+
+        bankAccountRepository.save(bankAccount);
+        userRepository.save(user);
+        userRepository.flush();
+        bankAccountRepository.flush();
+
+        MvcResult mvcResult = mockMvc.perform(put("/api/users/reset-daily-limit?userId=" + user.getId())
+                        .header("Authorization", "Bearer " + supervisorToken))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto userDto = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), UserDto.class);
+
+        assertEquals("User1", userDto.getFirstName());
+        assertEquals("User1", userDto.getLastName());
+        assertEquals("myuser2@mail.com", userDto.getEmail());
+        assertEquals(Position.EMPLOYEE, userDto.getPosition());
+        assertEquals("1111112222225", userDto.getJmbg());
+        assertEquals("063*******", userDto.getPhoneNumber());
+        assertTrue(userDto.getRoles().contains(User.USER_MODERATOR));
+        assertEquals(true, userDto.isActive());
+        assertEquals(100000D,userDto.getBankAccount().getDailyLimit());
+
+    }
+
+    @Test
+    public void setDailyLimitSuccessfully() throws Exception {
+
+
+        User user = User.builder()
+                .firstName("User1")
+                .lastName("User1")
+                .email("myuser2@mail.com")
+                .jmbg("1111112222225")
+                .position(Position.EMPLOYEE)
+                .phoneNumber("063*******")
+                .roles(List.of(User.USER_MODERATOR))
+                .active(true)
+                .build();
+
+
+
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(200000D)
+                .dailyLimit(100000D)
+                .user(user)
+                .build();
+
+        user.setBankAccount(bankAccount);
+
+        bankAccountRepository.save(bankAccount);
+        userRepository.save(user);
+        userRepository.flush();
+        bankAccountRepository.flush();
+
+        MvcResult mvcResult = mockMvc.perform(put("/api/users/set-daily-limit?userId=" + user.getId()+"&setLimit=50000")
+                        .header("Authorization", "Bearer " + supervisorToken))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto userDto = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), UserDto.class);
+
+        assertEquals("User1", userDto.getFirstName());
+        assertEquals("User1", userDto.getLastName());
+        assertEquals("myuser2@mail.com", userDto.getEmail());
+        assertEquals(Position.EMPLOYEE, userDto.getPosition());
+        assertEquals("1111112222225", userDto.getJmbg());
+        assertEquals("063*******", userDto.getPhoneNumber());
+        assertTrue(userDto.getRoles().contains(User.USER_MODERATOR));
+        assertEquals(true, userDto.isActive());
+        assertEquals(50000D,userDto.getBankAccount().getDailyLimit());
+
+    }
+
+    @Test
+    public void reduceDailyLimitSuccessfully() throws Exception {
+
+
+        User user = User.builder()
+                .firstName("User1")
+                .lastName("User1")
+                .email("myuser2@mail.com")
+                .jmbg("1111112222225")
+                .position(Position.EMPLOYEE)
+                .phoneNumber("063*******")
+                .roles(List.of(User.USER_MODERATOR))
+                .active(true)
+                .build();
+
+
+
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(200000D)
+                .dailyLimit(100000D)
+                .user(user)
+                .build();
+
+        user.setBankAccount(bankAccount);
+
+        bankAccountRepository.save(bankAccount);
+        userRepository.save(user);
+        userRepository.flush();
+        bankAccountRepository.flush();
+
+        MvcResult mvcResult = mockMvc.perform(put("/api/users/reduce-daily-limit?userId=" + user.getId()+"&decreaseLimit=10000")
+                        .header("Authorization", "Bearer " + supervisorToken))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto userDto = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), UserDto.class);
+
+        assertEquals("User1", userDto.getFirstName());
+        assertEquals("User1", userDto.getLastName());
+        assertEquals("myuser2@mail.com", userDto.getEmail());
+        assertEquals(Position.EMPLOYEE, userDto.getPosition());
+        assertEquals("1111112222225", userDto.getJmbg());
+        assertEquals("063*******", userDto.getPhoneNumber());
+        assertTrue(userDto.getRoles().contains(User.USER_MODERATOR));
+        assertEquals(true, userDto.isActive());
+        assertEquals(90000D,userDto.getBankAccount().getDailyLimit());
 
     }
 
