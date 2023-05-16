@@ -142,7 +142,6 @@ public class OrderService {
         }
     }
 
-//    @Async
     public void mockExecutionOfOrder(Order order, String token) {
         UserListingDto userListingDto = getUserListing(order.getUserId(), order.getListingType(), order.getListingSymbol(), token);
         if(userListingDto == null) {
@@ -248,14 +247,8 @@ public class OrderService {
             throw new RuntimeException(e);
         }
 
-                order.setLastModified(new Date());
-                orderRepository.save(order);
-            }
-
-        };
-
-        Thread thread = new Thread(runnable);
-        thread.start();
+        order.setLastModified(new Date());
+        orderRepository.save(order);
     }
 
     @RabbitListener(queues = "${rabbitmq.queue.forex.name}")
@@ -265,8 +258,15 @@ public class OrderService {
 
     @RabbitListener(queues = "${rabbitmq.queue.stock.name}")
     public void receiveStock(Stock stock) {
-        System.err.println("STOCK: " + stock.getSymbol());
-        //TODO Proveravanje ordera
+        receive(ListingType.STOCK, stock.getSymbol());
+    }
+
+    private void receive(ListingType listingType, String symbol){
+        List<Order> notDoneOrders = orderRepository
+                .findAllByListingTypeAndListingSymbolAndDone(listingType, symbol, false);
+        String token = "Bearer " + jwtUtil.generateToken();
+
+        notDoneOrders.forEach(order -> mockExecutionOfOrder(order, token));
     }
 
     public void updateBankAccountBalance(String token, String url){
