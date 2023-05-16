@@ -1,7 +1,7 @@
 import e, {json, NextFunction, Request, Response} from "express";
 import {ErrorMessages} from "../model/errors/error-messages";
 import jwt from 'jsonwebtoken'
-import {UserRoles} from "../model/user-roles";
+import {UserRoles} from "../model/users/user-roles";
 
 
 const secretKey = "SECRET_KEY";

@@ -1,7 +1,7 @@
 import express, {json, NextFunction, Request, Response} from 'express';
 import {connect} from "./mongo-db";
 import contractsRoute from './routes/contract.route';
-import {authToken} from "./middleware/auth.middleware";
+import finalisedContractRoute from "./routes/finalised-contract.route";
 
 
 const app = express();
@@ -13,8 +13,8 @@ connect()
     .catch(() => console.log('Connection to MongoDB failed.'));
 
 app.use(express.json());
-//app.use(authToken);
 app.use('/api/contracts', contractsRoute);
+app.use('/api/contracts/finalised', finalisedContractRoute);
 
 app.listen(port, () => {
     console.log('Contracts service is running.');

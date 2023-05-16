@@ -6,7 +6,11 @@ export class ErrorMessages{
 
     public static contractsDeleteError: string = "Greška prilikom brisanja ugovora.";
 
+    public static contractsUpdateError: string = "Greška prilikom izmene ugovora.";
+
     public static contractsFinalisedDeleteError: string = "Finalizovan ugovor ne može da se briše.";
+
+    public static contractsFinalisedUpdateError: string = "Finalizovan ugovor ne može da se menja.";
 
     public static userNotLoggedInError: string = "Korinsik nije ulogovan.";
 

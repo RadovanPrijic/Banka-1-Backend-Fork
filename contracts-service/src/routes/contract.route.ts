@@ -1,9 +1,9 @@
 import express from 'express';
-import Contract, { ContractStatus } from "../model/contract.model";
+import Contract, { ContractStatus } from "../model/contracts/contract.model";
 import {ErrorMessages} from "../model/errors/error-messages";
 import {authToken, hasRole} from "../middleware/auth.middleware";
-import {UserRoles} from "../model/user-roles";
-import {getUserId} from "../utils/jwt-util";
+import {UserRoles} from "../model/users/user-roles";
+import {getUserId, isAgent} from "../utils/jwt-util";
 
 const router = express.Router();
 
@@ -55,6 +55,7 @@ router.post('/', authToken, async (req, res) => {
             status: ContractStatus.DRAFT,
             referenceNumber: req.body.referenceNumber,
             description: req.body.description,
+            transactions: req.body.transactions
         });
 
         const savedContract = await newContract.save();
@@ -65,8 +66,38 @@ router.post('/', authToken, async (req, res) => {
     }
 });
 
-router.post('/finalise/:contractId', authToken, async (req, res) => {
-    //TODO upload PDF
+router.put('/:contractId', authToken, async (req, res) => {
+    try {
+        let contractId = req.params['contractId'];
+        const contract = await Contract.findById(contractId);
+        if(contract){
+            if(isAgent(req)){
+                let agentId = getUserId(req);
+                if(contract['agentId'] != agentId){
+                    res.status(403).send(ErrorMessages.unauthorizedAccessError);
+                }
+            }
+
+            if(contract['status'] == ContractStatus.FINAL){
+                res.status(403).send(ErrorMessages.contractsFinalisedUpdateError);
+            }
+            else {
+                let update = {
+                    companyId: req.body.companyId,
+                    referenceNumber: req.body.referenceNumber,
+                    description: req.body.description,
+                    transactions: req.body.transactions,
+                    modifiedDateTime: Date.now(),
+                }
+
+                await Contract.findByIdAndUpdate(contractId, update, { status: ContractStatus.DRAFT })
+                res.status(200).send();
+            }
+        }
+    } catch (error) {
+        console.error(ErrorMessages.contractsUpdateError, error);
+        res.status(500).send(ErrorMessages.contractsUpdateError);
+    }
 });
 
 router.delete('/:contractId', authToken, async (req, res) => {
