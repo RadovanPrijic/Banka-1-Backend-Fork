@@ -75,11 +75,13 @@ router.put('/:contractId', authToken, async (req, res) => {
                 let agentId = getUserId(req);
                 if(contract['agentId'] != agentId){
                     res.status(403).send(ErrorMessages.unauthorizedAccessError);
+                    return;
                 }
             }
 
             if(contract['status'] == ContractStatus.FINAL){
                 res.status(403).send(ErrorMessages.contractsFinalisedUpdateError);
+                return;
             }
             else {
                 let update = {
@@ -108,6 +110,7 @@ router.delete('/:contractId', authToken, async (req, res) => {
         if(contract){
             if(contract['status'] == ContractStatus.FINAL){
                 res.status(403).send(ErrorMessages.contractsFinalisedDeleteError);
+                return;
             }
             else {
                 await Contract.deleteOne({ _id: contractId });
