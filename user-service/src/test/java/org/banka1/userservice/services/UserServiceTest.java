@@ -1,19 +1,23 @@
 package org.banka1.userservice.services;
 
+import com.querydsl.core.types.Predicate;
 import org.banka1.userservice.domains.dtos.user.PasswordDto;
 import org.banka1.userservice.domains.dtos.user.UserCreateDto;
 import org.banka1.userservice.domains.dtos.user.UserFilterRequest;
 import org.banka1.userservice.domains.dtos.user.UserUpdateDto;
 import org.banka1.userservice.domains.dtos.user.UserUpdateMyProfileDto;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
+import org.banka1.userservice.domains.exceptions.ForbiddenException;
 import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.userservice.domains.exceptions.ValidationException;
 import org.banka1.userservice.repositories.BankAccountRepository;
 import org.banka1.userservice.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,6 +50,7 @@ class UserServiceTest {
     private UserService userService;
     private Page<User> userPage;
 
+    private Page<User> employeesPage;
     @BeforeEach
     void setUp() {
         this.userRepository = mock(UserRepository.class);
@@ -63,6 +69,21 @@ class UserServiceTest {
 
         //when
         var result = userService.getUsers(filterChain, 0, 10);
+
+        //then
+        assertEquals(2, result.getContent().size());
+    }
+
+    @Test
+    void findAllUsersSuccessfullyAsASupervisor() {
+        //given
+        var filterChain = new UserFilterRequest();
+        filterChain.setPosition(Position.EMPLOYEE);
+
+        when(userRepository.findAll(filterChain.getPredicate(), PageRequest.of(0, 10))).thenReturn(getEmployees());
+
+        //when
+        var result = userService.superviseUsers(0, 10);
 
         //then
         assertEquals(2, result.getContent().size());
@@ -169,6 +190,231 @@ class UserServiceTest {
     }
 
     @Test
+    void setDailyLimitSuccessfully() {
+        //given
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+        bankAcc.setUser(user1);
+
+        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.setDailyLimit(1L,150000D);
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+        assertEquals(150000D, result.getBankAccount().getDailyLimit());
+
+
+        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
+        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
+        verify(userRepository, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(bankAccountRepository);
+        verifyNoMoreInteractions(userRepository);
+
+    }
+
+    @Test
+    void setDailyLimitBadRequestException() {
+        //given
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+        bankAcc.setUser(user1);
+
+        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+
+        //when
+
+
+        //then
+        assertThrows(BadRequestException.class, () -> userService.setDailyLimit(1L,500000D));
+
+
+        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
+        verifyNoMoreInteractions(bankAccountRepository);
+    }
+    @Test
+    void reduceDailyLimitSuccessfully() {
+        //given
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+        bankAcc.setUser(user1);
+
+        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.reduceDailyLimit(1L,50000D);
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+        assertEquals(50000D, result.getBankAccount().getDailyLimit());
+
+
+        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
+        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
+        verify(userRepository, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(bankAccountRepository);
+        verifyNoMoreInteractions(userRepository);
+
+    }
+
+    @Test
+    void resetDailyLimitSuccessfully() {
+        //given
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(50000D).build();
+
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+        bankAcc.setUser(user1);
+
+        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.resetDailyLimit(1L);
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+        assertEquals(100000D, result.getBankAccount().getDailyLimit());
+
+
+        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
+        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
+        verify(userRepository, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(bankAccountRepository);
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void increaseBankAccountBalanceSuccessfully() {
+        //given
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+
+        bankAcc.setUser(user1);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        when(bankAccountRepository.findByUser_Email(anyString())).thenReturn(bankAcc);
+        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.increaseBankAccountBalance(50000D);
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+        assertEquals(100000D, result.getBankAccount().getDailyLimit());
+        assertEquals(350000D, result.getBankAccount().getAccountBalance());
+
+
+
+        verify(bankAccountRepository, times(1)).findByUser_Email(anyString());
+        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(bankAccountRepository);
+        verifyNoMoreInteractions(userRepository);
+
+    }
+
+    @Test
+    void decreaseBankAccountBalanceSuccessfully() {
+        //given
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+
+        bankAcc.setUser(user1);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        when(bankAccountRepository.findByUser_Email(anyString())).thenReturn(bankAcc);
+        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
+
+        //when
+        var result = userService.decreaseBankAccountBalance(50000D);
+
+        //then
+        assertEquals(1, result.getId());
+        assertEquals("email@gmail.com", result.getEmail());
+        assertEquals("Test", result.getFirstName());
+        assertEquals("Test", result.getLastName());
+        assertEquals(100000D, result.getBankAccount().getDailyLimit());
+        assertEquals(250000D, result.getBankAccount().getAccountBalance());
+
+
+
+        verify(bankAccountRepository, times(1)).findByUser_Email(anyString());
+        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(bankAccountRepository);
+        verifyNoMoreInteractions(userRepository);
+
+    }
+
+    @Test
+    void resetDailyLimitScheduledSuccessfully() {
+        //given
+
+        List<BankAccount> list = getAllBankAccountsForSheduledReset();
+        when(bankAccountRepository.findAll()).thenReturn(list);
+        when(bankAccountRepository.saveAll(list)).thenReturn(list);
+
+        //when
+        userService.resetDailyLimitScheduled();
+        //then
+        assertEquals(100000D, list.get(0).getDailyLimit());
+        assertEquals(100000D, list.get(1).getDailyLimit());
+        assertEquals(100000D, list.get(2).getDailyLimit());
+
+
+        verify(bankAccountRepository, times(1)).findAll();
+        verify(bankAccountRepository, times(1)).saveAll(anyList());
+        verifyNoMoreInteractions(bankAccountRepository);
+
+    }
+
+
+    @Test
     void loadUserByUsernameSuccessfully() {
         //given
         String password = passwordEncoder.encode("admin1234");
@@ -185,6 +431,23 @@ class UserServiceTest {
         assertEquals(password, result.getPassword());
         assertTrue(result.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ADMINISTRATOR")));
 
+
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void loadUserByUsernameForbiddenException() {
+        //given
+        String password = passwordEncoder.encode("admin1234");
+        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").active(false)
+                .roles(List.of("ADMINISTRATOR")).password(password).build();
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
+
+        //when
+
+        //then
+        assertThrows(ForbiddenException.class, () -> userService.loadUserByUsername("email@gmail.com"));
 
         verify(userRepository, times(1)).findByEmail(anyString());
         verifyNoMoreInteractions(userRepository);
@@ -406,13 +669,45 @@ class UserServiceTest {
         verifyNoMoreInteractions(userRepository);
     }
 
+    List<BankAccount> getAllBankAccountsForSheduledReset(){
+
+        String password = passwordEncoder.encode("admin1234");
+
+        var user1 = User.builder().id(1L).email("email1@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).build();
+        var user2 = User.builder().id(1L).email("email2@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("USER_AGENT")).password(password).build();
+        var user3 = User.builder().id(1L).email("email3@gmail.com").firstName("Test").lastName("Test").
+                active(true).roles(List.of("USER_AGENT")).password(password).build();
+
+        var bankAcc1 = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(50000D).user(user1).build();
+        var bankAcc2 = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(20000D).user(user2).build();
+        var bankAcc3 = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(250000D).user(user3).build();
+
+
+        bankAcc1.setUser(user1);
+        bankAcc2.setUser(user2);
+        bankAcc3.setUser(user3);
+
+        return List.of(bankAcc1,bankAcc2,bankAcc3);
+
+    }
     private Page<User> getUsers() {
         if (userPage == null) {
-            var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
-            var user2 = User.builder().id(2L).email("email2@gmail.com").firstName("Test").lastName("Test").build();
+            var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").position(Position.ADMINISTRATOR).build();
+            var user2 = User.builder().id(2L).email("email1@gmail.com").firstName("Test").lastName("Test").position(Position.EMPLOYEE).build();
             userPage = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 10), 2);
         }
         return userPage;
+    }
+
+    private Page<User> getEmployees() {
+        if (employeesPage == null) {
+            var user1 = User.builder().id(3L).email("email2@gmail.com").firstName("Test").lastName("Test").position(Position.EMPLOYEE).build();
+            var user2 = User.builder().id(4L).email("email3@gmail.com").firstName("Test").lastName("Test").position(Position.EMPLOYEE).build();
+            employeesPage = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 10), 2);
+        }
+        return employeesPage;
     }
 
 

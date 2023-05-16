@@ -43,6 +43,18 @@ public class BootstrapData implements CommandLineRunner {
                 .active(true)
                 .build();
 
+        User supervisor = User.builder()
+                .firstName("Supervisor")
+                .lastName("Supervisor")
+                .email("supervisor@supervisor.com")
+                .position(Position.ADMINISTRATOR)
+                .jmbg("1111111112")
+                .phoneNumber("063111111112")
+                .password(passwordEncoder.encode("super1234"))
+                .roles(List.of("ROLE_SUPERVISOR"))
+                .active(true)
+                .build();
+
         User user1 = User.builder()
                 .firstName("User1")
                 .lastName("User1")
@@ -82,6 +94,7 @@ public class BootstrapData implements CommandLineRunner {
         bankAccount.setUser(admin);
 
         userRepository.save(admin);
+        userRepository.save(supervisor);
         userRepository.save(user1);
         userRepository.save(user2);
         userRepository.save(user3);
