@@ -2,6 +2,12 @@ version: '3'
  
 services:
 
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - "5672:5672"
+    profiles: ["all", "exchange"]
+
   mysql-db:
     image: mysql
     ports:
@@ -45,9 +51,11 @@ services:
     links:
       - mysql-db
       - flask-api-service
+      - rabbitmq
     depends_on:
       - mysql-db
       - flask-api-service
+      - rabbitmq
     restart: on-failure
     profiles: [ "all" ]
 
