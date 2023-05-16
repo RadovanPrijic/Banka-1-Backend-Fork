@@ -1,6 +1,8 @@
 import mongoose, { ConnectOptions } from 'mongoose';
 
-const databaseUrl = 'mongodb://banka1_mongodb:banka1_mongodb@localhost:27017';
+//first is for local, second is docker compose
+//const databaseUrl = 'mongodb://banka1_mongodb:banka1_mongodb@localhost:27017';
+const databaseUrl = 'mongodb://banka1_mongodb:banka1_mongodb@mongo-db:27017';
 const databaseName = 'mongo-db';
 
 
