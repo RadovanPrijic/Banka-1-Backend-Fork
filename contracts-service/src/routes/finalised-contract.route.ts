@@ -21,7 +21,7 @@ const upload = multer({
     }
 });
 
-
+//download contract
 router.get('/:contractId', authToken, async (req, res) => {
     try {
         let contractId = req.params['contractId'];
