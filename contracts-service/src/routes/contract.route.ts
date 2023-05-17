@@ -103,6 +103,10 @@ router.put('/:contractId', authToken, async (req, res) => {
 });
 
 router.delete('/:contractId', authToken, async (req, res) => {
+    if(!hasRole(UserRoles.ROLE_SUPERVISOR, req)){
+        res.status(403).send(ErrorMessages.unauthorizedAccessError);
+    }
+
     try {
         let contractId = req.params['contractId'];
 
