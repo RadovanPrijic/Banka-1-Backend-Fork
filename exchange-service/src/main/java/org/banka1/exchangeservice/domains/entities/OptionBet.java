@@ -31,4 +31,5 @@ public class OptionBet {
     private LocalDate date;
     private Double bettingPrice;
     private Long optionId;
+    private String email;
 }

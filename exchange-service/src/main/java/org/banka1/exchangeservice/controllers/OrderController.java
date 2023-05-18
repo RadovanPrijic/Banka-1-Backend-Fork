@@ -62,8 +62,13 @@ public class  OrderController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @GetMapping(value = "/options")
+    @GetMapping(value = "/options/myBets")
     public ResponseEntity<?> getMyBets(@RequestHeader("Authorization") String token){
         return ResponseEntity.ok(orderService.getMyBets(token));
+    }
+
+    @GetMapping(value = "/options")
+    public ResponseEntity<?> getAllOptions(@RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(orderService.getAllOptions());
     }
 }

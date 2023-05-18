@@ -1,8 +1,11 @@
 package org.banka1.exchangeservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.banka1.exchangeservice.domains.dtos.option.BetDto;
+import org.banka1.exchangeservice.domains.dtos.option.OptionDto;
 import org.banka1.exchangeservice.domains.dtos.order.OrderFilterRequest;
 import org.banka1.exchangeservice.domains.dtos.order.OrderRequest;
 import org.banka1.exchangeservice.domains.dtos.user.Position;
@@ -47,6 +50,9 @@ public class OrderService {
 
     @Value("${user.service.endpoint}")
     private String userServiceUrl;
+
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
 
     public OrderService(OrderRepository orderRepository, ForexRepository forexRepository,
@@ -371,7 +377,7 @@ public class OrderService {
         else month = String.valueOf(mm);
 
         String code = year + month + day + type + option.getStrike();
-        OptionBet optionBet = new OptionBet(null, userDto.getId(), code , bet.getDate(), bet.getBet(), optionId);
+        OptionBet optionBet = new OptionBet(null, userDto.getId(), code , bet.getDate(), bet.getBet(), optionId, userDto.getEmail());
         optionBetRepository.save(optionBet);
     }
 
@@ -397,16 +403,39 @@ public class OrderService {
         return result;
     }
 
+    public List<Option> getAllOptions() {
+       return optionRepository.findAll();
+    }
+
     @Scheduled(cron = "0 0 * * *")
     private void checkBets() {
         List<OptionBet> optionBets = optionBetRepository.findAll().stream().filter(optionBet -> optionBet.getDate().equals(LocalDate.now())).toList();
         optionBets.forEach(optionBet -> {
             Option option = optionRepository.findById(optionBet.getOptionId()).orElseThrow(() -> new NotFoundExceptions("Option not found"));
+            String token = generateToken(optionBet.getUserId(), optionBet.getEmail());
             if (option.getOptionType().equals(OptionType.CALL)) {
+                String urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + option.getPrice();
+                updateBankAccountBalance(token, urlBankAccount);
                 // skini pare sa racuna
             } else {
+                String urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + option.getPrice();
+                updateBankAccountBalance(token, urlBankAccount);
                 //uplati pare
             }
         });
+    }
+
+    private String generateToken(Long userId, String email){
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("roles", "ROLE_ADMIN");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
     }
 }
