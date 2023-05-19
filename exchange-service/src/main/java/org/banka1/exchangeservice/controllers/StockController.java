@@ -1,10 +1,12 @@
 package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
+import org.banka1.exchangeservice.domains.dtos.order.OrderFilterRequest;
 import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.services.StockService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class StockController {
 
     private final StockService stockService;
-
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllStocks(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size,
@@ -30,5 +31,15 @@ public class StockController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getStock(@PathVariable Long id){
         return ResponseEntity.ok(stockService.getStockById(id));
+    }
+
+    @GetMapping(value = "/symbols")
+    public ResponseEntity<?> getStockSymbols() {
+        return ResponseEntity.ok(stockService.getStockSymbols());
+    }
+
+    @GetMapping("/symbols/{symbol}")
+    public ResponseEntity<?> getStockBySymbol(@PathVariable String symbol){
+        return ResponseEntity.ok(stockService.getStockBySymbol(symbol));
     }
 }
