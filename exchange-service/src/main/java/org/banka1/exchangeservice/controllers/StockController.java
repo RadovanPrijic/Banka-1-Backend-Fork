@@ -1,12 +1,10 @@
 package org.banka1.exchangeservice.controllers;
 
 import lombok.AllArgsConstructor;
-import org.banka1.exchangeservice.domains.dtos.order.OrderFilterRequest;
 import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.services.StockService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin
