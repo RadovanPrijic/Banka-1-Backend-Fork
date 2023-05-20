@@ -414,7 +414,7 @@ public class OrderService {
        return optionRepository.findAll();
     }
 
-    @Scheduled(cron = "0 0 * * *")
+    @Scheduled(cron = "*/10 * * * * *")
     private void checkBets() {
         List<OptionBet> optionBets = optionBetRepository.findAll().stream().filter(optionBet -> optionBet.getDate().equals(LocalDate.now())).toList();
         optionBets.forEach(optionBet -> {
