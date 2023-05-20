@@ -8,9 +8,7 @@ import org.banka1.exchangeservice.domains.dtos.user.UserDto;
 
 import org.banka1.exchangeservice.domains.entities.*;
 import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
-import org.banka1.exchangeservice.repositories.ForexRepository;
-import org.banka1.exchangeservice.repositories.OrderRepository;
-import org.banka1.exchangeservice.repositories.StockRepository;
+import org.banka1.exchangeservice.repositories.*;
 import org.banka1.exchangeservice.services.ForexService;
 import org.banka1.exchangeservice.services.OrderService;
 import org.banka1.exchangeservice.services.StockService;
@@ -26,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class OrderServiceTest extends IntegrationTest{
+public class OrderServiceTest extends IntegrationTest {
 
     private OrderRepository orderRepository;
     private ForexRepository forexRepository;
@@ -38,14 +36,22 @@ public class OrderServiceTest extends IntegrationTest{
     @Value("${user.service.endpoint}")
     private String userServiceUrl;
 
+//    OrderRepository orderRepository, ForexRepository forexRepository,
+//    StockRepository stockRepository, OptionBetRepository optionBetRepository, OptionRepository optionRepository, ForexService forexService,
+//    StockService stockService, JwtUtil jwtUtil
+
     @BeforeEach
     void setUp() {
+        OptionBetRepository optionBetRepository = mock(OptionBetRepository.class);
+        OptionRepository optionRepository = mock(OptionRepository.class);
+
         this.orderRepository = mock(OrderRepository.class);
         this.forexRepository = mock(ForexRepository.class);
         this.stockRepository = mock(StockRepository.class);
         this.forexService = mock(ForexService.class);
         this.stockService = mock(StockService.class);
-        this.orderService = new OrderService(orderRepository, forexRepository, stockRepository, forexService, stockService, new JwtUtil());
+        this.orderService = new OrderService(orderRepository, forexRepository, stockRepository,
+                optionBetRepository, optionRepository, forexService, stockService, new JwtUtil());
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.banka1.exchangeservice.repositories.OptionBetRepository;
 import org.banka1.exchangeservice.repositories.OptionRepository;
 import org.banka1.exchangeservice.repositories.OrderRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.banka1.exchangeservice.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
@@ -44,8 +45,8 @@ public class OrderServiceTest {
         this.forexRepository = mock(ForexRepository.class);
         this.forexService = mock(ForexService.class);
         this.stockService = mock(StockService.class);
-        this.orderService = new  OrderService(orderRepository, forexRepository, stockRepository,
-                optionBetRepository, optionRepository, forexService, stockService);
+        this.orderService = new OrderService(orderRepository, forexRepository, stockRepository, optionBetRepository,
+                optionRepository, forexService, stockService, new JwtUtil());
     }
 
    @Test

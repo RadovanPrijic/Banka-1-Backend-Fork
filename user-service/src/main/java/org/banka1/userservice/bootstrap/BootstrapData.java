@@ -100,6 +100,7 @@ public class BootstrapData implements CommandLineRunner {
                 .dailyLimit(100000D)
                 .build();
 
+        bankAccountRepository.save(bankAccount);
 
         userRepository.save(admin);
         userRepository.save(supervisor);
@@ -107,7 +108,6 @@ public class BootstrapData implements CommandLineRunner {
         userRepository.save(user2);
         userRepository.save(user3);
 
-        bankAccountRepository.save(bankAccount);
 
         System.out.println("Data loaded");
     }
