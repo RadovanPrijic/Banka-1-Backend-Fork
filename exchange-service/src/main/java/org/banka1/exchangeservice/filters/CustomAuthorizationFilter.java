@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static java.util.Arrays.stream;
@@ -38,7 +39,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 try {
                     String token = authorizationHeader.substring("Bearer ".length());
 
-                    Claims claims = Jwts.parser().setSigningKey(jwtSecretKey).parseClaimsJws(token).getBody();
+                    Claims claims = Jwts.parser().setSigningKey(jwtSecretKey.getBytes(StandardCharsets.UTF_8)).parseClaimsJws(token).getBody();
                     String email = claims.getSubject();
                     Long userId = claims.get("userId", Long.class);
                     List<String> roles = claims.get("roles", ArrayList.class);

@@ -39,11 +39,9 @@ public class JwtFilter extends OncePerRequestFilter {
 //            jwtToken = request.getParameter("jwt");
 //            email = jwtUtil.extractEmail(jwtToken);
 //        }
-
         if (email != null) {
             //load user by email
             UserDetails userDetails = this.userService.loadUserByUsername(email);
-
             if (jwtUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

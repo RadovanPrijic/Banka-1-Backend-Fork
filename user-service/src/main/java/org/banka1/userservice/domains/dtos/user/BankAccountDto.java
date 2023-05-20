@@ -12,6 +12,5 @@ public class BankAccountDto {
     private Long id;
     private String currencyCode;
     private Double accountBalance;
-    private Double dailyLimit;
 
 }

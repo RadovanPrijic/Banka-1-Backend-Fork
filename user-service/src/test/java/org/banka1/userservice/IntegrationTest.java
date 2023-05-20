@@ -2,8 +2,10 @@ package org.banka1.userservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
+import org.banka1.userservice.repositories.BankAccountRepository;
 import org.banka1.userservice.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +41,15 @@ public abstract class IntegrationTest {
     @Autowired
     protected UserRepository userRepository;
     @Autowired
+    protected BankAccountRepository bankAccountRepository;
+    @Autowired
     protected PasswordEncoder passwordEncoder;
 
     @Autowired
     protected ObjectMapper objectMapper;
 
-    protected String token;
+    protected String adminToken;
+    protected String supervisorToken;
     private boolean isInitialized;
 
     @BeforeEach
@@ -60,6 +65,11 @@ public abstract class IntegrationTest {
         List<String> roles = new ArrayList<>();
         roles.add(User.USER_ADMIN);
 
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(300000D)
+                .build();
+
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
@@ -69,10 +79,32 @@ public abstract class IntegrationTest {
                 .password(passwordEncoder.encode("test1234"))
                 .roles(roles)
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
         userRepository.save(admin);
+
+        List<String> roles1 = new ArrayList<>();
+        roles1.add(User.USER_SUPERVISOR);
+
+        User supervisor = User.builder()
+                .firstName("supervisor")
+                .lastName("supervisor")
+                .email("supervisor@supervisor.com")
+                .position(Position.ADMINISTRATOR)
+                .phoneNumber("111222334")
+                .password(passwordEncoder.encode("test12345"))
+                .roles(roles1)
+                .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
+                .build();
+
+        bankAccountRepository.save(bankAccount);
+        userRepository.save(supervisor);
         userRepository.flush();
+
     }
 
     public void initToken() {
@@ -87,7 +119,19 @@ public abstract class IntegrationTest {
                     .andExpect(status().isOk())
                     .andReturn();
 
-            token = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.jwtToken");
+            adminToken = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.jwtToken");
+
+            MvcResult mvcResult1 = mockMvc.perform(post("/api/users/login")
+                            .contentType("application/json")
+                            .content("""
+                                    {
+                                        "email": "supervisor@supervisor.com",
+                                        "password": "test12345"
+                                    }"""))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            supervisorToken = JsonPath.read(mvcResult1.getResponse().getContentAsString(), "$.jwtToken");
         } catch (Exception e) {
             throw new RuntimeException();
         }

@@ -5,6 +5,7 @@ import org.banka1.exchangeservice.domains.dtos.option.OptionFilterRequest;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.repositories.StockRepository;
 import org.banka1.exchangeservice.services.OptionService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class OptionControllerTest extends IntegrationTest {
     public void setUp() {
         initStocks();
         optionService.loadOptions();
+    }
+
+    @AfterEach()
+    public void removeContent() {
+        stockRepository.deleteAll();
     }
 
     @Test

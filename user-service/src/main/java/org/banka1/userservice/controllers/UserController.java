@@ -43,6 +43,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUsers(filterRequest, page, size));
     }
 
+
+    @PreAuthorize("hasRole('ROLE_SUPERVISOR')")
+    @GetMapping(value = "/supervise")
+    public ResponseEntity<?> superviseUsers(@RequestParam(defaultValue = "0") Integer page,
+                                            @RequestParam(defaultValue = "10") Integer size) {
+        return ResponseEntity.ok(userService.superviseUsers(page, size));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
@@ -80,6 +88,16 @@ public class UserController {
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
         userService.forgotPassword(email);
         return ResponseEntity.ok().build();
+    }
+    @PreAuthorize("hasRole('ROLE_SUPERVISOR')")
+    @PutMapping("/reset-daily-limit")
+    public ResponseEntity<?> resetDailyLimit(@RequestParam Long userId) {
+        return ResponseEntity.ok(userService.resetDailyLimit(userId));
+    }
+    @PreAuthorize("hasRole('ROLE_SUPERVISOR')")
+    @PutMapping("/set-daily-limit")
+    public ResponseEntity<?> setDailyLimit(@RequestParam Long userId, @RequestParam Double setLimit) {
+        return ResponseEntity.ok(userService.setDailyLimit(userId, setLimit));
     }
 
     @PutMapping("/reduce-daily-limit")

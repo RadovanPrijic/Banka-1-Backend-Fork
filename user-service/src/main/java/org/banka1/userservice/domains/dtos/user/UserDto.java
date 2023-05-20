@@ -20,6 +20,7 @@ public class UserDto {
     private Position position;
     private String phoneNumber;
     private boolean active;
+    private Double dailyLimit;
 
     private BankAccountDto bankAccount;
 

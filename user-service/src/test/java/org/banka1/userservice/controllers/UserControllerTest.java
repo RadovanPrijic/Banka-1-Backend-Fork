@@ -2,6 +2,7 @@ package org.banka1.userservice.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.banka1.userservice.domains.dtos.user.*;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.IntegrationTest;
@@ -25,9 +26,20 @@ public class UserControllerTest extends IntegrationTest {
         filterRequest.setPosition(Position.EMPLOYEE);
 
         mockMvc.perform(post("/api/users?page=0&size=10")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(filterRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void superviseUsersTest() throws Exception {
+
+        mockMvc.perform(get("/api/users/supervise")
+                        .header("Authorization", "Bearer " + supervisorToken)
+                        .contentType("application/json"))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -50,7 +62,7 @@ public class UserControllerTest extends IntegrationTest {
         userRepository.flush();
 
         MvcResult mvcResult = mockMvc.perform(get("/api/users/" + user.getId())
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -71,7 +83,7 @@ public class UserControllerTest extends IntegrationTest {
         Long id = -1L;
 
         MvcResult mvcResult = mockMvc.perform(get("/api/users/" + id)
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound())
                 .andReturn();
@@ -93,7 +105,7 @@ public class UserControllerTest extends IntegrationTest {
         userCreateDto.setRoles(List.of(User.USER_MODERATOR));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -123,7 +135,7 @@ public class UserControllerTest extends IntegrationTest {
         userCreateDto.setRoles(List.of(User.USER_MODERATOR));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -147,7 +159,7 @@ public class UserControllerTest extends IntegrationTest {
         userCreateDto.setRoles(List.of(User.USER_MODERATOR));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -164,7 +176,7 @@ public class UserControllerTest extends IntegrationTest {
         UserCreateDto userCreateDto = new UserCreateDto();
 
         MvcResult mvcResult = mockMvc.perform(post("/api/users/create")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(userCreateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -186,7 +198,7 @@ public class UserControllerTest extends IntegrationTest {
     @Test
     public void myProfileTest() throws Exception {
         MvcResult mvcResult = mockMvc.perform(get("/api/users/my-profile")
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + adminToken))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -211,7 +223,7 @@ public class UserControllerTest extends IntegrationTest {
         updateDto.setPhoneNumber("069*******");
 
         MvcResult mvcResult = mockMvc.perform(put("/api/users/update/" + id)
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -234,7 +246,7 @@ public class UserControllerTest extends IntegrationTest {
         updateDto.setPassword("test123");
 
         MvcResult mvcResult = mockMvc.perform(put("/api/users/update/" + id)
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(MockMvcResultHandlers.print())
@@ -255,7 +267,7 @@ public class UserControllerTest extends IntegrationTest {
         updateDto.setPhoneNumber("069*******");
 
         MvcResult mvcResult = mockMvc.perform(put("/api/users/my-profile/update")
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", "Bearer " + adminToken)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(MockMvcResultHandlers.print())

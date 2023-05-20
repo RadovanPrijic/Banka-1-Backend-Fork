@@ -21,9 +21,4 @@ public class BankAccount {
 
     private String currencyCode;
     private Double accountBalance;
-    private Double dailyLimit;
-
-    @OneToOne
-    private User user;
-
 }

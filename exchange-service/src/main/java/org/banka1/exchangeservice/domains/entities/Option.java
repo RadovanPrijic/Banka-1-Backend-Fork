@@ -22,6 +22,7 @@ public class Option {
 
     private String symbol;
     private Double strike;
+    @Enumerated(EnumType.STRING)
     private OptionType optionType;
     private LocalDate expirationDate;
     

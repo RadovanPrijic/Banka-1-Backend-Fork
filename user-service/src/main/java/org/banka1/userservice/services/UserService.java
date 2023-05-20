@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.userservice.domains.dtos.user.*;
 import org.banka1.userservice.domains.entities.BankAccount;
+import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.domains.exceptions.BadRequestException;
 import org.banka1.userservice.domains.exceptions.ForbiddenException;
@@ -73,6 +74,22 @@ public class UserService implements UserDetailsService {
         );
     }
 
+    public Page<UserDto> superviseUsers(Integer page, Integer size) {
+        UserFilterRequest filterRequest = new UserFilterRequest();
+        filterRequest.setPosition(Position.EMPLOYEE);
+
+        Page<User> users = userRepository.findAll(
+                filterRequest.getPredicate(),
+                PageRequest.of(page, size)
+        );
+
+        return new PageImpl<>(
+                users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
+                PageRequest.of(page, size),
+                users.getTotalElements()
+        );
+    }
+
     public UserDto createUser(UserCreateDto userCreateDto) {
         // validate email and jmbg
         if(!emailPattern.matcher(userCreateDto.getEmail()).matches()) {
@@ -83,21 +100,16 @@ public class UserService implements UserDetailsService {
         }
 
         User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
+        BankAccount bankAccount = bankAccountRepository.findAll().get(0);
+
         String secretKey = RandomStringUtils.randomNumeric(6);
 
         user.setActive(true);
         user.setSecretKey(secretKey);
+        user.setDailyLimit(100000D);
+        user.setBankAccount(bankAccount);
 
         userRepository.saveAndFlush(user);
-
-        BankAccount bankAccount = BankAccount.builder()
-                .currencyCode("USD")
-                .accountBalance(200000D)
-                .dailyLimit(100000D)
-                .user(user)
-                .build();
-
-        bankAccountRepository.save(bankAccount);
 
         String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordActivateEndpoint + "/" + user.getId();
         emailService.sendEmail(user.getEmail(), "Activate account", text);
@@ -180,12 +192,34 @@ public class UserService implements UserDetailsService {
 
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
-        BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
-        Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
-        bankAccount.setDailyLimit(newLimit);
+    public UserDto setDailyLimit(Long userId, Double limitAmount) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found"));
 
-        bankAccountRepository.saveAndFlush(bankAccount);
+        user.setDailyLimit(limitAmount);
+        userRepository.saveAndFlush(user);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found"));
+        Double newLimit = Math.max(0, user.getDailyLimit() - decreaseLimit);
+        user.setDailyLimit(newLimit);
+
+        userRepository.saveAndFlush(user);
+
+        return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public UserDto resetDailyLimit(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found"));
+
+        user.setDailyLimit(100000D);
+        userRepository.saveAndFlush(user);
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
     }
@@ -194,7 +228,7 @@ public class UserService implements UserDetailsService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto increaseBankAccountBalance(Double increaseAmount) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        BankAccount bankAccount = bankAccountRepository.findByUser_Email(email);
+        BankAccount bankAccount = bankAccountRepository.findAll().get(0);
         bankAccount.setAccountBalance(bankAccount.getAccountBalance() + increaseAmount);
 
         bankAccountRepository.saveAndFlush(bankAccount);
@@ -205,7 +239,7 @@ public class UserService implements UserDetailsService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto decreaseBankAccountBalance(Double decreaseAccount) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        BankAccount bankAccount = bankAccountRepository.findByUser_Email(email);
+        BankAccount bankAccount = bankAccountRepository.findAll().get(0);
         bankAccount.setAccountBalance(bankAccount.getAccountBalance() - decreaseAccount);
 
         bankAccountRepository.saveAndFlush(bankAccount);
@@ -214,10 +248,10 @@ public class UserService implements UserDetailsService {
     }
 
     @Scheduled(cron = "0 0 8 * * *")  // every day at 8am
-    public void resetDailyLimit() {
-        List<BankAccount> allBankAccounts = bankAccountRepository.findAll();
-        allBankAccounts.forEach(bankAccount -> bankAccount.setDailyLimit(100000D));
-        bankAccountRepository.saveAll(allBankAccounts);
+    public void resetDailyLimitScheduled() {
+        List<User> users = userRepository.findAll();
+        users.forEach(user -> user.setDailyLimit(100000D));
+        userRepository.saveAllAndFlush(users);
     }
 
     @Override
