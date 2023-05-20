@@ -205,22 +205,21 @@ public class UserService implements UserDetailsService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto reduceDailyLimit(Long userId, Double decreaseLimit) {
-        BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
-        Double newLimit = Math.max(0, bankAccount.getDailyLimit() - decreaseLimit);
-        bankAccount.setDailyLimit(newLimit);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found"));
+        Double newLimit = Math.max(0, user.getDailyLimit() - decreaseLimit);
+        user.setDailyLimit(newLimit);
 
-        bankAccountRepository.saveAndFlush(bankAccount);
+        userRepository.saveAndFlush(user);
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto resetDailyLimit(Long userId) {
-        BankAccount bankAccount = bankAccountRepository.findByUser_Id(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found"));
 
-        bankAccount.setDailyLimit(100000D);
-
-        bankAccountRepository.saveAndFlush(bankAccount);
+        user.setDailyLimit(100000D);
+        userRepository.saveAndFlush(user);
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.findById(userId).orElseThrow(() -> new NotFoundExceptions("user not found")));
     }
@@ -250,9 +249,9 @@ public class UserService implements UserDetailsService {
 
     @Scheduled(cron = "0 0 8 * * *")  // every day at 8am
     public void resetDailyLimitScheduled() {
-        List<BankAccount> allBankAccounts = bankAccountRepository.findAll();
-        allBankAccounts.forEach(bankAccount -> bankAccount.setDailyLimit(100000D));
-        bankAccountRepository.saveAll(allBankAccounts);
+        List<User> users = userRepository.findAll();
+        users.forEach(user -> user.setDailyLimit(100000D));
+        userRepository.saveAllAndFlush(users);
     }
 
     @Override

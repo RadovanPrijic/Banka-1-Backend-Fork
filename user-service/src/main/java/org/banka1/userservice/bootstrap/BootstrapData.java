@@ -28,7 +28,6 @@ public class BootstrapData implements CommandLineRunner {
         BankAccount bankAccount = BankAccount.builder()
                 .currencyCode("USD")
                 .accountBalance(300000D)
-                .dailyLimit(100000D)
                 .build();
 
         User admin = User.builder()

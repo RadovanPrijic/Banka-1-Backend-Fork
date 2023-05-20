@@ -58,6 +58,9 @@ public class User {
     @ManyToOne
     private BankAccount bankAccount;
 
+    private Double dailyLimit;
+
+
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (roles == null) {
