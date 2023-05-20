@@ -55,7 +55,7 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles;
 
-    @OneToOne(mappedBy = "user")
+    @ManyToOne
     private BankAccount bankAccount;
 
     @JsonIgnore

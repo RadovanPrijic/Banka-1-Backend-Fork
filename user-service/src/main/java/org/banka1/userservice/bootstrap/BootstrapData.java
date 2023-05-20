@@ -41,6 +41,8 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("admin1234"))
                 .roles(List.of("ROLE_ADMIN"))
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
         User supervisor = User.builder()
@@ -53,6 +55,8 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("super1234"))
                 .roles(List.of("ROLE_SUPERVISOR"))
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
         User user1 = User.builder()
@@ -65,6 +69,8 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("user1"))
                 .roles(List.of("ROLE_MODERATOR"))
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
         User user2 = User.builder()
@@ -77,6 +83,8 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("user3"))
                 .roles(List.of("ROLE_MODERATOR"))
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
         User user3 = User.builder()
@@ -89,9 +97,10 @@ public class BootstrapData implements CommandLineRunner {
                 .password(passwordEncoder.encode("user3"))
                 .roles(List.of("ROLE_MODERATOR"))
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
-        bankAccount.setUser(admin);
 
         userRepository.save(admin);
         userRepository.save(supervisor);

@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -192,14 +193,13 @@ class UserServiceTest {
     @Test
     void setDailyLimitSuccessfully() {
         //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
 
         String password = passwordEncoder.encode("admin1234");
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
-        bankAcc.setUser(user1);
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).dailyLimit(100000D).build();
 
-        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
         when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
 
@@ -211,14 +211,9 @@ class UserServiceTest {
         assertEquals("email@gmail.com", result.getEmail());
         assertEquals("Test", result.getFirstName());
         assertEquals("Test", result.getLastName());
-        assertEquals(150000D, result.getBankAccount().getDailyLimit());
+        assertEquals(150000D, user1.getDailyLimit());
 
-
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
-        verify(userRepository, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, times(2)).findById(anyLong());
 
     }
 
@@ -271,12 +266,7 @@ class UserServiceTest {
         assertEquals(50000D, result.getBankAccount().getDailyLimit());
 
 
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
-        verify(userRepository, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
-
+        verify(userRepository, times(2)).findById(anyLong());
     }
 
     @Test
@@ -304,11 +294,7 @@ class UserServiceTest {
         assertEquals(100000D, result.getBankAccount().getDailyLimit());
 
 
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
-        verify(userRepository, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, times(2)).findById(anyLong());
     }
 
     @Test
@@ -346,8 +332,6 @@ class UserServiceTest {
         verify(bankAccountRepository, times(1)).findByUser_Email(anyString());
         verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
         verify(userRepository, times(1)).findByEmail(anyString());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
 
     }
 
@@ -386,7 +370,6 @@ class UserServiceTest {
         verify(bankAccountRepository, times(1)).findByUser_Email(anyString());
         verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
         verify(userRepository, times(1)).findByEmail(anyString());
-        verifyNoMoreInteractions(bankAccountRepository);
         verifyNoMoreInteractions(userRepository);
 
     }
@@ -473,10 +456,14 @@ class UserServiceTest {
 
     @Test
     void createUserSuccessfully() {
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
+
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
         var userCreateDto = new UserCreateDto("Test", "Test", "email@gmail.com",
                 "2606999751027", Position.ADMINISTRATOR, "12345", List.of("ROLE_ADMIN"));
+
         when(userRepository.save(any())).thenReturn(user1);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
 
         var result = userService.createUser(userCreateDto);
 
