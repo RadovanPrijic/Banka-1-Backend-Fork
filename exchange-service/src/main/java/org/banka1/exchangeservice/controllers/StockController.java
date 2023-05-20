@@ -15,7 +15,6 @@ public class StockController {
 
     private final StockService stockService;
 
-
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllStocks(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size,
                                           @RequestParam(required = false) String symbol) {
@@ -30,5 +29,15 @@ public class StockController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getStock(@PathVariable Long id){
         return ResponseEntity.ok(stockService.getStockById(id));
+    }
+
+    @GetMapping(value = "/symbols")
+    public ResponseEntity<?> getStockSymbols() {
+        return ResponseEntity.ok(stockService.getStockSymbols());
+    }
+
+    @GetMapping("/symbols/{symbol}")
+    public ResponseEntity<?> getStockBySymbol(@PathVariable String symbol){
+        return ResponseEntity.ok(stockService.getStockBySymbol(symbol));
     }
 }

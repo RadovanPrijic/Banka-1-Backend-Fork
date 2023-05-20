@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface StockRepository extends JpaRepository<Stock, Long> {
     Page<Stock> getAllBySymbolContainsIgnoreCase(String symbol, Pageable pageable);
     Stock findBySymbol(String symbol);
+    boolean existsStockBySymbol(String symbol);
 }

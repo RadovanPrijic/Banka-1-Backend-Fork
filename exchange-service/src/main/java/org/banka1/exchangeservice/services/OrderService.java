@@ -21,6 +21,7 @@ import org.banka1.exchangeservice.repositories.OptionBetRepository;
 import org.banka1.exchangeservice.repositories.OptionRepository;
 import org.banka1.exchangeservice.repositories.OrderRepository;
 import org.banka1.exchangeservice.repositories.StockRepository;
+import org.banka1.exchangeservice.utils.JwtUtil;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,8 @@ public class OrderService {
     private final ForexService forexService;
     private final StockService stockService;
 
+    private final JwtUtil jwtUtil;
+
     @Value("${user.service.endpoint}")
     private String userServiceUrl;
 
@@ -59,7 +62,8 @@ public class OrderService {
 
     public OrderService(OrderRepository orderRepository, ForexRepository forexRepository,
                         StockRepository stockRepository, OptionBetRepository optionBetRepository, OptionRepository optionRepository, ForexService forexService,
-                        StockService stockService) {
+                        StockService stockService, JwtUtil jwtUtil) {
+
         this.orderRepository = orderRepository;
         this.forexRepository = forexRepository;
         this.stockRepository = stockRepository;
@@ -67,6 +71,7 @@ public class OrderService {
         this.optionRepository = optionRepository;
         this.forexService = forexService;
         this.stockService = stockService;
+        this.jwtUtil = jwtUtil;
     }
 
     public Order makeOrder(OrderRequest orderRequest, String token) {
@@ -123,7 +128,7 @@ public class OrderService {
         String url = userServiceUrl + "/users/my-profile";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", token)
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -142,7 +147,7 @@ public class OrderService {
         String url = userServiceUrl + "/users/reduce-daily-limit?userId=" + userId + "&decreaseLimit=" + decreaseLimit;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", token)
                 .method("PUT", HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -153,149 +158,137 @@ public class OrderService {
         }
     }
 
-//    @Async
     public void mockExecutionOfOrder(Order order, String token) {
-        Runnable runnable = () -> {
-            UserListingDto userListingDto = getUserListing(order.getUserId(), order.getListingType(), order.getListingSymbol(), token);
-            if(userListingDto == null) {
-                UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
-                userListingCreateDto.setSymbol(order.getListingSymbol());
-                userListingCreateDto.setQuantity(0);
-                userListingCreateDto.setListingType(order.getListingType());
+        UserListingDto userListingDto = getUserListing(order.getUserId(), order.getListingType(), order.getListingSymbol(), token);
+        if(userListingDto == null) {
+            UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
+            userListingCreateDto.setSymbol(order.getListingSymbol());
+            userListingCreateDto.setQuantity(0);
+            userListingCreateDto.setListingType(order.getListingType());
 
-                try {
-                    String body = objectMapper.writeValueAsString(userListingCreateDto);
-                    String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
-                    HttpRequest request = HttpRequest.newBuilder()
-                            .uri(URI.create(url))
-                            .header("Authorization", "Bearer " + token)
-                            .header("Content-Type", "application/json")
-                            .method("POST", HttpRequest.BodyPublishers.ofString(body))
-                            .build();
-
-                    HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-                    String jsonUserListing = response.body();
-                    userListingDto = objectMapper.readValue(jsonUserListing, UserListingDto.class);
-
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            Long listingId = userListingDto.getId();
-            while(!order.getDone()){
-                try {
-                    Thread.sleep(10000);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                Random random = new Random();
-                int quantity = random.nextInt(order.getRemainingQuantity() + 1);
-                if (order.isAllOrNone() && quantity != order.getQuantity()) continue;
-
-                double askPrice = 0;
-                double bidPrice = 0;
-                if (order.getListingType() == ListingType.FOREX) {
-                    Forex forex = forexRepository.findBySymbol(order.getListingSymbol());
-                    forexService.updateForexes(Collections.singletonList(forex));
-
-                    askPrice = forex.getAskPrice();
-                    bidPrice = forex.getBidPrice();
-                } else if (order.getListingType() == ListingType.STOCK) {
-                    Stock stock = stockRepository.findBySymbol(order.getListingSymbol());
-                    stockService.updateStocks(Collections.singletonList(stock));
-
-                    askPrice = stock.getPrice();
-                    bidPrice = stock.getPrice();
-                }
-
-                switch (order.getOrderType()) {
-                    case STOP_ORDER -> {
-                        if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() < askPrice)
-                                || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() > bidPrice)) {
-                            order.setOrderType(OrderType.MARKET_ORDER);
-                        }
-                        else {
-                            continue;
-                        }
-                    }
-                    case LIMIT_ORDER -> {
-                        if ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
-                                || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue())) {
-                            continue;
-                        }
-                    }
-                    case STOP_LIMIT_ORDER -> {
-                        if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() > askPrice)
-                                || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() < bidPrice)
-                                || ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
-                                || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue()))) {
-                            continue;
-                        }
-                    }
-                }
-
-                int newQuantity;
-                if(order.getOrderAction() == OrderAction.BUY) {
-                    newQuantity = quantity + userListingDto.getQuantity();
-                } else {
-                    newQuantity = userListingDto.getQuantity() - quantity;
-                }
-
-                order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
-                if(order.getRemainingQuantity() == 0) order.setDone(true);
-
-                Double accountBalanceToUpdate = calculateThePrice(order.getListingType(), order.getListingSymbol(), quantity);
-                String urlBankAccount;
-                if(order.getOrderAction() == OrderAction.BUY) urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + accountBalanceToUpdate;
-                else urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
-
-                updateBankAccountBalance(token, urlBankAccount);
-                System.out.println("UPDATED BALANCE ACCOUNT");
-                System.out.println("URL: " + urlBankAccount);
-
-
-                String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
+            try {
+                String body = objectMapper.writeValueAsString(userListingCreateDto);
+                String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
-                        .header("Authorization", "Bearer " + token)
+                        .header("Authorization", token)
                         .header("Content-Type", "application/json")
-                        .method("PUT", HttpRequest.BodyPublishers.ofString("")) // mozda treba mozda ne treba
+                        .method("POST", HttpRequest.BodyPublishers.ofString(body))
                         .build();
-                try {
-                    HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-                    userListingDto = objectMapper.readValue(response.body(), UserListingDto.class);
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
 
-                order.setLastModified(new Date());
-                orderRepository.save(order);
+                HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                String jsonUserListing = response.body();
+                userListingDto = objectMapper.readValue(jsonUserListing, UserListingDto.class);
+
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
             }
+        }
 
-        };
+        Long listingId = userListingDto.getId();
+        Random random = new Random();
+        int quantity = random.nextInt(order.getRemainingQuantity() + 1);
+        if (order.isAllOrNone() && quantity != order.getQuantity())
+            return;
 
-        Thread thread = new Thread(runnable);
-        thread.start();
+        double askPrice = 0;
+        double bidPrice = 0;
+        if (order.getListingType() == ListingType.FOREX) {
+            Forex forex = forexRepository.findBySymbol(order.getListingSymbol());
+            askPrice = forex.getAskPrice();
+            bidPrice = forex.getBidPrice();
+        } else if (order.getListingType() == ListingType.STOCK) {
+            Stock stock = stockRepository.findBySymbol(order.getListingSymbol());
+            askPrice = stock.getPrice();
+            bidPrice = stock.getPrice();
+        }
+
+        switch (order.getOrderType()) {
+            case STOP_ORDER -> {
+                if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() < askPrice)
+                        || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() > bidPrice)) {
+                    order.setOrderType(OrderType.MARKET_ORDER);
+                }
+                else {
+                    return;
+                }
+            }
+            case LIMIT_ORDER -> {
+                if ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
+                        || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue())) {
+                    return;
+                }
+            }
+            case STOP_LIMIT_ORDER -> {
+                if ((order.getOrderAction() == OrderAction.BUY && order.getStopValue() > askPrice)
+                        || (order.getOrderAction() == OrderAction.SELL && order.getStopValue() < bidPrice)
+                        || ((order.getOrderAction() == OrderAction.BUY && askPrice > order.getLimitValue())
+                        || (order.getOrderAction() == OrderAction.SELL && bidPrice < order.getLimitValue()))) {
+                    return;
+                }
+            }
+        }
+
+        int newQuantity;
+        if(order.getOrderAction() == OrderAction.BUY) {
+            newQuantity = quantity + userListingDto.getQuantity();
+        } else {
+            newQuantity = userListingDto.getQuantity() - quantity;
+        }
+
+        order.setRemainingQuantity(order.getRemainingQuantity() - quantity);
+        if(order.getRemainingQuantity() == 0)
+            order.setDone(true);
+
+        Double accountBalanceToUpdate = calculateThePrice(order.getListingType(), order.getListingSymbol(), quantity);
+        String urlBankAccount;
+        if(order.getOrderAction() == OrderAction.BUY)
+            urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + accountBalanceToUpdate;
+        else
+            urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
+
+        updateBankAccountBalance(token, urlBankAccount);
+
+        String url = userServiceUrl + "/user-listings/update/" + listingId + "?newQuantity=" + newQuantity;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", token)
+                .header("Content-Type", "application/json")
+                .method("PUT", HttpRequest.BodyPublishers.ofString("")) // mozda treba mozda ne treba
+                .build();
+        try {
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            userListingDto = objectMapper.readValue(response.body(), UserListingDto.class);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        order.setLastModified(new Date());
+        orderRepository.save(order);
     }
 
     @RabbitListener(queues = "${rabbitmq.queue.forex.name}")
     public void receiveForex(Forex forex) {
-        System.err.println("FOREX: " + forex.getSymbol() + " - " + forex.getFromCurrency() + " - " + forex.getToCurrency());
-        //TODO Proveravanje ordera
+        receive(ListingType.FOREX, forex.getSymbol());
     }
 
     @RabbitListener(queues = "${rabbitmq.queue.stock.name}")
     public void receiveStock(Stock stock) {
-        System.err.println("STOCK: " + stock.getSymbol());
-        //TODO Proveravanje ordera
+        receive(ListingType.STOCK, stock.getSymbol());
+    }
+
+    private void receive(ListingType listingType, String symbol){
+        List<Order> notDoneOrders = orderRepository
+                .findAllByListingTypeAndListingSymbolAndDone(listingType, symbol, false);
+        String token = "Bearer " + jwtUtil.generateToken();
+
+        notDoneOrders.forEach(order -> mockExecutionOfOrder(order, token));
     }
 
     public void updateBankAccountBalance(String token, String url){
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", token)
                 .header("Content-Type", "application/json")
                 .method("PUT", HttpRequest.BodyPublishers.ofString(""))
                 .build();
@@ -347,7 +340,7 @@ public class OrderService {
         String url = userServiceUrl + "/user-listings?userId=" + userId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", token)
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
 

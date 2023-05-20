@@ -12,7 +12,6 @@ import org.banka1.exchangeservice.domains.dtos.stock.StockDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.StockResponseDtoFlask;
 import org.banka1.exchangeservice.domains.dtos.stock.TimeSeriesStockEnum;
 import org.banka1.exchangeservice.domains.entities.Exchange;
-import org.banka1.exchangeservice.domains.entities.Forex;
 import org.banka1.exchangeservice.domains.entities.Stock;
 import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.ExchangeRepository;
@@ -157,6 +156,25 @@ public class StockService {
         else {
             throw new NotFoundExceptions("stock not found");
         }
+    }
+
+    public Stock getStockBySymbol(String symbol){
+        if(stockRepository.existsStockBySymbol(symbol))
+            return stockRepository.findBySymbol(symbol);
+        else
+            throw new NotFoundExceptions("Stock with the symbol " + symbol + " has not been found.");
+    }
+
+    public List<String> getStockSymbols(){
+        Iterable<Stock> stockIterable = stockRepository.findAll();
+        List<String> symbols = new ArrayList<>();
+
+        for (Stock stock : stockIterable) {
+            if(!symbols.contains(stock.getSymbol()))
+                symbols.add(stock.getSymbol());
+        }
+
+        return symbols;
     }
 
     private StockResponseDtoFlask getStockFromFlask(String symbol, TimeSeriesStockEnum timeSeries) throws IOException, InterruptedException {
