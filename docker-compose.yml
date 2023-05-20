@@ -14,6 +14,18 @@ services:
 #      - db-user:/var/lib/mysql/data
     profiles: ["all", "exchange"]
 
+  mongo-db:
+    image: mongo
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: banka1_mongodb
+      MONGO_INITDB_ROOT_PASSWORD: banka1_mongodb
+    restart: on-failure
+    profiles: ["all", "contracts", "mongo"]
+
   user-service:
     image: harbor.k8s.elab.rs/banka-1/user-service:latest
     build: ./user-service
@@ -51,5 +63,15 @@ services:
     restart: on-failure
     profiles: [ "all" ]
 
+  contracts-service:
+    image: harbor.k8s.elab.rs/banka-1/contracts-service:latest
+    build: ./contracts-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongo-db
+    profiles: ["all", "contracts"]
+
 volumes:
   mysql-db:
+  mongo-db:
