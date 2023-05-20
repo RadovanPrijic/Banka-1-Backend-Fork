@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -192,14 +193,13 @@ class UserServiceTest {
     @Test
     void setDailyLimitSuccessfully() {
         //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
 
         String password = passwordEncoder.encode("admin1234");
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
-        bankAcc.setUser(user1);
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).dailyLimit(100000D).build();
 
-        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
         when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
 
@@ -211,52 +211,22 @@ class UserServiceTest {
         assertEquals("email@gmail.com", result.getEmail());
         assertEquals("Test", result.getFirstName());
         assertEquals("Test", result.getLastName());
-        assertEquals(150000D, result.getBankAccount().getDailyLimit());
+        assertEquals(150000D, user1.getDailyLimit());
 
-
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
-        verify(userRepository, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, times(2)).findById(anyLong());
 
     }
 
-    @Test
-    void setDailyLimitBadRequestException() {
-        //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
-
-        String password = passwordEncoder.encode("admin1234");
-        var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
-        bankAcc.setUser(user1);
-
-        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
-        when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
-
-        //when
-
-
-        //then
-        assertThrows(BadRequestException.class, () -> userService.setDailyLimit(1L,500000D));
-
-
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-    }
     @Test
     void reduceDailyLimitSuccessfully() {
         //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
 
         String password = passwordEncoder.encode("admin1234");
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
-        bankAcc.setUser(user1);
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).dailyLimit(100000D).build();
 
-        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
         when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
 
@@ -268,28 +238,22 @@ class UserServiceTest {
         assertEquals("email@gmail.com", result.getEmail());
         assertEquals("Test", result.getFirstName());
         assertEquals("Test", result.getLastName());
-        assertEquals(50000D, result.getBankAccount().getDailyLimit());
+        assertEquals(50000D, result.getDailyLimit());
 
 
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
-        verify(userRepository, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
-
+        verify(userRepository, times(2)).findById(anyLong());
     }
 
     @Test
     void resetDailyLimitSuccessfully() {
         //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(50000D).build();
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
 
         String password = passwordEncoder.encode("admin1234");
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
-        bankAcc.setUser(user1);
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).dailyLimit(50000D).build();
 
-        when(bankAccountRepository.findByUser_Id(1L)).thenReturn(bankAcc);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
         when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
 
@@ -301,32 +265,27 @@ class UserServiceTest {
         assertEquals("email@gmail.com", result.getEmail());
         assertEquals("Test", result.getFirstName());
         assertEquals("Test", result.getLastName());
-        assertEquals(100000D, result.getBankAccount().getDailyLimit());
+        assertEquals(100000D, result.getDailyLimit());
 
 
-        verify(bankAccountRepository, times(1)).findByUser_Id(anyLong());
-        verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
-        verify(userRepository, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, times(2)).findById(anyLong());
     }
 
     @Test
     void increaseBankAccountBalanceSuccessfully() {
         //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
 
         String password = passwordEncoder.encode("admin1234");
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).dailyLimit(100000D).build();
 
-        bankAcc.setUser(user1);
 
         var authenticationToken =
                 new UsernamePasswordAuthenticationToken("test", null, null);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-        when(bankAccountRepository.findByUser_Email(anyString())).thenReturn(bankAcc);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
         when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
 
@@ -338,35 +297,31 @@ class UserServiceTest {
         assertEquals("email@gmail.com", result.getEmail());
         assertEquals("Test", result.getFirstName());
         assertEquals("Test", result.getLastName());
-        assertEquals(100000D, result.getBankAccount().getDailyLimit());
+        assertEquals(100000D, result.getDailyLimit());
         assertEquals(350000D, result.getBankAccount().getAccountBalance());
 
 
 
-        verify(bankAccountRepository, times(1)).findByUser_Email(anyString());
         verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
         verify(userRepository, times(1)).findByEmail(anyString());
-        verifyNoMoreInteractions(bankAccountRepository);
-        verifyNoMoreInteractions(userRepository);
 
     }
 
     @Test
     void decreaseBankAccountBalanceSuccessfully() {
         //given
-        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(100000D).build();
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
 
         String password = passwordEncoder.encode("admin1234");
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).build();
+                active(true).roles(List.of("ADMINISTRATOR")).password(password).bankAccount(bankAcc).dailyLimit(100000D).build();
 
-        bankAcc.setUser(user1);
 
         var authenticationToken =
                 new UsernamePasswordAuthenticationToken("test", null, null);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-        when(bankAccountRepository.findByUser_Email(anyString())).thenReturn(bankAcc);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
         when(bankAccountRepository.saveAndFlush(any(BankAccount.class))).thenReturn(bankAcc);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user1));
 
@@ -378,41 +333,16 @@ class UserServiceTest {
         assertEquals("email@gmail.com", result.getEmail());
         assertEquals("Test", result.getFirstName());
         assertEquals("Test", result.getLastName());
-        assertEquals(100000D, result.getBankAccount().getDailyLimit());
+        assertEquals(100000D, result.getDailyLimit());
         assertEquals(250000D, result.getBankAccount().getAccountBalance());
 
 
 
-        verify(bankAccountRepository, times(1)).findByUser_Email(anyString());
         verify(bankAccountRepository, times(1)).saveAndFlush(any(BankAccount.class));
         verify(userRepository, times(1)).findByEmail(anyString());
-        verifyNoMoreInteractions(bankAccountRepository);
         verifyNoMoreInteractions(userRepository);
 
     }
-
-    @Test
-    void resetDailyLimitScheduledSuccessfully() {
-        //given
-
-        List<BankAccount> list = getAllBankAccountsForSheduledReset();
-        when(bankAccountRepository.findAll()).thenReturn(list);
-        when(bankAccountRepository.saveAll(list)).thenReturn(list);
-
-        //when
-        userService.resetDailyLimitScheduled();
-        //then
-        assertEquals(100000D, list.get(0).getDailyLimit());
-        assertEquals(100000D, list.get(1).getDailyLimit());
-        assertEquals(100000D, list.get(2).getDailyLimit());
-
-
-        verify(bankAccountRepository, times(1)).findAll();
-        verify(bankAccountRepository, times(1)).saveAll(anyList());
-        verifyNoMoreInteractions(bankAccountRepository);
-
-    }
-
 
     @Test
     void loadUserByUsernameSuccessfully() {
@@ -473,10 +403,14 @@ class UserServiceTest {
 
     @Test
     void createUserSuccessfully() {
+        var bankAcc = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).build();
+
         var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").build();
         var userCreateDto = new UserCreateDto("Test", "Test", "email@gmail.com",
                 "2606999751027", Position.ADMINISTRATOR, "12345", List.of("ROLE_ADMIN"));
+
         when(userRepository.save(any())).thenReturn(user1);
+        when(bankAccountRepository.findAll()).thenReturn(Collections.singletonList(bankAcc));
 
         var result = userService.createUser(userCreateDto);
 
@@ -669,29 +603,7 @@ class UserServiceTest {
         verifyNoMoreInteractions(userRepository);
     }
 
-    List<BankAccount> getAllBankAccountsForSheduledReset(){
 
-        String password = passwordEncoder.encode("admin1234");
-
-        var user1 = User.builder().id(1L).email("email1@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("ADMINISTRATOR")).password(password).build();
-        var user2 = User.builder().id(1L).email("email2@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("USER_AGENT")).password(password).build();
-        var user3 = User.builder().id(1L).email("email3@gmail.com").firstName("Test").lastName("Test").
-                active(true).roles(List.of("USER_AGENT")).password(password).build();
-
-        var bankAcc1 = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(50000D).user(user1).build();
-        var bankAcc2 = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(20000D).user(user2).build();
-        var bankAcc3 = BankAccount.builder().id(1L).currencyCode("USD").accountBalance(300000D).dailyLimit(250000D).user(user3).build();
-
-
-        bankAcc1.setUser(user1);
-        bankAcc2.setUser(user2);
-        bankAcc3.setUser(user3);
-
-        return List.of(bankAcc1,bankAcc2,bankAcc3);
-
-    }
     private Page<User> getUsers() {
         if (userPage == null) {
             var user1 = User.builder().id(1L).email("email@gmail.com").firstName("Test").lastName("Test").position(Position.ADMINISTRATOR).build();

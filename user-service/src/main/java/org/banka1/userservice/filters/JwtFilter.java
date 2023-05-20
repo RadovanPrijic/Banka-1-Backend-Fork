@@ -29,7 +29,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String jwtToken = null;
         String email = null;
 
-        System.out.println("f1");
         if(authHeader != null && authHeader.startsWith("Bearer ")) {
             jwtToken = authHeader.substring(7);
             email = jwtUtil.extractEmail(jwtToken);
@@ -40,11 +39,9 @@ public class JwtFilter extends OncePerRequestFilter {
 //            jwtToken = request.getParameter("jwt");
 //            email = jwtUtil.extractEmail(jwtToken);
 //        }
-        System.out.println("f2 " + email);
         if (email != null) {
             //load user by email
             UserDetails userDetails = this.userService.loadUserByUsername(email);
-            System.out.println(userDetails);
             if (jwtUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
@@ -55,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }
-        System.out.println("f4");
+
         filterChain.doFilter(request, response);
     }
 

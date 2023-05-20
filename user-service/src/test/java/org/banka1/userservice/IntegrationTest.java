@@ -2,6 +2,7 @@ package org.banka1.userservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import org.banka1.userservice.domains.entities.BankAccount;
 import org.banka1.userservice.domains.entities.Position;
 import org.banka1.userservice.domains.entities.User;
 import org.banka1.userservice.repositories.BankAccountRepository;
@@ -64,6 +65,11 @@ public abstract class IntegrationTest {
         List<String> roles = new ArrayList<>();
         roles.add(User.USER_ADMIN);
 
+        BankAccount bankAccount = BankAccount.builder()
+                .currencyCode("USD")
+                .accountBalance(300000D)
+                .build();
+
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("Admin")
@@ -73,6 +79,8 @@ public abstract class IntegrationTest {
                 .password(passwordEncoder.encode("test1234"))
                 .roles(roles)
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
         userRepository.save(admin);
@@ -89,11 +97,12 @@ public abstract class IntegrationTest {
                 .password(passwordEncoder.encode("test12345"))
                 .roles(roles1)
                 .active(true)
+                .bankAccount(bankAccount)
+                .dailyLimit(100000D)
                 .build();
 
+        bankAccountRepository.save(bankAccount);
         userRepository.save(supervisor);
-
-
         userRepository.flush();
 
     }

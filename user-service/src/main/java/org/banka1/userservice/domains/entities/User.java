@@ -55,8 +55,11 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles;
 
-    @OneToOne(mappedBy = "user")
+    @ManyToOne
     private BankAccount bankAccount;
+
+    private Double dailyLimit;
+
 
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
