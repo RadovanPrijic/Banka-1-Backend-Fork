@@ -3,10 +3,14 @@ import express from "express";
 import {ErrorMessages} from "../model/errors/error-messages";
 import FinalisedContract from "../model/contracts/finalised-contract.model";
 import multer from "multer";
-import Contract, {ContractStatus} from "../model/contracts/contract.model";
+import Contract, {ContractStatus, TransactionAction} from "../model/contracts/contract.model";
 import {UserRoles} from "../model/users/user-roles";
+import {Environment} from "../environment";
+import axios from "axios";
 
 const router = express.Router();
+
+const finaliseUrl = Environment.getFinaliseUrl();
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -20,6 +24,7 @@ const upload = multer({
         }
     }
 });
+
 
 //download contract
 router.get('/:contractId', authToken, async (req, res) => {
@@ -43,6 +48,7 @@ router.get('/:contractId', authToken, async (req, res) => {
     }
 });
 
+
 router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
     if(!hasRole(UserRoles.ROLE_SUPERVISOR, req)){
         res.status(403).send(ErrorMessages.unauthorizedAccessError);
@@ -64,12 +70,65 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
         });
 
         await finalisedContract.save();
-        await Contract.findByIdAndUpdate(req.body.contractId, { status: ContractStatus.FINAL });
-        res.status(201).send();
+        const updatedContract = await Contract.findByIdAndUpdate(req.body.contractId, { status: ContractStatus.FINAL }, async function (err, result) {
+            if (err) {
+                res.status(500).send(ErrorMessages.contractsFinaliseError);
+                return;
+            } else {
+                let finaliseTransactions = {
+                    contractId: finalisedContract.contractId,
+                    sellPrice: calculateSellPrice(result.transactions),
+                    sellStocks: getStocksByAction(result.transactions, TransactionAction.SELL),
+                    buyStocks: getStocksByAction(result.transactions, TransactionAction.BUY),
+                    userId: result.agentId
+                }
+
+                try {
+                    const response = await axios.post(finaliseUrl, finaliseTransactions, {
+                        headers: {
+                            Authorization: req.headers['authorization'] || ''
+                        }
+                    });
+
+                    res.status(201).send();
+                } catch (error) {
+                    console.error(ErrorMessages.contractsTransactionsFinaliseError, error);
+                    res.status(500).send(ErrorMessages.contractsTransactionsFinaliseError);
+                }
+            }
+        });
+
     } catch (error) {
         console.error(ErrorMessages.contractsFinaliseError, error);
         res.status(500).send(ErrorMessages.contractsFinaliseError);
     }
 });
+
+
+function calculateSellPrice(transactions){
+    let sellPrice = 0;
+    for(let transaction of transactions){
+        if(transaction.action == TransactionAction.SELL){
+            sellPrice += transaction.price * transaction.quantity;
+        }
+    }
+
+    return sellPrice;
+}
+
+function getStocksByAction(transactions, transactionAction: TransactionAction){
+    let stocks = [];
+    for(let transaction of transactions){
+        if(transaction.action == transactionAction){
+            stocks.push({
+                symbol: transaction.symbol,
+                quantity: transaction.quantity
+            });
+        }
+    }
+
+    return stocks;
+}
+
 
 export default router;

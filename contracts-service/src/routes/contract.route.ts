@@ -1,11 +1,15 @@
 import express from 'express';
-import Contract, { ContractStatus } from "../model/contracts/contract.model";
+import Contract, {ContractStatus, TransactionAction} from "../model/contracts/contract.model";
 import {ErrorMessages} from "../model/errors/error-messages";
 import {authToken, hasRole} from "../middleware/auth.middleware";
 import {UserRoles} from "../model/users/user-roles";
 import {getUserId, isAgent} from "../utils/jwt-util";
+import axios from "axios";
+import {Environment} from "../environment";
 
 const router = express.Router();
+
+const reserveTransactionsUrl = Environment.getReserveTransactionsUrl();
 
 
 router.get('/', authToken, async (req, res) => {
@@ -23,6 +27,7 @@ router.get('/', authToken, async (req, res) => {
     }
 });
 
+
 router.get('/my-contracts', authToken, async (req, res) => {
     let agentId = getUserId(req);
 
@@ -35,6 +40,7 @@ router.get('/my-contracts', authToken, async (req, res) => {
     }
 });
 
+
 router.get('/:contractId', authToken, async (req, res) => {
     try {
         const contract = await Contract.findById(req.params['contractId']);
@@ -44,6 +50,7 @@ router.get('/:contractId', authToken, async (req, res) => {
         res.status(500).send(ErrorMessages.contractsGetError);
     }
 });
+
 
 router.post('/', authToken, async (req, res) => {
     try {
@@ -59,12 +66,33 @@ router.post('/', authToken, async (req, res) => {
         });
 
         const savedContract = await newContract.save();
-        res.json(savedContract);
+
+        try {
+            let price = calculatePrice(savedContract.transactions);
+            if(price > 0){
+                let reserveTransactions = {
+                    contractId: savedContract._id,
+                    price: price
+                }
+                const response = await axios.post(reserveTransactionsUrl + '/reserve-assets', reserveTransactions, {
+                    headers: {
+                        Authorization: req.headers['authorization'] || ''
+                    }
+                });
+            }
+
+            res.json(savedContract);
+        } catch (error) {
+            console.error(ErrorMessages.contractsTransactionsError, error);
+            res.status(500).send(ErrorMessages.contractsTransactionsError);
+        }
+
     } catch (error) {
         console.error(ErrorMessages.contractsCreateError, error);
         res.status(500).send(ErrorMessages.contractsCreateError);
     }
 });
+
 
 router.put('/:contractId', authToken, async (req, res) => {
     try {
@@ -93,7 +121,26 @@ router.put('/:contractId', authToken, async (req, res) => {
                 }
 
                 await Contract.findByIdAndUpdate(contractId, update, { status: ContractStatus.DRAFT })
-                res.status(200).send();
+
+                try {
+                    let price = calculatePrice(update.transactions);
+                    if(price > 0){
+                        let reserveTransactions = {
+                            contractId: contractId,
+                            price: price
+                        }
+                        const response = await axios.post(reserveTransactionsUrl + '/reserve-assets', reserveTransactions, {
+                            headers: {
+                                Authorization: req.headers['authorization'] || ''
+                            }
+                        });
+                    }
+
+                    res.status(200).send();
+                } catch (error) {
+                    console.error(ErrorMessages.contractsTransactionsError, error);
+                    res.status(500).send(ErrorMessages.contractsTransactionsError);
+                }
             }
         }
     } catch (error) {
@@ -101,6 +148,7 @@ router.put('/:contractId', authToken, async (req, res) => {
         res.status(500).send(ErrorMessages.contractsUpdateError);
     }
 });
+
 
 router.delete('/:contractId', authToken, async (req, res) => {
     if(!hasRole(UserRoles.ROLE_SUPERVISOR, req)){
@@ -118,7 +166,19 @@ router.delete('/:contractId', authToken, async (req, res) => {
             }
             else {
                 await Contract.deleteOne({ _id: contractId });
-                res.status(200).send();
+
+                try {
+                    const response = await axios.delete(reserveTransactionsUrl + '/' + contractId, {
+                        headers: {
+                            Authorization: req.headers['authorization'] || ''
+                        }
+                    });
+
+                    res.status(200).send();
+                } catch (error) {
+                    console.error(ErrorMessages.contractsTransactionsError, error);
+                    res.status(500).send(ErrorMessages.contractsTransactionsError);
+                }
             }
         }
     } catch (error) {
@@ -126,5 +186,17 @@ router.delete('/:contractId', authToken, async (req, res) => {
         res.status(500).send(ErrorMessages.contractsDeleteError);
     }
 });
+
+
+function calculatePrice(transactions): number{
+    let price = 0;
+    for(let transaction of transactions){
+        if(transaction.action == TransactionAction.BUY){
+            price += transaction.price * transaction.quantity;
+        }
+    }
+
+    return price;
+}
 
 export default router;
