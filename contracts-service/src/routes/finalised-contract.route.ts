@@ -8,6 +8,7 @@ import {UserRoles} from "../model/users/user-roles";
 import {Environment} from "../environment";
 import axios from "axios";
 import ContractModel from "../model/contracts/contract.model";
+import {ContractTransactions} from "../model/contracts/contract-transactions";
 
 const router = express.Router();
 
@@ -71,8 +72,31 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
         });
 
         await finalisedContract.save();
-        const updatedContract = await Contract.findByIdAndUpdate(req.body.contractId, { status: ContractStatus.FINAL }, async function (err, result) {
-            if (err) {
+        const updatedContract = await Contract.findByIdAndUpdate(req.body.contractId, { status: ContractStatus.FINAL });
+        const contract = updatedContract as ContractTransactions;
+
+        let finaliseTransactions = {
+            contractId: finalisedContract.contractId,
+            sellPrice: calculateSellPrice(contract.transactions),
+            stocks: getStocks(contract.transactions),
+            userId: contract.agentId
+        }
+
+        try {
+            const response = await axios.post(finaliseUrl, finaliseTransactions, {
+                headers: {
+                    Authorization: req.headers['authorization'] || ''
+                }
+            });
+
+            res.status(201).send();
+        } catch (error) {
+            console.error(ErrorMessages.contractsTransactionsFinaliseError, error);
+            res.status(500).send(ErrorMessages.contractsTransactionsFinaliseError);
+        }
+
+        /*
+        * if (err) {
                 res.status(500).send(ErrorMessages.contractsFinaliseError);
                 return;
             } else {
@@ -95,8 +119,7 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
                     console.error(ErrorMessages.contractsTransactionsFinaliseError, error);
                     res.status(500).send(ErrorMessages.contractsTransactionsFinaliseError);
                 }
-            }
-        });
+            }*/
 
     } catch (error) {
         console.error(ErrorMessages.contractsFinaliseError, error);
