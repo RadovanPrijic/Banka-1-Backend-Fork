@@ -5,7 +5,6 @@ import org.banka1.exchangeservice.domains.dtos.option.OptionChainDto;
 import org.banka1.exchangeservice.domains.dtos.option.OptionDto;
 import org.banka1.exchangeservice.domains.dtos.option.OptionFilterRequest;
 import org.banka1.exchangeservice.domains.dtos.option.Response;
-import org.banka1.exchangeservice.domains.dtos.user.UserDto;
 import org.banka1.exchangeservice.domains.entities.Option;
 import org.banka1.exchangeservice.domains.entities.OptionType;
 import org.banka1.exchangeservice.domains.entities.Stock;
@@ -23,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,11 +68,14 @@ public class OptionService {
 
                     optionResponseDto.getCalls().forEach(optionTypeDto -> {
 
-                        Instant instant = Instant.ofEpochMilli(optionTypeDto.getExpiration());
-                        LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                        Instant instant = Instant.ofEpochSecond(optionTypeDto.getExpiration());
+
+                        LocalDateTime expirationDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+                        LocalDate localDate = expirationDateTime.toLocalDate();
 
                         Option call = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
-                                OptionType.CALL, localDate);
+                                OptionType.CALL, localDate, optionTypeDto.getAsk(), optionTypeDto.getBid(), optionTypeDto.getLastPrice());
                         options.add(call);
                     });
 
@@ -81,7 +84,7 @@ public class OptionService {
                         LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
 
                         Option put = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
-                                OptionType.PUT, localDate);
+                                OptionType.PUT, localDate, optionTypeDto.getAsk(), optionTypeDto.getBid(), optionTypeDto.getLastPrice());
                         options.add(put);
                     });
                 });
@@ -100,9 +103,9 @@ public class OptionService {
 
         Stock stock = stockRepository.findBySymbol(optionFilterRequest.getSymbol());
         options.forEach(o -> {
-           o.setAsk(stock.getPrice());
-           o.setBid(stock.getPrice());
-           o.setPrice(stock.getPrice());
+            o.setAsk(stock.getPrice());
+            o.setBid(stock.getPrice());
+            o.setPrice(stock.getPrice());
         });
 
         Map<OptionDto, List<Option>> optionMap = options.stream()
@@ -121,12 +124,15 @@ public class OptionService {
         return optionsToReturn;
     }
 
-    private Option createOption(String symbol, Double strike, OptionType optionType, LocalDate expirationType) {
+    private Option createOption(String symbol, Double strike, OptionType optionType, LocalDate expirationType, Double ask, Double bid, Double price) {
         return Option.builder()
                 .symbol(symbol)
                 .strike(strike)
                 .optionType(optionType)
                 .expirationDate(expirationType)
+                .ask(ask)
+                .bid(bid)
+                .price(price)
                 .build();
     }
 }
