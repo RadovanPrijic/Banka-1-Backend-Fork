@@ -82,6 +82,9 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
             userId: contract.agentId
         }
 
+        console.error(contract);
+        console.error(finaliseTransactions.contractId);
+
         try {
             const response = await axios.post(finaliseUrl, finaliseTransactions, {
                 headers: {
@@ -95,31 +98,6 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
             res.status(500).send(ErrorMessages.contractsTransactionsFinaliseError);
         }
 
-        /*
-        * if (err) {
-                res.status(500).send(ErrorMessages.contractsFinaliseError);
-                return;
-            } else {
-                let finaliseTransactions = {
-                    contractId: finalisedContract.contractId,
-                    sellPrice: calculateSellPrice(result.transactions),
-                    stocks: getStocks(result.transactions),
-                    userId: result.agentId
-                }
-
-                try {
-                    const response = await axios.post(finaliseUrl, finaliseTransactions, {
-                        headers: {
-                            Authorization: req.headers['authorization'] || ''
-                        }
-                    });
-
-                    res.status(201).send();
-                } catch (error) {
-                    console.error(ErrorMessages.contractsTransactionsFinaliseError, error);
-                    res.status(500).send(ErrorMessages.contractsTransactionsFinaliseError);
-                }
-            }*/
 
     } catch (error) {
         console.error(ErrorMessages.contractsFinaliseError, error);
