@@ -7,6 +7,7 @@ import Contract, {ContractStatus, TransactionAction} from "../model/contracts/co
 import {UserRoles} from "../model/users/user-roles";
 import {Environment} from "../environment";
 import axios from "axios";
+import ContractModel from "../model/contracts/contract.model";
 
 const router = express.Router();
 
@@ -104,7 +105,7 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
 });
 
 
-function calculateSellPrice(transactions){
+function calculateSellPrice(transactions: any){
     let sellPrice = 0;
     for(let transaction of transactions){
         if(transaction.action == TransactionAction.SELL){
@@ -115,28 +116,30 @@ function calculateSellPrice(transactions){
     return sellPrice;
 }
 
-function getStocksByAction(transactions, transactionAction: TransactionAction){
-    let stocks = [];
+function getStocksByAction(transactions: any, transactionAction: TransactionAction){
+    let stocks: any = [];
     for(let transaction of transactions){
         if(transaction.action == transactionAction){
-            stocks.push({
+            let stock = {
                 symbol: transaction.symbol,
                 quantity: transaction.quantity
-            });
+            }
+            stocks.push(stock);
         }
     }
 
     return stocks;
 }
 
-function getStocks(transactions){
-    let stocks = [];
+function getStocks(transactions: any){
+    let stocks: any = [];
     for(let transaction of transactions){
-        stocks.push({
+        let stock = {
             symbol: transaction.symbol,
             quantity: transaction.quantity,
             transactionType: transaction.action
-        });
+        }
+        stocks.push(stock);
     }
 
     return stocks;
