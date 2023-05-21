@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserContractRepository extends JpaRepository<UserContract, Long> {
 
-    UserContract findAllByContractId(String contractId);
+//    UserContract findAllByContractId(String contractId);
+    UserContract findByContractId(String contractId);
 
 }

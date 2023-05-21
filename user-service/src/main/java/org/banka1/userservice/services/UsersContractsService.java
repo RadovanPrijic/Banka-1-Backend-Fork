@@ -36,7 +36,7 @@ public class UsersContractsService {
 
 
     public void createUpdateUserContract(UserContractDto userContractDto) {
-        UserContract userContract = userContractRepository.findAllByContractId(userContractDto.getContractId());
+        UserContract userContract = userContractRepository.findByContractId(userContractDto.getContractId());
 
         Double oldPrice = userContract == null ? 0 : userContract.getPrice();
         Double newPrice = userContractDto.getPrice();
@@ -54,7 +54,7 @@ public class UsersContractsService {
     }
 
     public void deleteUserContract(String contractId) {
-        UserContract userContract = userContractRepository.findAllByContractId(contractId);
+        UserContract userContract = userContractRepository.findByContractId(contractId);
         BankAccount bankAccount = bankAccountRepository.findAll().get(0);
 
         bankAccount.setReservedAsset(bankAccount.getReservedAsset() - userContract.getPrice());
@@ -93,7 +93,7 @@ public class UsersContractsService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void finalizeContract(UserContractListingsDto userContractListingsDto) {
-        UserContract userContract = userContractRepository.findAllByContractId(userContractListingsDto.getContractId());
+        UserContract userContract = userContractRepository.findByContractId(userContractListingsDto.getContractId());
         BankAccount bankAccount = bankAccountRepository.findAll().get(0);
         bankAccount.setAccountBalance(bankAccount.getAccountBalance() + userContractListingsDto.getSellPrice() - userContract.getPrice());
         bankAccount.setReservedAsset(bankAccount.getReservedAsset() - userContract.getPrice());
