@@ -78,8 +78,7 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
                 let finaliseTransactions = {
                     contractId: finalisedContract.contractId,
                     sellPrice: calculateSellPrice(result.transactions),
-                    sellStocks: getStocksByAction(result.transactions, TransactionAction.SELL),
-                    buyStocks: getStocksByAction(result.transactions, TransactionAction.BUY),
+                    stocks: getStocks(result.transactions),
                     userId: result.agentId
                 }
 
@@ -125,6 +124,19 @@ function getStocksByAction(transactions, transactionAction: TransactionAction){
                 quantity: transaction.quantity
             });
         }
+    }
+
+    return stocks;
+}
+
+function getStocks(transactions){
+    let stocks = [];
+    for(let transaction of transactions){
+        stocks.push({
+            symbol: transaction.symbol,
+            quantity: transaction.quantity,
+            transactionType: transaction.action
+        });
     }
 
     return stocks;
