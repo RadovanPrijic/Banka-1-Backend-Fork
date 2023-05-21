@@ -120,7 +120,7 @@ public class UsersContractsService {
             } else if (ul != null) {
                 switch (el.getTransactionType()) {
                     case BUY -> ul.setQuantity(ul.getQuantity() + el.getQuantity());
-                    case SELL -> ul.setQuantity(ul.getQuantity() - el.getQuantity());
+                    case SELL -> ul.setQuantity(Math.max(ul.getQuantity() - el.getQuantity(), 0));
                 }
             }
         });
