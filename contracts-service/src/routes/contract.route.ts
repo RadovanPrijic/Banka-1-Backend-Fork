@@ -22,7 +22,7 @@ router.get('/', authToken, async (req, res) => {
             res.json(contracts);
         } catch (error) {
             console.error(ErrorMessages.contractsGetError, error);
-            res.status(500).send(ErrorMessages.contractsGetError);
+            res.status(500).send({message: ErrorMessages.contractsGetError});
         }
     }
 });
@@ -36,7 +36,7 @@ router.get('/my-contracts', authToken, async (req, res) => {
         res.json(contracts);
     } catch (error) {
         console.error(ErrorMessages.contractsGetError, error);
-        res.status(500).send(ErrorMessages.contractsGetError);
+        res.status(500).send({message: ErrorMessages.contractsGetError});
     }
 });
 
@@ -47,7 +47,18 @@ router.get('/:contractId', authToken, async (req, res) => {
         res.json(contract);
     } catch (error) {
         console.error(ErrorMessages.contractsGetError, error);
-        res.status(500).send(ErrorMessages.contractsGetError);
+        res.status(500).send({message: ErrorMessages.contractsGetError});
+    }
+});
+
+
+router.get('/company-contracts/:companyId', authToken, async (req, res) => {
+    try {
+        const contracts = await Contract.find({ companyId: req.params['companyId'] });
+        res.json(contracts);
+    } catch (error) {
+        console.error(ErrorMessages.contractsGetError, error);
+        res.status(500).send({message: ErrorMessages.contractsGetError});
     }
 });
 
@@ -84,12 +95,12 @@ router.post('/', authToken, async (req, res) => {
             res.json(savedContract);
         } catch (error) {
             console.error(ErrorMessages.contractsTransactionsError, error);
-            res.status(500).send(ErrorMessages.contractsTransactionsError);
+            res.status(500).send({message: ErrorMessages.contractsTransactionsError});
         }
 
     } catch (error) {
         console.error(ErrorMessages.contractsCreateError, error);
-        res.status(500).send(ErrorMessages.contractsCreateError);
+        res.status(500).send({message: ErrorMessages.contractsCreateError});
     }
 });
 
@@ -102,13 +113,13 @@ router.put('/:contractId', authToken, async (req, res) => {
             if(isAgent(req)){
                 let agentId = getUserId(req);
                 if(contract['agentId'] != agentId){
-                    res.status(403).send(ErrorMessages.unauthorizedAccessError);
+                    res.status(403).send({message: ErrorMessages.unauthorizedAccessError});
                     return;
                 }
             }
 
             if(contract['status'] == ContractStatus.FINAL){
-                res.status(403).send(ErrorMessages.contractsFinalisedUpdateError);
+                res.status(403).send({message: ErrorMessages.contractsFinalisedUpdateError});
                 return;
             }
             else {
@@ -139,20 +150,20 @@ router.put('/:contractId', authToken, async (req, res) => {
                     res.status(200).send();
                 } catch (error) {
                     console.error(ErrorMessages.contractsTransactionsError, error);
-                    res.status(500).send(ErrorMessages.contractsTransactionsError);
+                    res.status(500).send({message: ErrorMessages.contractsTransactionsError});
                 }
             }
         }
     } catch (error) {
         console.error(ErrorMessages.contractsUpdateError, error);
-        res.status(500).send(ErrorMessages.contractsUpdateError);
+        res.status(500).send({message: ErrorMessages.contractsUpdateError});
     }
 });
 
 
 router.delete('/:contractId', authToken, async (req, res) => {
     if(!hasRole(UserRoles.ROLE_SUPERVISOR, req)){
-        res.status(403).send(ErrorMessages.unauthorizedAccessError);
+        res.status(403).send({message: ErrorMessages.unauthorizedAccessError});
     }
 
     try {
@@ -161,7 +172,7 @@ router.delete('/:contractId', authToken, async (req, res) => {
         const contract = await Contract.findById(contractId);
         if(contract){
             if(contract['status'] == ContractStatus.FINAL){
-                res.status(403).send(ErrorMessages.contractsFinalisedDeleteError);
+                res.status(403).send({message: ErrorMessages.contractsFinalisedDeleteError});
                 return;
             }
             else {
@@ -177,13 +188,13 @@ router.delete('/:contractId', authToken, async (req, res) => {
                     res.status(200).send();
                 } catch (error) {
                     console.error(ErrorMessages.contractsTransactionsError, error);
-                    res.status(500).send(ErrorMessages.contractsTransactionsError);
+                    res.status(500).send({message: ErrorMessages.contractsTransactionsError});
                 }
             }
         }
     } catch (error) {
         console.error(ErrorMessages.contractsDeleteError, error);
-        res.status(500).send(ErrorMessages.contractsDeleteError);
+        res.status(500).send({message: ErrorMessages.contractsDeleteError});
     }
 });
 

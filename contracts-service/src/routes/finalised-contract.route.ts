@@ -35,7 +35,7 @@ router.get('/:contractId', authToken, async (req, res) => {
         const finalisedContract = await FinalisedContract.findOne({ contractId: contractId });
 
         if (!finalisedContract) {
-            res.status(400).send(ErrorMessages.contractNotFound);
+            res.status(400).send({message: ErrorMessages.contractNotFound});
             return;
         }
 
@@ -46,14 +46,14 @@ router.get('/:contractId', authToken, async (req, res) => {
         res.send(finalisedContract['contractFile']);
     } catch (error) {
         console.error(ErrorMessages.contractsGetError, error);
-        res.status(500).send(ErrorMessages.contractsGetError);
+        res.status(500).send({message: ErrorMessages.contractsGetError});
     }
 });
 
 
 router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
     if(!hasRole(UserRoles.ROLE_SUPERVISOR, req)){
-        res.status(403).send(ErrorMessages.unauthorizedAccessError);
+        res.status(403).send({message: ErrorMessages.unauthorizedAccessError});
         return;
     }
 
@@ -61,7 +61,7 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
         const contractFile = req.file?.buffer;
 
         if (!contractFile) {
-            res.status(400).send(ErrorMessages.contractsFinalisedFileMissing);
+            res.status(400).send({message: ErrorMessages.contractsFinalisedFileMissing});
             return;
         }
 
@@ -95,13 +95,13 @@ router.post('/', authToken, upload.single('contractFile'), async (req, res) => {
             res.status(201).send();
         } catch (error) {
             console.error(ErrorMessages.contractsTransactionsFinaliseError, error);
-            res.status(500).send(ErrorMessages.contractsTransactionsFinaliseError);
+            res.status(500).send({message: ErrorMessages.contractsTransactionsFinaliseError});
         }
 
 
     } catch (error) {
         console.error(ErrorMessages.contractsFinaliseError, error);
-        res.status(500).send(ErrorMessages.contractsFinaliseError);
+        res.status(500).send({message: ErrorMessages.contractsFinaliseError});
     }
 });
 
