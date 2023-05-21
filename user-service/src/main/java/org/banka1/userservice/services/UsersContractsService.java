@@ -94,9 +94,11 @@ public class UsersContractsService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void finalizeContract(UserContractListingsDto userContractListingsDto) {
         UserContract userContract = userContractRepository.findByContractId(userContractListingsDto.getContractId());
+        Double price = userContract == null ? 0 : userContract.getPrice();
+
         BankAccount bankAccount = bankAccountRepository.findAll().get(0);
-        bankAccount.setAccountBalance(bankAccount.getAccountBalance() + userContractListingsDto.getSellPrice() - userContract.getPrice());
-        bankAccount.setReservedAsset(bankAccount.getReservedAsset() - userContract.getPrice());
+        bankAccount.setAccountBalance(bankAccount.getAccountBalance() + userContractListingsDto.getSellPrice() - price);
+        bankAccount.setReservedAsset(bankAccount.getReservedAsset() - price);
 
         Set<String> stockSymbols = userContractListingsDto.getStocks()
                 .stream().map(UserContractListingsDto.StockData::getSymbol).collect(Collectors.toSet());
@@ -125,8 +127,10 @@ public class UsersContractsService {
             }
         });
 
+        if (userContract != null)
+            userContractRepository.delete(userContract);
+
         userListingRepository.saveAll(listingMap.values());
-        userContractRepository.delete(userContract);
         bankAccountRepository.save(bankAccount);
     }
 }
