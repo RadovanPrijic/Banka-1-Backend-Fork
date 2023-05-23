@@ -22,5 +22,5 @@ app.use('/api/contacts', contactRoute);
 app.use('/api/accounts', accountRoute);
 
 app.listen(port, () => {
-    console.log('Contracts service is running.');
+    console.log('Companies service is running.');
 });

@@ -12,7 +12,7 @@ export enum TransactionAction {
 
 const contractSchema = new mongoose.Schema({
     companyId: {
-        type: Number,
+        type: String,
         required: true
     },
     agentId: {
