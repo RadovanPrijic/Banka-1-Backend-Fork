@@ -2,6 +2,7 @@ import express from 'express';
 import {authToken} from "../middleware/auth.middleware";
 import Company from "../model/companies/company.model";
 import {ErrorMessages} from "../model/errors/error-messages";
+import Contract from "../model/contracts/contract.model";
 
 
 const router = express.Router();
@@ -85,11 +86,16 @@ router.delete('/:companyId', authToken, async (req, res) => {
 
         const company = await Company.findById(companyId);
         if(company){
+            const contract = await Contract.findOne({ companyId: companyId });
+            if(contract){
+                res.status(403).send({ message: ErrorMessages.companiesDeleteAccessError });
+                return
+            }
+            else {
+                await Company.deleteOne({ _id: companyId });
+                res.status(200).send();
+            }
 
-            //TODO IF CONTRACTS
-
-            await Company.deleteOne({ _id: companyId });
-            res.status(200).send();
         }
     } catch (error) {
         console.error(ErrorMessages.companiesDeleteError, error);

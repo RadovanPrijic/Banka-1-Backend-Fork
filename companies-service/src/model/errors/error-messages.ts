@@ -12,6 +12,8 @@ export class ErrorMessages{
 
     public static companiesDeleteError: string = "Greška prilikom brisanja kompanije.";
 
+    public static companiesDeleteAccessError: string = "Kompanija je vezana za postojeći ugovor.";
+
     public static contactsGetError: string = "Greška prilikom dohvatanja kontakata.";
 
     public static contactsCreateError: string = "Greška prilikom kreiranja kontakta.";
