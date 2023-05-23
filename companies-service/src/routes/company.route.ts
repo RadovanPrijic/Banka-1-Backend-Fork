@@ -79,8 +79,22 @@ router.put('/:companyId', authToken, async (req, res) => {
 });
 
 
-router.delete('/:contractId', authToken, async (req, res) => {
-    //TODO
+router.delete('/:companyId', authToken, async (req, res) => {
+    try {
+        let companyId = req.params['companyId'];
+
+        const company = await Company.findById(companyId);
+        if(company){
+
+            //TODO IF CONTRACTS
+
+            await Company.deleteOne({ _id: companyId });
+            res.status(200).send();
+        }
+    } catch (error) {
+        console.error(ErrorMessages.companiesDeleteError, error);
+        res.status(500).send({ message: ErrorMessages.companiesDeleteError });
+    }
 });
 
 export default router;
