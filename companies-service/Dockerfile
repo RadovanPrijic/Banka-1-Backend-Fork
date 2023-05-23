@@ -22,5 +22,5 @@ CMD [ "node", "dist/service.js" ]
 
 # docker login harbor.k8s.elab.rs -u <username>
 
-# docker build -t harbor.k8s.elab.rs/banka-1/contracts-service:latest .
-# docker push harbor.k8s.elab.rs/banka-1/contracts-service:latest
+# docker build -t harbor.k8s.elab.rs/banka-1/companies-service:latest .
+# docker push harbor.k8s.elab.rs/banka-1/companies-service:latest
