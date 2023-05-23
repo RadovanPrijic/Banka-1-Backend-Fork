@@ -19,4 +19,10 @@ export class ErrorMessages{
     public static contactsUpdateError: string = "Greška prilikom kreiranja kontakta.";
 
     public static contactsDeleteError: string = "Greška prilikom brisanja kontakta.";
+
+    public static accountsGetError: string = "Greška prilikom dohvatanja računa.";
+
+    public static accountsCreateError: string = "Greška prilikom kreiranja računa.";
+
+    public static accountsDeleteError: string = "Greška prilikom brisanja računa.";
 }
