@@ -20,6 +20,10 @@ export class ErrorMessages{
 
     public static contractsFinalisedFileFormat: string = "Samo PDF fajlovi su dozvoljeni.";
 
+    public static contractsTransactionsError: string = "Greška prilikom rezervisanja sredstava.";
+
+    public static contractsTransactionsFinaliseError: string = "Greška prilikom finalizovanja transakcija.";
+
     public static userNotLoggedInError: string = "Korinsik nije ulogovan.";
 
     public static unauthorizedAccessError: string = "Nedozvoljen pristup."

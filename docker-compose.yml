@@ -81,6 +81,16 @@ services:
     restart: on-failure
     profiles: ["all", "contracts"]
 
+  companies-service:
+    image: harbor.k8s.elab.rs/banka-1/companies-service:latest
+    build: ./companies-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongo-db
+    restart: on-failure
+    profiles: [ "all", "companies" ]
+
 volumes:
   mysql-db:
   mongo-db:
