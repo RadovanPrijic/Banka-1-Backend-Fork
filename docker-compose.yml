@@ -8,6 +8,12 @@ services:
       - "5672:5672"
     profiles: ["all", "exchange"]
 
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    profiles: [ "all", "exchange" ]
+
   mysql-db:
     image: mysql
     ports:
@@ -64,10 +70,12 @@ services:
       - mysql-db
       - flask-api-service
       - rabbitmq
+      - redis
     depends_on:
       - mysql-db
       - flask-api-service
       - rabbitmq
+      - redis
     restart: on-failure
     profiles: [ "all" ]
 
