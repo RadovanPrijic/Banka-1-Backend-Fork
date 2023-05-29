@@ -25,12 +25,9 @@ public class Option {
     @Enumerated(EnumType.STRING)
     private OptionType optionType;
     private LocalDate expirationDate;
-    
-    @Transient
+
     private Double ask;
-    @Transient
     private Double bid;
-    @Transient
     private Double price;
 
 }
