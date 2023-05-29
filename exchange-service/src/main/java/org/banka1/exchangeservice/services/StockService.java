@@ -140,7 +140,6 @@ public class StockService {
 
     @Cacheable(value = "stocks", key = "{#symbol, #page, #size}", condition = "#symbol != null")
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
-        System.out.println("GET STOCKS - " + symbol);
         Page<Stock> stocks;
         if (symbol == null) {
             stocks = stockRepository.findAll(PageRequest.of(page, size));
@@ -154,7 +153,6 @@ public class StockService {
 
     @Cacheable(value = "stock", key = "#id")
     public Optional<Stock> getStockById(Long id){
-        System.out.println("GET STOCK BY ID - " + id);
         if(stockRepository.existsById(id)){
             return stockRepository.findById(id);
         }
@@ -164,7 +162,6 @@ public class StockService {
     }
     @Cacheable(value = "stockBySymbol", key = "#symbol")
     public Stock getStockBySymbol(String symbol){
-        System.out.println("GET STOCK BY SYMBOL - " + symbol);
         if(stockRepository.existsStockBySymbol(symbol))
             return stockRepository.findBySymbol(symbol);
         else
