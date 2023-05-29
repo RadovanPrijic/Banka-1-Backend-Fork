@@ -12,6 +12,8 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.io.Serial;
+import java.io.Serializable;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
@@ -21,7 +23,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "stocks")
-public class Stock extends Listing{
+public class Stock extends Listing {
 
     private String symbol;
     private Double priceChange;

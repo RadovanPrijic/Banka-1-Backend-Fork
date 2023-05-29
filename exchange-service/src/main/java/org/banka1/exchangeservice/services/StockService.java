@@ -137,7 +137,8 @@ public class StockService {
             }
         });
     }
-    @Cacheable(value = "stocks", key = "#symbol") //todo test for key=null
+
+    @Cacheable(value = "stocks", key = "{#symbol, #page, #size}", condition = "#symbol != null")
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
         Page<Stock> stocks;
         if (symbol == null) {

@@ -20,6 +20,7 @@ import org.banka1.exchangeservice.repositories.ForexRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -72,6 +73,9 @@ public class ForexService {
         this.objectMapper = objectMapper;
     }
 
+    @Cacheable(value = "forexes",
+            key = "{#forexFilterRequest, #page, #size}",
+            condition = "#forexFilterRequest.fromCurrencyCode != null && #forexFilterRequest.toCurrencyCode != null")
     public Page<Forex> getForexes(Integer page, Integer size, ForexFilterRequest forexFilterRequest){
         Page<Forex> forexes = forexRepository.findAll(forexFilterRequest.getPredicate(), PageRequest.of(page,size));
         updateForexes(forexes.getContent());

@@ -5,21 +5,21 @@ import lombok.*;
 
 import javax.persistence.*;
 
+@EqualsAndHashCode(callSuper = false)
 @Entity
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "bank_accounts")
-public class BankAccount {
+@Table(name = "users_contracts")
+public class UserContract {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String currencyCode;
-    private Double accountBalance;
-    private Double reservedAsset;
+    private String contractId;
+    private Double price;
+
 }
