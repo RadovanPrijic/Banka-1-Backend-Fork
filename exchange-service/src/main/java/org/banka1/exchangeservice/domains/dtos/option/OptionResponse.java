@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Response {
+public class OptionResponse {
     private OptionChainDto optionChain;
 }
