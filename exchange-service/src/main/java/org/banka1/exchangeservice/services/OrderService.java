@@ -91,7 +91,7 @@ public class OrderService {
         if(userDto.getBankAccount().getAccountBalance() < expectedPrice) {
             order.setOrderStatus(OrderStatus.REJECTED);
         }
-        else if(userDto.getBankAccount().getDailyLimit() - expectedPrice < 0) {
+        else if(userDto.getDailyLimit() - expectedPrice < 0) {
             order.setOrderStatus(OrderStatus.ON_HOLD);
         }
         else {
