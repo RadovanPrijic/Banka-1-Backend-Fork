@@ -24,6 +24,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +47,10 @@ public class OptionService {
     }
 
     private void saveLoadedOptions(String url) {
+        Random random = new Random();
+        double min = 100;
+        double max = 1000;
+
         List<Option> options = new ArrayList<>();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -65,6 +70,16 @@ public class OptionService {
                         Instant instant = Instant.ofEpochSecond(optionTypeDto.getExpiration());
                         LocalDateTime expirationDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
                         LocalDate localDate = expirationDateTime.toLocalDate();
+                        if (localDate.isBefore(LocalDate.now())) {
+                            localDate = LocalDate.now().plusDays(10);
+                        }
+                        if (optionTypeDto.getAsk() == 0) {
+                            optionTypeDto.setAsk(min + (max - min) * random.nextDouble());
+                        }
+                        if (optionTypeDto.getBid() == 0) {
+                            optionTypeDto.setBid(min + (max - min) * random.nextDouble());
+                        }
+
                         Option call = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
                                 OptionType.CALL, localDate, optionTypeDto.getAsk(), optionTypeDto.getBid(), optionTypeDto.getLastPrice());
                         options.add(call);
@@ -73,6 +88,15 @@ public class OptionService {
                     optionResponseDto.getPuts().forEach(optionTypeDto -> {
                         Instant instant = Instant.ofEpochMilli(optionTypeDto.getExpiration());
                         LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                        if (localDate.isBefore(LocalDate.now())) {
+                            localDate = LocalDate.now().plusDays(10);
+                        }
+                        if (optionTypeDto.getAsk() == 0) {
+                            optionTypeDto.setAsk(min + (max - min) * random.nextDouble());
+                        }
+                        if (optionTypeDto.getBid() == 0) {
+                            optionTypeDto.setBid(min + (max - min) * random.nextDouble());
+                        }
 
                         Option put = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
                                 OptionType.PUT, localDate, optionTypeDto.getAsk(), optionTypeDto.getBid(), optionTypeDto.getLastPrice());
