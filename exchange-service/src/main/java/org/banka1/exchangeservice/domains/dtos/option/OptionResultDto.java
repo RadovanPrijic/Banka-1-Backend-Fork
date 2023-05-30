@@ -1,7 +1,6 @@
 package org.banka1.exchangeservice.domains.dtos.option;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResultDto {
+public class OptionResultDto {
     private String underlyingSymbol;
     @JsonIgnore
     private List<Double> expirationDates;

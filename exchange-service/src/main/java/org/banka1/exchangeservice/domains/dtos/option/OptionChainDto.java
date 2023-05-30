@@ -12,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class OptionChainDto {
-    private List<ResultDto> result;
+    private List<OptionResultDto> result;
     private String error;
 }

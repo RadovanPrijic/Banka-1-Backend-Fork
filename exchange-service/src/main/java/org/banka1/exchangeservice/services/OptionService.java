@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.banka1.exchangeservice.domains.dtos.option.OptionChainDto;
 import org.banka1.exchangeservice.domains.dtos.option.OptionDto;
 import org.banka1.exchangeservice.domains.dtos.option.OptionFilterRequest;
-import org.banka1.exchangeservice.domains.dtos.option.Response;
-import org.banka1.exchangeservice.domains.dtos.user.UserDto;
+import org.banka1.exchangeservice.domains.dtos.option.OptionResponse;
 import org.banka1.exchangeservice.domains.entities.Option;
 import org.banka1.exchangeservice.domains.entities.OptionType;
 import org.banka1.exchangeservice.domains.entities.Stock;
@@ -22,10 +21,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +47,10 @@ public class OptionService {
     }
 
     private void saveLoadedOptions(String url) {
+        Random random = new Random();
+        double min = 100;
+        double max = 1000;
+
         List<Option> options = new ArrayList<>();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -55,33 +58,48 @@ public class OptionService {
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .build();
 
-        Response responseOption = null;
+        OptionResponse optionResponse = null;
         try {
             HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            responseOption = objectMapper.readValue(response.body(), Response.class);
+            optionResponse = objectMapper.readValue(response.body(), OptionResponse.class);
 
-            OptionChainDto optionChainDto = responseOption.getOptionChain();
-
+            OptionChainDto optionChainDto = optionResponse.getOptionChain();
             optionChainDto.getResult().forEach(resultDto -> {
-
                 resultDto.getOptions().forEach(optionResponseDto -> {
-
                     optionResponseDto.getCalls().forEach(optionTypeDto -> {
-
-                        Instant instant = Instant.ofEpochMilli(optionTypeDto.getExpiration());
-                        LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                        Instant instant = Instant.ofEpochSecond(optionTypeDto.getExpiration());
+                        LocalDateTime expirationDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+                        LocalDate localDate = expirationDateTime.toLocalDate();
+                        if (localDate.isBefore(LocalDate.now())) {
+                            localDate = LocalDate.now().plusDays(10);
+                        }
+                        if (optionTypeDto.getAsk() == 0) {
+                            optionTypeDto.setAsk(min + (max - min) * random.nextDouble());
+                        }
+                        if (optionTypeDto.getBid() == 0) {
+                            optionTypeDto.setBid(min + (max - min) * random.nextDouble());
+                        }
 
                         Option call = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
-                                OptionType.CALL, localDate);
+                                OptionType.CALL, localDate, optionTypeDto.getAsk(), optionTypeDto.getBid(), optionTypeDto.getLastPrice());
                         options.add(call);
                     });
 
                     optionResponseDto.getPuts().forEach(optionTypeDto -> {
                         Instant instant = Instant.ofEpochMilli(optionTypeDto.getExpiration());
                         LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                        if (localDate.isBefore(LocalDate.now())) {
+                            localDate = LocalDate.now().plusDays(10);
+                        }
+                        if (optionTypeDto.getAsk() == 0) {
+                            optionTypeDto.setAsk(min + (max - min) * random.nextDouble());
+                        }
+                        if (optionTypeDto.getBid() == 0) {
+                            optionTypeDto.setBid(min + (max - min) * random.nextDouble());
+                        }
 
                         Option put = createOption(resultDto.getUnderlyingSymbol(), optionTypeDto.getStrike(),
-                                OptionType.PUT, localDate);
+                                OptionType.PUT, localDate, optionTypeDto.getAsk(), optionTypeDto.getBid(), optionTypeDto.getLastPrice());
                         options.add(put);
                     });
                 });
@@ -98,12 +116,12 @@ public class OptionService {
         List<Option> options = new ArrayList<>();
         optionIterable.forEach(options::add);
 
-        Stock stock = stockRepository.findBySymbol(optionFilterRequest.getSymbol());
-        options.forEach(o -> {
-           o.setAsk(stock.getPrice());
-           o.setBid(stock.getPrice());
-           o.setPrice(stock.getPrice());
-        });
+//        Stock stock = stockRepository.findBySymbol(optionFilterRequest.getSymbol());
+//        options.forEach(o -> {
+//            o.setAsk(stock.getPrice());
+//            o.setBid(stock.getPrice());
+//            o.setPrice(stock.getPrice());
+//        });
 
         Map<OptionDto, List<Option>> optionMap = options.stream()
                 .collect(Collectors.groupingBy(o -> OptionDto.builder().strike(o.getStrike()).optionType(o.getOptionType()).build()));
@@ -121,12 +139,15 @@ public class OptionService {
         return optionsToReturn;
     }
 
-    private Option createOption(String symbol, Double strike, OptionType optionType, LocalDate expirationType) {
+    private Option createOption(String symbol, Double strike, OptionType optionType, LocalDate expirationType, Double ask, Double bid, Double price) {
         return Option.builder()
                 .symbol(symbol)
                 .strike(strike)
                 .optionType(optionType)
                 .expirationDate(expirationType)
+                .ask(ask)
+                .bid(bid)
+                .price(price)
                 .build();
     }
 }

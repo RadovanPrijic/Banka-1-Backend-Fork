@@ -19,6 +19,7 @@ import org.banka1.exchangeservice.repositories.StockRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -137,6 +138,7 @@ public class StockService {
         });
     }
 
+    @Cacheable(value = "stocks", key = "{#symbol, #page, #size}", condition = "#symbol != null")
     public Page<Stock> getStocks(Integer page, Integer size, String symbol){
         Page<Stock> stocks;
         if (symbol == null) {
@@ -149,6 +151,7 @@ public class StockService {
         return stocks;
     }
 
+    @Cacheable(value = "stock", key = "#id")
     public Optional<Stock> getStockById(Long id){
         if(stockRepository.existsById(id)){
             return stockRepository.findById(id);
@@ -157,7 +160,7 @@ public class StockService {
             throw new NotFoundExceptions("stock not found");
         }
     }
-
+    @Cacheable(value = "stockBySymbol", key = "#symbol")
     public Stock getStockBySymbol(String symbol){
         if(stockRepository.existsStockBySymbol(symbol))
             return stockRepository.findBySymbol(symbol);
@@ -165,6 +168,7 @@ public class StockService {
             throw new NotFoundExceptions("Stock with the symbol " + symbol + " has not been found.");
     }
 
+    @Cacheable(value = "stockSymbols")
     public List<String> getStockSymbols(){
         Iterable<Stock> stockIterable = stockRepository.findAll();
         List<String> symbols = new ArrayList<>();

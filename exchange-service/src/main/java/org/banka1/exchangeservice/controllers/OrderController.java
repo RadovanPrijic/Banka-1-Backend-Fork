@@ -71,4 +71,10 @@ public class  OrderController {
     public ResponseEntity<?> getAllOptions(@RequestHeader("Authorization") String token){
         return ResponseEntity.ok(orderService.getAllOptions());
     }
+
+    @PostMapping(value = "/options/finish-bet/{optionBetId}")
+    public ResponseEntity<?> finishOptionBet(@RequestHeader("Authorization") String token, @PathVariable Long optionBetId){
+        orderService.finishOptionBet(token, optionBetId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

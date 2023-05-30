@@ -8,8 +8,7 @@
         "esModuleInterop": true,
         "resolveJsonModule": true,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "noImplicitAny": false
+        "emitDecoratorMetadata": true
     },
     "include": ["src/**/*.ts", "src/routes/**/*.ts"],
     "exclude": ["node_modules"]

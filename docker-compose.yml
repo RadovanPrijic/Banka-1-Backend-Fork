@@ -6,7 +6,13 @@ services:
     image: rabbitmq
     ports:
       - "5672:5672"
-    profiles: ["all", "exchange"]
+    profiles: ["all", "exchange", "ufe"]
+
+  redis:
+    image: redis:7.0.11-alpine
+    ports:
+      - "6379:6379"
+    profiles: [ "all", "exchange", "ufe"]
 
   mysql-db:
     image: mysql
@@ -18,7 +24,7 @@ services:
       MYSQL_DB: mysql
 #    volumes:
 #      - db-user:/var/lib/mysql/data
-    profiles: ["all", "exchange"]
+    profiles: ["all", "exchange", "ufe"]
 
   mongo-db:
     image: mongo
@@ -44,14 +50,14 @@ services:
     depends_on:
       - mysql-db
     restart: on-failure
-    profiles: ["all", "exchange"]
+    profiles: ["all", "exchange", "ufe"]
 
   flask-api-service:
     image: harbor.k8s.elab.rs/banka-1/flask-api-service:latest
     build: ./flask-api-service
     ports:
       - "8888:8888"
-    profiles: ["all", "exchange"]
+    profiles: ["all", "exchange", "ufe"]
 
   exchange-service:
     image: harbor.k8s.elab.rs/banka-1/exchange-service:latest
@@ -64,12 +70,14 @@ services:
       - mysql-db
       - flask-api-service
       - rabbitmq
+      - redis
     depends_on:
       - mysql-db
       - flask-api-service
       - rabbitmq
+      - redis
     restart: on-failure
-    profiles: [ "all" ]
+    profiles: [ "all", "ufe"]
 
   contracts-service:
     image: harbor.k8s.elab.rs/banka-1/contracts-service:latest
@@ -80,6 +88,16 @@ services:
       - mongo-db
     restart: on-failure
     profiles: ["all", "contracts"]
+
+  companies-service:
+    image: harbor.k8s.elab.rs/banka-1/companies-service:latest
+    build: ./companies-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongo-db
+    restart: on-failure
+    profiles: [ "all", "companies" ]
 
 volumes:
   mysql-db:

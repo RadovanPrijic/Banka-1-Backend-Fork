@@ -26,6 +26,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
@@ -89,7 +91,7 @@ public class OrderService {
         if(userDto.getBankAccount().getAccountBalance() < expectedPrice) {
             order.setOrderStatus(OrderStatus.REJECTED);
         }
-        else if(userDto.getBankAccount().getDailyLimit() - expectedPrice < 0) {
+        else if(userDto.getDailyLimit() - expectedPrice < 0) {
             order.setOrderStatus(OrderStatus.ON_HOLD);
         }
         else {
@@ -414,22 +416,24 @@ public class OrderService {
        return optionRepository.findAll();
     }
 
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     private void checkBets() {
         List<OptionBet> optionBets = optionBetRepository.findAll().stream().filter(optionBet -> optionBet.getDate().equals(LocalDate.now())).toList();
         optionBets.forEach(optionBet -> {
             Option option = optionRepository.findById(optionBet.getOptionId()).orElseThrow(() -> new NotFoundExceptions("Option not found"));
             String token = generateToken(optionBet.getUserId(), optionBet.getEmail());
             if (option.getOptionType().equals(OptionType.CALL)) {
-                String urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + option.getPrice();
+                String urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + option.getStrike();
                 updateBankAccountBalance(token, urlBankAccount);
                 // skini pare sa racuna
             } else {
-                String urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + option.getPrice();
+                String urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + option.getStrike();
                 updateBankAccountBalance(token, urlBankAccount);
                 //uplati pare
             }
         });
+
+        optionBetRepository.deleteAll(optionBets);
     }
 
     private String generateToken(Long userId, String email){
@@ -443,6 +447,21 @@ public class OrderService {
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
+    }
+
+    public void finishOptionBet(String token, Long optionBetId) {
+        OptionBet optionBet = optionBetRepository.findById(optionBetId).orElseThrow(() -> new NotFoundExceptions("Option bet not found"));
+        Option option = optionRepository.findById(optionBet.getOptionId()).orElseThrow(() -> new NotFoundExceptions("Option not found"));
+        String urlBankAccount;
+        if (option.getOptionType().equals(OptionType.CALL)) {
+            urlBankAccount = userServiceUrl + "/users/decrease-balance?decreaseAccount=" + option.getStrike();
+            // skini pare sa racuna
+        } else {
+            urlBankAccount = userServiceUrl + "/users/increase-balance?increaseAccount=" + option.getStrike();
+            //uplati pare
+        }
+        updateBankAccountBalance(token, urlBankAccount);
+        optionBetRepository.delete(optionBet);
     }
 }
