@@ -44,7 +44,7 @@ router.delete('/:accountId', authToken, async (req, res) => {
 
         const account = await Account.findById(accountId);
         if(account){
-            await Contact.deleteOne({ _id: accountId });
+            await Account.deleteOne({ _id: accountId });
             res.status(200).send();
         }
     } catch (error) {
