@@ -133,7 +133,7 @@ public class OrderServiceTestsSteps extends OrderServiceTestsConfig{
 
         try {
             String body = objectMapper.writeValueAsString(userListingCreateDto);
-            String url = userServiceUrl + "/api/user-listings/create?userId=" + order.getUserId();
+            String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Authorization", "Bearer " + token)
