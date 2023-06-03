@@ -1,6 +1,5 @@
 package org.banka1.exchangeservice.cucumber.currencyservice;
 
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
@@ -48,9 +47,5 @@ public class CurrencyServiceTestsSteps extends CurrencyServiceTestsConfig{
         } catch (Exception e) {
             fail(e.getMessage());
         }
-    }
-
-    @And("User's daily limit is reduced")
-    public void userSDailyLimitIsReduced() {
     }
 }
