@@ -13,6 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.transaction.Transactional;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -48,7 +49,6 @@ public abstract class IntegrationTest {
                 .setSubject("admin@admin.com")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
     }
-
 }

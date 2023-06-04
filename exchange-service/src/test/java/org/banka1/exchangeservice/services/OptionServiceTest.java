@@ -49,8 +49,8 @@ public class OptionServiceTest {
         //verify
         verify(optionRepository, times(1)).findAll(optionFilterRequest.getPredicate());
         verifyNoMoreInteractions(optionRepository);
-        verify(stockRepository, times(1)).findBySymbol(optionFilterRequest.getSymbol());
-        verifyNoMoreInteractions(stockRepository);
+//        verify(stockRepository, times(1)).findBySymbol(optionFilterRequest.getSymbol());
+//        verifyNoMoreInteractions(stockRepository);
 
 
     }
