@@ -53,6 +53,7 @@ public class User {
     private boolean active;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @OrderColumn
     private List<String> roles;
 
     @ManyToOne
