@@ -3,44 +3,69 @@ package org.banka1.userservice.services;
 import org.banka1.userservice.IntegrationTest;
 import org.banka1.userservice.domains.dtos.user.listing.UserListingCreateDto;
 import org.banka1.userservice.domains.dtos.user.listing.UserListingDto;
+import org.banka1.userservice.domains.entities.ListingType;
+import org.banka1.userservice.domains.entities.User;
+import org.banka1.userservice.domains.entities.UserListing;
+import org.banka1.userservice.domains.exceptions.NotFoundExceptions;
+import org.banka1.userservice.repositories.UserListingRepository;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
-
 public class UserListingServiceTest extends IntegrationTest {
-    @MockBean
+    @Autowired
     private UserListingService userListingService;
-
-    @BeforeEach
-    public void setUpMocks() {
-        when(userListingService.getListingsByUser(anyLong())).thenReturn(Collections.emptyList());
-        when(userListingService.createUserListing(anyLong(), any())).thenReturn(new UserListingDto());
-        when(userListingService.updateUserListing(anyLong(), any())).thenReturn(new UserListingDto());
-    }
+    @Autowired
+    private UserListingRepository userListingRepository;
 
     @Test
     public void getUserListings() {
-        List<UserListingDto> userListings = userListingService.getListingsByUser(1L);
+        Long id = userRepository.findByEmail("test@test.com").get().getId();
+        List<UserListingDto> userListings = userListingService.getListingsByUser(id);
         Assertions.assertEquals(0, userListings.size());
     }
 
     @Test
     public void createUserListing() {
-        UserListingDto response = userListingService.createUserListing(1L, new UserListingCreateDto());
+        Long id = userRepository.findByEmail("supervisor@supervisor.com").get().getId();
+        UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
+        userListingCreateDto.setListingType(ListingType.STOCK);
+        userListingCreateDto.setQuantity(10);
+        userListingCreateDto.setSymbol("AAPL");
+
+        UserListingDto response = userListingService.createUserListing(id, userListingCreateDto);
+
         Assertions.assertNotNull(response);
     }
 
     @Test
+    public void createUserListingNotFound() {
+        UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
+        userListingCreateDto.setListingType(ListingType.STOCK);
+        userListingCreateDto.setQuantity(10);
+        userListingCreateDto.setSymbol("AAPL");
+
+        Assertions.assertThrows(NotFoundExceptions.class,
+                () -> userListingService.createUserListing(0L, userListingCreateDto), "user not found");
+    }
+
+    @Test
     public void updateUserListing() {
-        UserListingDto response = userListingService.updateUserListing(1L, 10);
+        User user = userRepository.findByEmail("supervisor@supervisor.com").get();
+        UserListing userListing = UserListing.builder()
+                .user(user)
+                .listingType(ListingType.STOCK)
+                .quantity(10)
+                .symbol("AMZN")
+                .build();
+        userListing = userListingRepository.save(userListing);
+
+
+        UserListingDto response = userListingService.updateUserListing(userListing.getId(), 20);
         Assertions.assertNotNull(response);
+        Assertions.assertEquals(20, response.getQuantity());
     }
 }
