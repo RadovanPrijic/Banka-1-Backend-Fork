@@ -55,16 +55,16 @@ public class OrderService {
 
     private final JwtUtil jwtUtil;
 
-    @Value("${user.service.endpoint}")
+//    @Value("${user.service.endpoint}")
     private String userServiceUrl;
 
-    @Value("${jwt.secret}")
+//    @Value("${jwt.secret}")
     private String SECRET_KEY;
 
 
     public OrderService(OrderRepository orderRepository, ForexRepository forexRepository,
                         StockRepository stockRepository, OptionBetRepository optionBetRepository, OptionRepository optionRepository, ForexService forexService,
-                        StockService stockService, JwtUtil jwtUtil) {
+                        StockService stockService, JwtUtil jwtUtil, @Value("${user.service.endpoint}") String userServiceUrl, @Value("${jwt.secret}") String SECRET_KEY) {
 
         this.orderRepository = orderRepository;
         this.forexRepository = forexRepository;
@@ -74,6 +74,8 @@ public class OrderService {
         this.forexService = forexService;
         this.stockService = stockService;
         this.jwtUtil = jwtUtil;
+        this.userServiceUrl = userServiceUrl;
+        this.SECRET_KEY = SECRET_KEY;
     }
 
     public Order makeOrder(OrderRequest orderRequest, String token) {

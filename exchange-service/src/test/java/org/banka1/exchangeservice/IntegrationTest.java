@@ -34,7 +34,7 @@ public abstract class IntegrationTest {
     protected ObjectMapper objectMapper;
 
     @Value("${jwt.secret}")
-    String SECRET_KEY;
+    protected String SECRET_KEY;
 
     protected String getToken() {
         List<String> role = new ArrayList<>();
