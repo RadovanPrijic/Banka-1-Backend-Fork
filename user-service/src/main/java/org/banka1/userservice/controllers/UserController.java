@@ -89,12 +89,12 @@ public class UserController {
         userService.forgotPassword(email);
         return ResponseEntity.ok().build();
     }
-    @PreAuthorize("hasRole('ROLE_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPERVISOR', 'ROLE_ADMIN')")
     @PutMapping("/reset-daily-limit")
     public ResponseEntity<?> resetDailyLimit(@RequestParam Long userId) {
         return ResponseEntity.ok(userService.resetDailyLimit(userId));
     }
-    @PreAuthorize("hasRole('ROLE_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPERVISOR', 'ROLE_ADMIN')")
     @PutMapping("/set-daily-limit")
     public ResponseEntity<?> setDailyLimit(@RequestParam Long userId, @RequestParam Double setLimit) {
         return ResponseEntity.ok(userService.setDailyLimit(userId, setLimit));
