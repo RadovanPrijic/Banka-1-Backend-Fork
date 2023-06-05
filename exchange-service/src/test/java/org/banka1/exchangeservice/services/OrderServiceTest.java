@@ -64,33 +64,33 @@ public class OrderServiceTest extends IntegrationTest {
 
     @Test
     public void getUserDtoFromUserServiceTest(){
-//        var result = orderService.getUserDtoFromUserService(getToken());
-//
-//        UserDto userDto = new UserDto();
-//        userDto.setId(1L);
-//
-//        Assertions.assertNotNull(result);
-//        Assertions.assertEquals(userDto.getId(), result.getId());
+        var result = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        UserDto userDto = new UserDto();
+        userDto.setId(1L);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(userDto.getId(), result.getId());
     }
 
     @Test
     public void rejectOrderTest(){
-//        Order order = new Order();
-//        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-//
-//        orderService.rejectOrder(getToken(), 1L);
-//
-//        verify(orderRepository, times(1)).save(order);
-//        Assertions.assertEquals(order.getOrderStatus(), OrderStatus.REJECTED);
+        Order order = new Order();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        orderService.rejectOrder("Bearer " + getToken(), 1L);
+
+        verify(orderRepository, times(1)).save(order);
+        Assertions.assertEquals(order.getOrderStatus(), OrderStatus.REJECTED);
     }
 
     @Test
     public void rejectOrderNotFoundExceptionTest(){
-//        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
-//
-//        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.rejectOrder(getToken(), 1L));
-//        verify(orderRepository, times(1)).findById(1L);
-//        verifyNoMoreInteractions(orderRepository);
+        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
+
+        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.rejectOrder("Bearer " + getToken(), 1L));
+        verify(orderRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(orderRepository);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class OrderServiceTest extends IntegrationTest {
 //        Order order = new Order();
 //        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 //
-//        orderService.approveOrder(getToken(), 1L);
+//        orderService.approveOrder("Bearer " + getToken(), 1L);
 //
 //        verify(orderRepository, times(1)).save(order);
 //        Assertions.assertEquals(order.getOrderStatus(), OrderStatus.APPROVED);
@@ -106,98 +106,98 @@ public class OrderServiceTest extends IntegrationTest {
 
     @Test
     public void approveOrderNotFoundExceptionTest(){
-//        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
-//
-//        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.approveOrder(getToken(), 1L));
-//        verify(orderRepository, times(1)).findById(1L);
-//        verifyNoMoreInteractions(orderRepository);
+        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
+
+        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.approveOrder("Bearer " + getToken(), 1L));
+        verify(orderRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(orderRepository);
     }
 
     @Test
     public void reduceDailyLimitForUserTest(){
-//        double limitDecrease = 10000;
-//        var userDtoBeforeLimitDecrease = orderService.getUserDtoFromUserService(getToken());
-//
-//        orderService.reduceDailyLimitForUser(getToken(), 1L, limitDecrease);
-//        var userDtoAfterLimitDecrease = orderService.getUserDtoFromUserService(getToken());
-//
-//        Assertions.assertEquals(userDtoBeforeLimitDecrease.getBankAccount().getDailyLimit() - limitDecrease,
-//                userDtoAfterLimitDecrease.getBankAccount().getDailyLimit());
+        double limitDecrease = 10000;
+        var userDtoBeforeLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        orderService.reduceDailyLimitForUser(getToken(), 1L, limitDecrease);
+        var userDtoAfterLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        Assertions.assertEquals(userDtoBeforeLimitDecrease.getDailyLimit() - limitDecrease,
+                userDtoAfterLimitDecrease.getDailyLimit() - limitDecrease);
     }
 
     @Test
     public void  updateBankAccountBalanceTest() {
-//        double accountBalanceToUpdate = 10.00;
-//        var userDtoBeforeUpdate = orderService.getUserDtoFromUserService(getToken());
-//
-//        String url = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
-//        orderService.updateBankAccountBalance(getToken(), url);
-//        var userDtoAfterUpdate = orderService.getUserDtoFromUserService(getToken());
-//
-//        Assertions.assertEquals(userDtoBeforeUpdate.getBankAccount().getAccountBalance() + accountBalanceToUpdate,
-//                userDtoAfterUpdate.getBankAccount().getAccountBalance());
+        double accountBalanceToUpdate = 10.00;
+        var userDtoBeforeUpdate = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        String url = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
+        orderService.updateBankAccountBalance("Bearer " + getToken(), url);
+        var userDtoAfterUpdate = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        Assertions.assertEquals(userDtoBeforeUpdate.getBankAccount().getAccountBalance() + accountBalanceToUpdate,
+                userDtoAfterUpdate.getBankAccount().getAccountBalance());
     }
 
     @Test
     public void calculateThePriceForForexTest(){
-//        ListingType listingType = ListingType.FOREX;
-//        String symbol = "USD/CAD";
-//        Integer qty = 5;
-//
-//        Forex forex = new Forex();
-//        forex.setExchangeRate(1.35);
-//
-//        when(forexRepository.findBySymbol("USD/CAD")).thenReturn(forex);
-//        var result = orderService.calculateThePrice(listingType, symbol, qty);
-//
-//        Assertions.assertEquals(forex.getExchangeRate() * qty, result);
+        ListingType listingType = ListingType.FOREX;
+        String symbol = "USD/CAD";
+        Integer qty = 5;
+
+        Forex forex = new Forex();
+        forex.setExchangeRate(1.35);
+
+        when(forexRepository.findBySymbol("USD/CAD")).thenReturn(forex);
+        var result = orderService.calculateThePrice(listingType, symbol, qty);
+
+        Assertions.assertEquals(forex.getExchangeRate() * qty, result);
     }
 
     @Test
     public void calculateThePriceForStockTest(){
-//        ListingType listingType = ListingType.STOCK;
-//        String symbol = "AAPL";
-//        Integer qty = 5;
-//
-//        Stock stock = new Stock();
-//        stock.setPrice(173.15);
-//
-//        when(stockRepository.findBySymbol("AAPL")).thenReturn(stock);
-//        var result = orderService.calculateThePrice(listingType, symbol, qty);
-//
-//        Assertions.assertEquals(stock.getPrice() * qty, result);
+        ListingType listingType = ListingType.STOCK;
+        String symbol = "AAPL";
+        Integer qty = 5;
+
+        Stock stock = new Stock();
+        stock.setPrice(173.15);
+
+        when(stockRepository.findBySymbol("AAPL")).thenReturn(stock);
+        var result = orderService.calculateThePrice(listingType, symbol, qty);
+
+        Assertions.assertEquals(stock.getPrice() * qty, result);
     }
 
     @Test
     public void getOrdersTest(){
-//        Order order1 = Order.builder().listingType(ListingType.STOCK).listingSymbol("AAPL").quantity(5).build();
-//        Order order2 = Order.builder().listingType(ListingType.STOCK).listingSymbol("GOOGL").quantity(10).build();
-//        Order order3 = Order.builder().listingType(ListingType.STOCK).listingSymbol("MSFT").quantity(15).build();
-//        ArrayList<Order> orders = new ArrayList<>();
-//        orders.add(order1);
-//        orders.add(order2);
-//        orders.add(order3);
-//
-//        Stock stock1 = new Stock();
-//        stock1.setPrice(173.15);
-//        when(stockRepository.findBySymbol("AAPL")).thenReturn(stock1);
-//
-//        Stock stock2 = new Stock();
-//        stock2.setPrice(116.57);
-//        when(stockRepository.findBySymbol("GOOGL")).thenReturn(stock2);
-//
-//        Stock stock3 = new Stock();
-//        stock3.setPrice(310.11);
-//        when(stockRepository.findBySymbol("MSFT")).thenReturn(stock3);
-//
-//        OrderFilterRequest orderFilterRequest = new OrderFilterRequest();
-//        when(orderRepository.findAll(orderFilterRequest.getPredicate())).thenReturn(List.of(order1, order2, order3));
-//
-//        var result1 = orderService.getAllOrders(orderFilterRequest);
-//        var result2 = orderService.getOrdersByUser(orderFilterRequest);
-//
-//        Assertions.assertEquals(orders, result1);
-//        Assertions.assertEquals(orders, result2);
+        Order order1 = Order.builder().listingType(ListingType.STOCK).listingSymbol("AAPL").quantity(5).build();
+        Order order2 = Order.builder().listingType(ListingType.STOCK).listingSymbol("GOOGL").quantity(10).build();
+        Order order3 = Order.builder().listingType(ListingType.STOCK).listingSymbol("MSFT").quantity(15).build();
+        ArrayList<Order> orders = new ArrayList<>();
+        orders.add(order1);
+        orders.add(order2);
+        orders.add(order3);
+
+        Stock stock1 = new Stock();
+        stock1.setPrice(173.15);
+        when(stockRepository.findBySymbol("AAPL")).thenReturn(stock1);
+
+        Stock stock2 = new Stock();
+        stock2.setPrice(116.57);
+        when(stockRepository.findBySymbol("GOOGL")).thenReturn(stock2);
+
+        Stock stock3 = new Stock();
+        stock3.setPrice(310.11);
+        when(stockRepository.findBySymbol("MSFT")).thenReturn(stock3);
+
+        OrderFilterRequest orderFilterRequest = new OrderFilterRequest();
+        when(orderRepository.findAll(orderFilterRequest.getPredicate())).thenReturn(List.of(order1, order2, order3));
+
+        var result1 = orderService.getAllOrders(orderFilterRequest);
+        var result2 = orderService.getOrdersByUser(orderFilterRequest);
+
+        Assertions.assertEquals(orders, result1);
+        Assertions.assertEquals(orders, result2);
     }
 
     @Test
@@ -207,6 +207,8 @@ public class OrderServiceTest extends IntegrationTest {
         Long optionId = 123L;
         BetDto bet = new BetDto();
         LocalDate currentDate = LocalDate.now();
+        bet.setBet(10D);
+        bet.setDate(currentDate);
 
         UserDto userDto = new UserDto();
         userDto.setId(1L);
@@ -218,16 +220,14 @@ public class OrderServiceTest extends IntegrationTest {
         option.setOptionType(OptionType.CALL);
         option.setStrike(100.0);
 
-//        when(orderService.getUserDtoFromUserService(token)).thenReturn(userDto);
-//        when(optionRepository.findById(optionId)).thenReturn(Optional.of(option));
-//
-//        // Act
-//        orderService.placeBet(token, optionId, bet);
-//
-//        // Assert
-//        verify(orderService).getUserDtoFromUserService(token);
-//        verify(optionRepository).findById(optionId);
-//        verify(optionBetRepository).save(any(OptionBet.class));
+        when(optionRepository.findById(optionId)).thenReturn(Optional.of(option));
+
+        // Act
+        orderService.placeBet(token, optionId, bet);
+
+        // Assert
+        verify(optionRepository).findById(optionId);
+        verify(optionBetRepository).save(any(OptionBet.class));
     }
 
     @Test
@@ -272,16 +272,13 @@ public class OrderServiceTest extends IntegrationTest {
         optionBet.setId(optionBetId);
         optionBet.setUserId(userId);
 
-//        when(orderService.getUserDtoFromUserService(token)).thenReturn(userDto);
-//        when(optionBetRepository.findById(optionBetId)).thenReturn(Optional.of(optionBet));
-//
-//        // Act
-//        orderService.rejectBet(token, optionBetId);
-//
-//        // Assert
-//        verify(orderService).getUserDtoFromUserService(token);
-//        verify(optionBetRepository).findById(optionBetId);
-//        verify(optionBetRepository).delete(optionBet);
+        when(optionBetRepository.findById(optionBetId)).thenReturn(Optional.of(optionBet));
+
+        // Act
+        Assertions.assertThrows(BadRequestException.class, () -> orderService.rejectBet(token, optionBetId), "Bad request");
+
+        // Assert
+        verify(optionBetRepository).findById(optionBetId);
     }
 
     @Test
@@ -299,11 +296,10 @@ public class OrderServiceTest extends IntegrationTest {
         optionBet.setId(optionBetId);
         optionBet.setUserId(differentUserId);
 
-//        when(orderService.getUserDtoFromUserService(token)).thenReturn(userDto);
-//        when(optionBetRepository.findById(optionBetId)).thenReturn(Optional.of(optionBet));
-//
-//        // Act & Assert
-//        assertThrows(BadRequestException.class, () -> orderService.rejectBet(token, optionBetId));
+        when(optionBetRepository.findById(optionBetId)).thenReturn(Optional.of(optionBet));
+
+        // Act & Assert
+        assertThrows(BadRequestException.class, () -> orderService.rejectBet(token, optionBetId));
     }
 
     @Test
@@ -328,18 +324,15 @@ public class OrderServiceTest extends IntegrationTest {
         bet2.setDate(LocalDate.now().minusDays(1)); // Before current date
         optionBets.add(bet2);
 
-//        when(orderService.getUserDtoFromUserService(token)).thenReturn(userDto);
-//        when(optionBetRepository.findAllByUserId(userId)).thenReturn(optionBets);
-//
-//        // Act
-//        List<OptionBet> result = orderService.getMyBets(token);
-//
-//        // Assert
-//        verify(orderService).getUserDtoFromUserService(token);
-//        verify(optionBetRepository).findAllByUserId(userId);
-//
-//        assertEquals(1, result.size());
-//        assertEquals(bet1, result.get(0));
+        when(optionBetRepository.findAllByUserId(anyLong())).thenReturn(optionBets);
+
+        // Act
+        List<OptionBet> result = orderService.getMyBets(token);
+
+        // Assert
+        verify(optionBetRepository).findAllByUserId(anyLong());
+        assertEquals(1, result.size());
+        assertEquals(bet1, result.get(0));
     }
 
     @Test
