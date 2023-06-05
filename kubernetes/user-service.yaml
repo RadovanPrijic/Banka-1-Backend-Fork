@@ -23,6 +23,10 @@ spec:
               value: jdbc:mysql://mysql-db:3306/db_banka1?createDatabaseIfNotExist=true
             - name: spring.jpa.hibernate.ddl-auto
               value: update
+            - name: password.reset.endpoint
+              value: https://banka-1.k8s.elab.rs/reset-password
+            - name: password.activate.endpoint
+              value: https://banka-1.k8s.elab.rs/activate-password
           ports:
             - containerPort: 8080
 ---
