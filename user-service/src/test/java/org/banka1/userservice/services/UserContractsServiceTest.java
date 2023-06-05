@@ -56,14 +56,35 @@ public class UserContractsServiceTest extends IntegrationTest {
 
     @Test
     public void deleteUserContract() {
-        usersContractsService.deleteUserContract("test");
-        Assertions.assertTrue(true);
+        UserContract userContract = UserContract.builder()
+                .contractId("contract-id-LAKI")
+                .price(150.0)
+                .build();
+        userContractRepository.save(userContract);
+
+        usersContractsService.deleteUserContract("contract-id-LAKI");
+
+        UserContract contractNotFound = userContractRepository.findByContractId("contract-id-LAKI");
+        Assertions.assertNull(contractNotFound);
     }
 
     @Test
     public void finalizeContract() {
-        usersContractsService.finalizeContract(new UserContractListingsDto());
-        Assertions.assertTrue(true);
+        UserContract userContract = UserContract.builder()
+                .contractId("contract-id-VUK")
+                .price(150.0)
+                .build();
+        userContractRepository.save(userContract);
+
+        User user = userRepository.findByEmail("supervisor@supervisor.com").get();
+
+        UserContractListingsDto request = new UserContractListingsDto();
+        request.setContractId("contract-id-VUK");
+        request.setUserId(user.getId());
+        request.setSellPrice(120.0);
+        request.setStocks(new ArrayList<>());
+
+        usersContractsService.finalizeContract(request);
     }
 
 }

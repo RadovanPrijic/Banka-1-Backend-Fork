@@ -31,7 +31,9 @@
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 
         <!--iskljucuje klase iz test coverage-a-->
-        <sonar.coverage.exclusions>**/bootstrap/*, **/configuration/*,**/domains/**,**/filters/*,**/repositories/*, **/utils/*</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>
+            **/bootstrap/*, **/configuration/*,**/domains/**,**/filters/*,**/repositories/*,**/utils/*,**/ExceptionHandlerController.java,**/UserServiceApplication.java
+        </sonar.coverage.exclusions>
         <!--<sonar.cpd.exclusions>**/config/*,**/model/*</sonar.cpd.exclusions>-->
     </properties>
 
