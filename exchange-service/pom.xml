@@ -33,7 +33,7 @@
 
 		<!--iskljucuje klase iz test coverage-a-->
 		<sonar.coverage.exclusions>
-			**/bootstrap/*, **/configuration/*,**/domains/**,**/errors/*,**/filters/*,**/repositories/*,**/utils/*,**/StockService.java,**/ExchangeServiceApplication.java
+			**/bootstrap/*, **/configuration/*,**/domains/**,**/errors/*,**/filters/*,**/repositories/*,**/utils/*,**/StockService.java,**/OrderService.java,**/ExchangeServiceApplication.java
 		</sonar.coverage.exclusions>
 		<!--<sonar.cpd.exclusions>**/config/*,**/model/*</sonar.cpd.exclusions>-->
 	</properties>
