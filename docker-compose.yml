@@ -6,13 +6,13 @@ services:
     image: rabbitmq
     ports:
       - "5672:5672"
-    profiles: ["all", "exchange", "ufe"]
+    profiles: ["all", "ufe"]
 
   redis:
     image: redis:7.0.11-alpine
     ports:
       - "6379:6379"
-    profiles: [ "all", "exchange", "ufe"]
+    profiles: [ "all", "ufe"]
 
   mysql-db:
     image: mysql

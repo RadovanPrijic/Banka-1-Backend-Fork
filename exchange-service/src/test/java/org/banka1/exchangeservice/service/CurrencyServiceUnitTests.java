@@ -1,4 +1,4 @@
-package org.banka1.exchangeservice;
+package org.banka1.exchangeservice.service;
 
 import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.exchangeservice.domains.entities.Currency;
