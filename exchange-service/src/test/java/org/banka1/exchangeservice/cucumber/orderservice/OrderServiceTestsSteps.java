@@ -88,25 +88,25 @@ public class OrderServiceTestsSteps extends OrderServiceTestsConfig{
 
     @And("Order is made")
     public void orderIsMade() {
-//        forexRepository.deleteAll();
-//        stockRepository.deleteAll();
-//        orderRepository.deleteAll();
-//
-//        try {
-//            forexService.loadForex();
-//            stockService.loadStocks();
-//        } catch (Exception e) {
-//            fail(e.getMessage());
-//        }
-//
-//        OrderRequest orderRequest = new OrderRequest("AAPL", ListingType.STOCK, 1, OrderAction.BUY, OrderType.MARKET_ORDER,
-//                100D, 100D, false, false);
-//
-//        order = orderService.makeOrder(orderRequest, "Bearer " + token);
-//
-//        assertNotNull(order);
-//        assertEquals(order.getUserId(), 1L);
-//        assertEquals(order.getOrderStatus(), OrderStatus.APPROVED);
+        forexRepository.deleteAll();
+        stockRepository.deleteAll();
+        orderRepository.deleteAll();
+
+        try {
+            forexService.loadForex();
+            stockService.loadStocks();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+
+        OrderRequest orderRequest = new OrderRequest("AAPL", ListingType.STOCK, 1, OrderAction.BUY, OrderType.MARKET_ORDER,
+                100D, 100D, false, false);
+
+        order = orderService.makeOrder(orderRequest, "Bearer " + token);
+
+        assertNotNull(order);
+        assertEquals(order.getUserId(), 1L);
+        assertEquals(order.getOrderStatus(), OrderStatus.APPROVED);
     }
 
     @Then("Get order")
@@ -124,28 +124,28 @@ public class OrderServiceTestsSteps extends OrderServiceTestsConfig{
 
     @And("User listing is made")
     public void userListingIsMade(){
-//        Order order = Order.builder().userId(1L).listingSymbol("AMZN").quantity(50).listingType(ListingType.STOCK).build();
-//
-//        UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
-//        userListingCreateDto.setSymbol(order.getListingSymbol());
-//        userListingCreateDto.setQuantity(order.getQuantity());
-//        userListingCreateDto.setListingType(order.getListingType());
-//
-//        try {
-//            String body = objectMapper.writeValueAsString(userListingCreateDto);
-//            String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
-//            HttpRequest request = HttpRequest.newBuilder()
-//                    .uri(URI.create(url))
-//                    .header("Authorization", "Bearer " + token)
-//                    .header("Content-Type", "application/json")
-//                    .method("POST", HttpRequest.BodyPublishers.ofString(body))
-//                    .build();
-//
-//            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        } catch (IOException | InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
+        Order order = Order.builder().userId(1L).listingSymbol("AMZN").quantity(50).listingType(ListingType.STOCK).build();
+
+        UserListingCreateDto userListingCreateDto = new UserListingCreateDto();
+        userListingCreateDto.setSymbol(order.getListingSymbol());
+        userListingCreateDto.setQuantity(order.getQuantity());
+        userListingCreateDto.setListingType(order.getListingType());
+
+        try {
+            String body = objectMapper.writeValueAsString(userListingCreateDto);
+            String url = userServiceUrl + "/user-listings/create?userId=" + order.getUserId();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", "Bearer " + token)
+                    .header("Content-Type", "application/json")
+                    .method("POST", HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Then("Get user listing")
@@ -155,82 +155,82 @@ public class OrderServiceTestsSteps extends OrderServiceTestsConfig{
         userListingDto.setSymbol("AMZN");
         userListingDto.setQuantity(50);
 
-//        UserListingDto resultUserListingDto = orderService.getUserListing(1L, ListingType.STOCK, "AMZN", "Bearer " + token);
-//
-//        Assertions.assertNotNull(resultUserListingDto);
-//        Assertions.assertEquals(userListingDto.getListingType(), resultUserListingDto.getListingType());
-//        Assertions.assertEquals(userListingDto.getSymbol(), resultUserListingDto.getSymbol());
-//        Assertions.assertEquals(userListingDto.getQuantity(), resultUserListingDto.getQuantity());
+        UserListingDto resultUserListingDto = orderService.getUserListing(1L, ListingType.STOCK, "AMZN", "Bearer " + token);
+
+        Assertions.assertNotNull(resultUserListingDto);
+        Assertions.assertEquals(userListingDto.getListingType(), resultUserListingDto.getListingType());
+        Assertions.assertEquals(userListingDto.getSymbol(), resultUserListingDto.getSymbol());
+        Assertions.assertEquals(userListingDto.getQuantity(), resultUserListingDto.getQuantity());
     }
 
     @Then("Approve and get order")
     public void approveAndGetOrder() {
-//        order.setOrderStatus(OrderStatus.REJECTED);
-//        orderRepository.save(order);
-//
-//        orderService.approveOrder("Bearer " + token, order.getId());
-//
-//        Optional<Order> optionalOrder = orderRepository.findById(order.getId());
-//        Order orderFromDatabase = optionalOrder.stream().findFirst().orElse(null);
-//
-//        Assertions.assertNotNull(orderFromDatabase);
-//        Assertions.assertEquals(orderFromDatabase.getOrderStatus(), OrderStatus.APPROVED);
+        order.setOrderStatus(OrderStatus.REJECTED);
+        orderRepository.save(order);
+
+        orderService.approveOrder("Bearer " + token, order.getId());
+
+        Optional<Order> optionalOrder = orderRepository.findById(order.getId());
+        Order orderFromDatabase = optionalOrder.stream().findFirst().orElse(null);
+
+        Assertions.assertNotNull(orderFromDatabase);
+        Assertions.assertEquals(orderFromDatabase.getOrderStatus(), OrderStatus.APPROVED);
     }
 
     @Then("Reject and get order")
     public void rejectAndGetOrder() {
-//        orderService.rejectOrder("Bearer " + token, order.getId());
-//
-//        Optional<Order> optionalOrder = orderRepository.findById(order.getId());
-//        Order orderFromDatabase = optionalOrder.stream().findFirst().orElse(null);
-//
-//        Assertions.assertNotNull(orderFromDatabase);
-//        Assertions.assertEquals(orderFromDatabase.getOrderStatus(), OrderStatus.REJECTED);
+        orderService.rejectOrder("Bearer " + token, order.getId());
+
+        Optional<Order> optionalOrder = orderRepository.findById(order.getId());
+        Order orderFromDatabase = optionalOrder.stream().findFirst().orElse(null);
+
+        Assertions.assertNotNull(orderFromDatabase);
+        Assertions.assertEquals(orderFromDatabase.getOrderStatus(), OrderStatus.REJECTED);
     }
 
     @And("An invalid rejected order search is made")
     public void anInvalidRejectedOrderSearchIsMade() {
-//        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.rejectOrder("Bearer " + token, 999L));
+        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.rejectOrder("Bearer " + token, 999L));
     }
 
     @And("An invalid approved order search is made")
     public void anInvalidApprovedOrderSearchIsMade() {
-//        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.approveOrder("Bearer " + token, 999L));
+        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.approveOrder("Bearer " + token, 999L));
     }
 
     @Then("Get user information from user service")
     public void getUserInformationFromUserService() {
-//        var result = orderService.getUserDtoFromUserService("Bearer " + token);
-//
-//        UserDto userDto = new UserDto();
-//        userDto.setId(1L);
-//
-//        Assertions.assertNotNull(result);
-//        Assertions.assertEquals(userDto.getId(), result.getId());
+        var result = orderService.getUserDtoFromUserService("Bearer " + token);
+
+        UserDto userDto = new UserDto();
+        userDto.setId(1L);
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(userDto.getId(), result.getId());
     }
 
     @Then("User daily limit can be reduced")
     public void userDailyLimitIsUpdated() {
-//        double limitDecrease = 10000;
-//        var userDtoBeforeLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + token);
-//
-//        orderService.reduceDailyLimitForUser("Bearer " + token, 1L, limitDecrease);
-//        var userDtoAfterLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + token);
-//
-//        Assertions.assertEquals(userDtoBeforeLimitDecrease.getDailyLimit() - limitDecrease,
-//                userDtoAfterLimitDecrease.getDailyLimit());
+        double limitDecrease = 10000;
+        var userDtoBeforeLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + token);
+
+        orderService.reduceDailyLimitForUser("Bearer " + token, 1L, limitDecrease);
+        var userDtoAfterLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + token);
+
+        Assertions.assertEquals(userDtoBeforeLimitDecrease.getDailyLimit() - limitDecrease,
+                userDtoAfterLimitDecrease.getDailyLimit());
     }
 
     @Then("User bank account balance can be updated")
     public void userBankAccountBalanceIsUpdated() {
-//        double accountBalanceToUpdate = 10.00;
-//        var userDtoBeforeUpdate = orderService.getUserDtoFromUserService("Bearer " + token);
-//
-//        String url = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
-//        orderService.updateBankAccountBalance("Bearer " + token, url);
-//        var userDtoAfterUpdate = orderService.getUserDtoFromUserService("Bearer " + token);
-//
-//        Assertions.assertEquals(userDtoBeforeUpdate.getBankAccount().getAccountBalance() + accountBalanceToUpdate,
-//                userDtoAfterUpdate.getBankAccount().getAccountBalance());
+        double accountBalanceToUpdate = 10.00;
+        var userDtoBeforeUpdate = orderService.getUserDtoFromUserService("Bearer " + token);
+
+        String url = userServiceUrl + "/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
+        orderService.updateBankAccountBalance("Bearer " + token, url);
+        var userDtoAfterUpdate = orderService.getUserDtoFromUserService("Bearer " + token);
+
+        Assertions.assertEquals(userDtoBeforeUpdate.getBankAccount().getAccountBalance() + accountBalanceToUpdate,
+                userDtoAfterUpdate.getBankAccount().getAccountBalance());
     }
 }
