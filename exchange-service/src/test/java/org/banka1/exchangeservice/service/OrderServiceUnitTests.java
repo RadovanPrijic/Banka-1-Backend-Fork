@@ -1,8 +1,11 @@
 package org.banka1.exchangeservice.service;
 
+import org.banka1.exchangeservice.IntegrationTest;
 import org.banka1.exchangeservice.domains.dtos.order.OrderFilterRequest;
 
+import org.banka1.exchangeservice.domains.dtos.user.UserDto;
 import org.banka1.exchangeservice.domains.entities.*;
+import org.banka1.exchangeservice.domains.exceptions.NotFoundExceptions;
 import org.banka1.exchangeservice.repositories.*;
 import org.banka1.exchangeservice.services.ForexService;
 import org.banka1.exchangeservice.services.OrderService;
@@ -11,13 +14,14 @@ import org.banka1.exchangeservice.utils.JwtUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class OrderServiceUnitTests {
+public class OrderServiceUnitTests extends IntegrationTest {
 
     private OrderRepository orderRepository;
     private ForexRepository forexRepository;
@@ -27,6 +31,9 @@ public class OrderServiceUnitTests {
     private OrderService orderService;
     private OptionBetRepository optionBetRepository;
     private OptionRepository optionRepository;
+
+    @Value("${user.service.endpoint}")
+    private String userServiceUrl;
 
     @BeforeEach
     void setUp() {
@@ -38,85 +45,73 @@ public class OrderServiceUnitTests {
         this.forexService = mock(ForexService.class);
         this.stockService = mock(StockService.class);
         this.orderService = new OrderService(orderRepository, forexRepository, stockRepository,
-                optionBetRepository, optionRepository, forexService, stockService, new JwtUtil(), null, null);
+                optionBetRepository, optionRepository, forexService, stockService, new JwtUtil(), userServiceUrl, SECRET_KEY);
     }
 
-//    @Test
-//    public void getUserDtoFromUserServiceTest(){
-//        var result = orderService.getUserDtoFromUserService("Bearer " + getToken());
-//
-//        UserDto userDto = new UserDto();
-//        userDto.setId(1L);
-//
-//        Assertions.assertNotNull(result);
-//        Assertions.assertEquals(userDto.getId(), result.getId());
-//    }
+    @Test
+    public void getUserDtoFromUserServiceTest(){
+        var result = orderService.getUserDtoFromUserService("Bearer " + getToken());
 
-//    @Test
-//    public void rejectOrderTest(){
-//        Order order = new Order();
-//        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-//
-//        orderService.rejectOrder("Bearer " + getToken(), 1L);
-//
-//        verify(orderRepository, times(1)).save(order);
-//        Assertions.assertEquals(order.getOrderStatus(), OrderStatus.REJECTED);
-//    }
-//
-//    @Test
-//    public void rejectOrderNotFoundExceptionTest(){
-//        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
-//
-//        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.rejectOrder("Bearer " + getToken(), 1L));
-//        verify(orderRepository, times(1)).findById(1L);
-//        verifyNoMoreInteractions(orderRepository);
-//    }
-//
-//    @Test
-//    public void approveOrderTest(){
-//        Order order = new Order();
-//        order.setUserId(1L);
-//        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-//
-//        orderService.approveOrder("Bearer " + getToken(), 1L);
-//
-//        verify(orderRepository, times(1)).save(order);
-//        Assertions.assertEquals(order.getOrderStatus(), OrderStatus.APPROVED);
-//    }
-//
-//    @Test
-//    public void approveOrderNotFoundExceptionTest(){
-//        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
-//
-//        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.approveOrder("Bearer " + getToken(), 1L));
-//        verify(orderRepository, times(1)).findById(1L);
-//        verifyNoMoreInteractions(orderRepository);
-//    }
+        UserDto userDto = new UserDto();
+        userDto.setId(1L);
 
-//    @Test
-//    public void reduceDailyLimitForUserTest(){
-//        double limitDecrease = 10000;
-//        var userDtoBeforeLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + getToken());
-//
-//        orderService.reduceDailyLimitForUser("Bearer " + getToken(), 1L, limitDecrease);
-//        var userDtoAfterLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + getToken());
-//
-//        Assertions.assertEquals(userDtoBeforeLimitDecrease.getDailyLimit() - limitDecrease,
-//                userDtoAfterLimitDecrease.getDailyLimit());
-//    }
-//
-//    @Test
-//    public void  updateBankAccountBalanceTest() {
-//        double accountBalanceToUpdate = 10.00;
-//        var userDtoBeforeUpdate = orderService.getUserDtoFromUserService("Bearer " + getToken());
-//
-//        String url = "http://127.0.0.1:8080/api/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
-//        orderService.updateBankAccountBalance("Bearer " + getToken(), url);
-//        var userDtoAfterUpdate = orderService.getUserDtoFromUserService("Bearer " + getToken());
-//
-//        Assertions.assertEquals(userDtoBeforeUpdate.getBankAccount().getAccountBalance() + accountBalanceToUpdate,
-//                userDtoAfterUpdate.getBankAccount().getAccountBalance());
-//    }
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(userDto.getId(), result.getId());
+    }
+
+    @Test
+    public void rejectOrderTest(){
+        Order order = new Order();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        orderService.rejectOrder("Bearer " + getToken(), 1L);
+
+        verify(orderRepository, times(1)).save(order);
+        Assertions.assertEquals(order.getOrderStatus(), OrderStatus.REJECTED);
+    }
+
+    @Test
+    public void rejectOrderNotFoundExceptionTest(){
+        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
+
+        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.rejectOrder("Bearer " + getToken(), 1L));
+        verify(orderRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(orderRepository);
+    }
+
+    @Test
+    public void approveOrderNotFoundExceptionTest(){
+        when(orderRepository.findById(1L)).thenThrow(NotFoundExceptions.class);
+
+        Assertions.assertThrows(NotFoundExceptions.class, () -> orderService.approveOrder("Bearer " + getToken(), 1L));
+        verify(orderRepository, times(1)).findById(1L);
+        verifyNoMoreInteractions(orderRepository);
+    }
+
+    @Test
+    public void reduceDailyLimitForUserTest(){
+        double limitDecrease = 10000;
+        var userDtoBeforeLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        orderService.reduceDailyLimitForUser("Bearer " + getToken(), 1L, limitDecrease);
+        var userDtoAfterLimitDecrease = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        Assertions.assertEquals(userDtoBeforeLimitDecrease.getDailyLimit() - limitDecrease,
+                userDtoAfterLimitDecrease.getDailyLimit());
+    }
+
+    @Test
+    public void  updateBankAccountBalanceTest() {
+        double accountBalanceToUpdate = 10.00;
+        var userDtoBeforeUpdate = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        String url = "http://localhost:8080/api/users/increase-balance?increaseAccount=" + accountBalanceToUpdate;
+        orderService.updateBankAccountBalance("Bearer " + getToken(), url);
+        var userDtoAfterUpdate = orderService.getUserDtoFromUserService("Bearer " + getToken());
+
+        Assertions.assertEquals(userDtoBeforeUpdate.getBankAccount().getAccountBalance() + accountBalanceToUpdate,
+                userDtoAfterUpdate.getBankAccount().getAccountBalance());
+    }
 
     @Test
     public void calculateThePriceForForexTest(){
