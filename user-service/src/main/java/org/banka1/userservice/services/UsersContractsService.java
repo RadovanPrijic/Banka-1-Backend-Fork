@@ -62,35 +62,6 @@ public class UsersContractsService {
         userContractRepository.delete(userContract);
     }
 
-//    @Transactional(isolation = Isolation.SERIALIZABLE)
-//    public void finalizeTheContract(UserContractListingsDto userContractListingsDto) {
-//        UserContract userContract = userContractRepository.findAllByContractId(userContractListingsDto.getContractId());
-//        BankAccount bankAccount = bankAccountRepository.findAll().get(0);
-//        bankAccount.setAccountBalance(bankAccount.getAccountBalance() + userContractListingsDto.getSellPrice() - userContract.getPrice());
-//        bankAccount.setReservedAsset(bankAccount.getReservedAsset() - userContract.getPrice());
-//
-//        userContractRepository.delete(userContract);
-//        bankAccountRepository.save(bankAccount);
-//
-//        List<UserListing> userListings = userListingRepository.findByUser_Id(userContractListingsDto.getUserId());
-//
-//        for(UserContractListingsDto.StockData stockData : userContractListingsDto.getSellStocks()){
-//            Optional<UserListing> userListing = userListings.stream().filter(ul -> ul.getSymbol().equals(stockData.getSymbol())).findFirst();
-//            if(userListing.isPresent()) {
-//                userListingService.updateUserListing(userListing.get().getId(), userListing.get().getQuantity() - stockData.getQuantity());
-//            }
-//        }
-//
-//        for(UserContractListingsDto.StockData stockData : userContractListingsDto.getBuyStocks()){
-//            Optional<UserListing> userListing = userListings.stream().filter(ul -> ul.getSymbol().equals(stockData.getSymbol())).findFirst();
-//            if(userListing.isPresent()){
-//                userListingService.updateUserListing(userListing.get().getId(), userListing.get().getQuantity() + stockData.getQuantity());
-//            }else {
-//                userListingService.createUserListing(userContractListingsDto.getUserId(), new UserListingCreateDto(ListingType.STOCK, userListing.get().getSymbol(), userListing.get().getQuantity()));
-//            }
-//        }
-//    }
-
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void finalizeContract(UserContractListingsDto userContractListingsDto) {
         UserContract userContract = userContractRepository.findByContractId(userContractListingsDto.getContractId());
