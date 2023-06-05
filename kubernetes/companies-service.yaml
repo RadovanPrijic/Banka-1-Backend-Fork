@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: companies-service
+  name: companies-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: companies-service
+  template:
+    metadata:
+      labels:
+        app: companies-service
+    spec:
+      containers:
+        - image: harbor.k8s.elab.rs/banka-1/companies-service:latest
+          imagePullPolicy: Always
+          name: companies-service
+          ports:
+            - containerPort: 8083
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: companies-service
+  name: companies-service
+spec:
+  ports:
+    - port: 8083
+      protocol: TCP
+      targetPort: 8083
+  selector:
+    app: companies-service
+  type: ClusterIP

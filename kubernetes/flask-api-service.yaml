@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flask-api-service
+  name: flask-api-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-api-service
+  template:
+    metadata:
+      labels:
+        app: flask-api-service
+    spec:
+      containers:
+        - image: harbor.k8s.elab.rs/banka-1/flask-api-service:latest
+          imagePullPolicy: Always
+          name: flask-api-service
+          ports:
+            - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: flask-api-service
+  name: flask-api-service
+spec:
+  ports:
+    - port: 8888
+      protocol: TCP
+      targetPort: 8888
+  selector:
+    app: flask-api-service
+  type: ClusterIP
