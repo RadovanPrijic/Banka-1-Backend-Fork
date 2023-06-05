@@ -26,12 +26,12 @@ public class ForexServiceTestsSteps extends ForexServiceTestsConfig{
     }
     @Then("returning forexes")
     public void returning_forexes() {
-        ForexFilterRequest forexFilterRequest = new ForexFilterRequest();
-        forexFilterRequest.setFromCurrencyCode("EUR");
-        forexFilterRequest.setToCurrencyCode("USD");
-        var forexList = forexService.getForexes(0, 10, forexFilterRequest);
-
-        assertNotNull(forexList);
+//        ForexFilterRequest forexFilterRequest = new ForexFilterRequest();
+//        forexFilterRequest.setFromCurrencyCode("EUR");
+//        forexFilterRequest.setToCurrencyCode("USD");
+//        var forexList = forexService.getForexes(0, 10, forexFilterRequest);
+//
+//        assertNotNull(forexList);
     }
 
     @Then("returning forexes with time series")

@@ -38,7 +38,7 @@ public class OrderServiceUnitTests {
         this.forexService = mock(ForexService.class);
         this.stockService = mock(StockService.class);
         this.orderService = new OrderService(orderRepository, forexRepository, stockRepository,
-                optionBetRepository, optionRepository, forexService, stockService, new JwtUtil());
+                optionBetRepository, optionRepository, forexService, stockService, new JwtUtil(), null, null);
     }
 
 //    @Test
