@@ -68,4 +68,10 @@ public class UserListingServiceTest extends IntegrationTest {
         Assertions.assertNotNull(response);
         Assertions.assertEquals(20, response.getQuantity());
     }
+
+    @Test
+    public void updateUserListingNotFound() {
+        Assertions.assertThrows(NotFoundExceptions.class,
+                () -> userListingService.updateUserListing(0L, 20), "listing not found");
+    }
 }
