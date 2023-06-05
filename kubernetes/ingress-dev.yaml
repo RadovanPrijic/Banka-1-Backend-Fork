@@ -1,0 +1,100 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-backend
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "banka-1-dev.k8s.elab.rs"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/api/users(/|$)(.*)"
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - pathType: Prefix
+            path: "/api/user-listings(/|$)(.*)"
+            backend:
+              service:
+                name: user-service
+                port:
+                  number: 8080
+          - pathType: Prefix
+            path: "/api/stocks(/|$)(.*)"
+            backend:
+              service:
+                name: exchange-service
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: "/api/forexes(/|$)(.*)"
+            backend:
+              service:
+                name: exchange-service
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: "/api/orders(/|$)(.*)"
+            backend:
+              service:
+                name: exchange-service
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: "/api/options(/|$)(.*)"
+            backend:
+              service:
+                name: exchange-service
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: "/api/contracts(/|$)(.*)"
+            backend:
+              service:
+                name: contracts-service
+                port:
+                  number: 8082
+          - pathType: Prefix
+            path: "/api/companies(/|$)(.*)"
+            backend:
+              service:
+                name: companies-service
+                port:
+                  number: 8083
+          - pathType: Prefix
+            path: "/api/contacts(/|$)(.*)"
+            backend:
+              service:
+                name: companies-service
+                port:
+                  number: 8083
+          - pathType: Prefix
+            path: "/api/accounts(/|$)(.*)"
+            backend:
+              service:
+                name: companies-service
+                port:
+                  number: 8083
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-frontend
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "banka-1-dev.k8s.elab.rs"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
