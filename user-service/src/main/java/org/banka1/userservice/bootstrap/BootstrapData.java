@@ -24,7 +24,10 @@ public class BootstrapData implements CommandLineRunner {
     private final BankAccountRepository bankAccountRepository;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
+        if (!userRepository.findAll().isEmpty())
+            return;
+
         BankAccount bankAccount = BankAccount.builder()
                 .currencyCode("USD")
                 .accountBalance(300000D)
