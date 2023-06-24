@@ -19,6 +19,7 @@
     <modules>
         <module>user-service</module>
         <module>exchange-service</module>
+        <module>bank-service</module>
     </modules>
 
     <build>
