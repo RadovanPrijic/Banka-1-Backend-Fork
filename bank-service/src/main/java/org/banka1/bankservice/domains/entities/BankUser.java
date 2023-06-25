@@ -10,7 +10,6 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,9 +19,8 @@ import java.util.stream.Collectors;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users",
-        indexes = { @Index(name = "email_index", columnList = "email")})
-public class User {
+@Table(name = "bank_users")
+public class BankUser {
 
     public static final String USER_EMPLOYEE = UserRole.ROLE_EMPLOYEE.name();
     public static final String USER_CLIENT = UserRole.ROLE_CLIENT.name();

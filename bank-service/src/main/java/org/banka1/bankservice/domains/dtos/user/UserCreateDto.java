@@ -21,10 +21,10 @@ public class UserCreateDto {
     @NotBlank
     private String lastName;
 
-    @NotBlank
+    @NotNull
     private LocalDate birthDate;
 
-    @NotBlank
+    @NotNull
     private Gender gender;
 
     @NotBlank

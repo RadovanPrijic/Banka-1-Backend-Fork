@@ -1,13 +1,13 @@
 package org.banka1.bankservice.repositories;
 
-import org.banka1.bankservice.domains.entities.User;
+import org.banka1.bankservice.domains.entities.BankUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long>, QuerydslPredicateExecutor<User> {
+public interface UserRepository extends JpaRepository<BankUser, Long>, QuerydslPredicateExecutor<BankUser> {
 
-    Optional<User> findByEmail(String email);
+    Optional<BankUser> findByEmail(String email);
 
 }

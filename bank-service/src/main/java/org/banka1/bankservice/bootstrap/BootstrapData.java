@@ -1,10 +1,10 @@
 package org.banka1.bankservice.bootstrap;
 
 import lombok.AllArgsConstructor;
+import org.banka1.bankservice.domains.entities.BankUser;
 import org.banka1.bankservice.domains.entities.Department;
 import org.banka1.bankservice.domains.entities.Gender;
 import org.banka1.bankservice.domains.entities.Position;
-import org.banka1.bankservice.domains.entities.User;
 import org.banka1.bankservice.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Component
@@ -27,7 +26,7 @@ public class BootstrapData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        User employee1 = User.builder()
+        BankUser employee1 = BankUser.builder()
                 .firstName("Zoran")
                 .lastName("Stosic")
                 .birthDate(LocalDate.of(1981, 1, 29))
@@ -41,7 +40,7 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_EMPLOYEE"))
                 .build();
 
-        User employee2 = User.builder()
+        BankUser employee2 = BankUser.builder()
                 .firstName("Luka")
                 .lastName("Lukacevic")
                 .birthDate(LocalDate.of(1983, 6, 1))
@@ -55,7 +54,7 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_EMPLOYEE"))
                 .build();
 
-        User client1 = User.builder()
+        BankUser client1 = BankUser.builder()
                 .firstName("Marko")
                 .lastName("Markovic")
                 .birthDate(LocalDate.of(1990, 10, 5))
@@ -67,7 +66,7 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_CLIENT"))
                 .build();
 
-        User client2 = User.builder()
+        BankUser client2 = BankUser.builder()
                 .firstName("Petar")
                 .lastName("Petrovic")
                 .birthDate(LocalDate.of(1986, 3, 17))
@@ -79,7 +78,7 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_CLIENT"))
                 .build();
 
-        User client3 = User.builder()
+        BankUser client3 = BankUser.builder()
                 .firstName("Jovana")
                 .lastName("Jovanovic")
                 .birthDate(LocalDate.of(1988, 9, 11))
