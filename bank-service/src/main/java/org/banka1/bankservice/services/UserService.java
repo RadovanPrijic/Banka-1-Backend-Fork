@@ -56,38 +56,9 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-//    public Page<UserDto> getUsers(UserFilterRequest filterRequest, Integer page, Integer size) {
-//        Page<User> users = userRepository.findAll(
-//                filterRequest.getPredicate(),
-//                PageRequest.of(page, size)
-//        );
-//
-//        return new PageImpl<>(
-//                users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
-//                PageRequest.of(page, size),
-//                users.getTotalElements()
-//        );
-//    }
-//
-//    public Page<UserDto> superviseUsers(Integer page, Integer size) {
-//        UserFilterRequest filterRequest = new UserFilterRequest();
-//        filterRequest.setPosition(Position.EMPLOYEE);
-//
-//        Page<User> users = userRepository.findAll(
-//                filterRequest.getPredicate(),
-//                PageRequest.of(page, size)
-//        );
-//
-//        return new PageImpl<>(
-//                users.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList()),
-//                PageRequest.of(page, size),
-//                users.getTotalElements()
-//        );
-//    }
-
     public UserDto createUser(UserCreateDto userCreateDto) {
         if(!emailPattern.matcher(userCreateDto.getEmail()).matches()) {
-            throw new ValidationException("invalid email");
+            throw new ValidationException("Invalid email address form.");
         }
 
         User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
@@ -97,7 +68,6 @@ public class UserService implements UserDetailsService {
         userRepository.saveAndFlush(user);
 
         String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordActivateEndpoint + "/" + user.getId();
-        //TODO Ovde treba proslediti aktivacioni kod (a mozda i ne!)
         emailService.sendEmail(user.getEmail(), "Activate your bank account", text);
 
         return UserMapper.INSTANCE.userToUserDto(user);
@@ -123,13 +93,13 @@ public class UserService implements UserDetailsService {
     }
 
     public void resetUserPassword(PasswordDto passwordDto, Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User has not been found."));
+
         if(!passwordPattern.matcher(passwordDto.getPassword()).matches()) {
             throw new ValidationException("Invalid password format. Password has to contain" +
                     " at least one of each: uppercase letter, lowercase letter, number, and special character. " +
                     "It also has to be at least 8 characters long.");
         }
-
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User has not been found."));
 
         if(user.getSecretKey() == null || !user.getSecretKey().equals(passwordDto.getSecretKey())) {
             throw new BadRequestException("Invalid secret key.");
@@ -142,39 +112,34 @@ public class UserService implements UserDetailsService {
     }
 
     public void forgotPassword(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("user not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User has not been found."));
 
         String secretKey = RandomStringUtils.randomAlphabetic(6);
         user.setSecretKey(secretKey);
         userRepository.save(user);
 
         String text = "Secret key: " + secretKey + "\n" + "Link: " + passwordResetEndpoint + "/" + user.getId();
-        //TODO Ovde treba proslediti ovde password reset token (a mozda i ne!)
-        emailService.sendEmail(user.getEmail(), "Reset password", text);
+        emailService.sendEmail(user.getEmail(), "Reset your bank account password", text);
     }
 
     public UserDto findUserById(Long id) {
         Optional<User> user = userRepository.findById(id);
-        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("user not found"));
+        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("User has not been found."));
     }
 
     public UserDto findUserByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
-        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("user not found"));
+        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("User has not been found."));
     }
 
     public UserDto returnUserProfile(){
         Optional<User> user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("user not found"));
+        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("User has not been found."));
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("user not found"));
-
-        if(!user.isActive()){
-            throw new ForbiddenException("user not active");
-        }
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User has not been found."));
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.getAuthorities());
     }

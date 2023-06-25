@@ -1,11 +1,13 @@
 package org.banka1.bankservice.domains.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -33,7 +35,8 @@ public class User {
 
     private String lastName;
 
-    private Date birthDate;
+    @JsonFormat(pattern="dd-MM-yyyy")
+    private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
@@ -56,8 +59,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Department department;
-
-    private boolean active;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles;

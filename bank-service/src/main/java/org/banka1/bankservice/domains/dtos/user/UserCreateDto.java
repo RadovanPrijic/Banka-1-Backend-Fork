@@ -7,7 +7,7 @@ import org.banka1.bankservice.domains.entities.Gender;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -22,7 +22,7 @@ public class UserCreateDto {
     private String lastName;
 
     @NotBlank
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @NotBlank
     private Gender gender;
