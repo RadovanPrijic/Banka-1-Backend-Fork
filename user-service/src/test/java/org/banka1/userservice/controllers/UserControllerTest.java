@@ -282,4 +282,129 @@ public class UserControllerTest extends IntegrationTest {
 
     }
 
+    @Test
+    public void resetPasswordThrowsValidationException() throws Exception {
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setPassword("badpass");
+        passwordDto.setSecretKey("123456");
+        Long id = userRepository.findByEmail("supervisor@supervisor.com").get().getId();
+
+        mockMvc.perform(post("/api/users/reset-password/" + id)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(passwordDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
+    public void resetPasswordThrowsUserNotFoundException() throws Exception {
+        PasswordDto passwordDto = new PasswordDto();
+        passwordDto.setPassword("Aa1234!!!asdFG#");
+        passwordDto.setSecretKey("123456");
+
+        mockMvc.perform(post("/api/users/reset-password/0")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(passwordDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void forgotPasswordThrowsUserNotFoundException() throws Exception {
+        mockMvc.perform(get("/api/users/forgot-password?email=fake@mail.com")
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void forgotPasswordThrowsUserSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/users/forgot-password?email=supervisor@supervisor.com")
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void resetDailyLimitSuccessfully() throws Exception {
+        Long id = userRepository.findByEmail("test@test.com").get().getId();
+
+        mockMvc.perform(put("/api/users/reset-daily-limit?userId=" + id)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void resetDailyLimitNotFoundException() throws Exception {
+        mockMvc.perform(put("/api/users/reset-daily-limit?userId=0")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void setDailyLimitSuccessfully() throws Exception {
+        Long id = userRepository.findByEmail("test@test.com").get().getId();
+
+        mockMvc.perform(put("/api/users/set-daily-limit?userId=" + id + "&setLimit=1000")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void setDailyLimitNotFoundException() throws Exception {
+        mockMvc.perform(put("/api/users/set-daily-limit?userId=0&setLimit=1000")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void reduceDailyLimitSuccessfully() throws Exception {
+        Long id = userRepository.findByEmail("test@test.com").get().getId();
+
+        mockMvc.perform(put("/api/users/reduce-daily-limit?userId=" + id + "&decreaseLimit=1000")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void increaseBankBalanceSuccessfully() throws Exception {
+        Double amount = 200.0;
+        mockMvc.perform(put("/api/users/increase-balance?increaseAccount=" + amount)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void decreaseBankBalanceSuccessfully() throws Exception {
+        Double amount = 200.0;
+        mockMvc.perform(put("/api/users/decrease-balance?decreaseAccount=" + amount)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
 }

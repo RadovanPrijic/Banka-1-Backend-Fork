@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: contracts-service
+  name: contracts-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: contracts-service
+  template:
+    metadata:
+      labels:
+        app: contracts-service
+    spec:
+      containers:
+        - image: harbor.k8s.elab.rs/banka-1/contracts-service:latest
+          imagePullPolicy: Always
+          name: contracts-service
+          ports:
+            - containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: contracts-service
+  name: contracts-service
+spec:
+  ports:
+    - port: 8082
+      protocol: TCP
+      targetPort: 8082
+  selector:
+    app: contracts-service
+  type: ClusterIP

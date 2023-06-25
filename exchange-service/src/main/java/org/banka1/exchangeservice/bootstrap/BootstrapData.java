@@ -1,22 +1,19 @@
 package org.banka1.exchangeservice.bootstrap;
 
 import com.opencsv.bean.CsvToBeanBuilder;
+import lombok.AllArgsConstructor;
+import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.exchangeservice.domains.dtos.exchange.ExchangeCSV;
 import org.banka1.exchangeservice.services.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
-import lombok.AllArgsConstructor;
-import org.banka1.exchangeservice.domains.dtos.currency.CurrencyCsvBean;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-
-import java.util.ArrayList;
 
 
 @Component
@@ -33,6 +30,8 @@ public class BootstrapData implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!exchangeService.getExchanges(0, 10).isEmpty())
+            return;
 
         // CURRENCY DATA
         List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
