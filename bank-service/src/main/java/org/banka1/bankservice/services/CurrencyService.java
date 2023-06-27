@@ -41,12 +41,11 @@ public class CurrencyService {
                     currency.setCurrencySymbol(c.getSymbol(Locale.US));
 
                 Locale locale = new Locale("", currency.getCurrencyCode().substring(0, 2));
-                currency.setCountry(locale.getDisplayCountry(Locale.US));
-                currency.setStatus(AccountStatus.ACTIVE);
+                currency.setPolity(locale.getDisplayCountry(Locale.US));
 
             } catch (Exception e) {
                 currency.setCurrencySymbol("Doesn't exist");
-                currency.setCountry("Doesn't exist");
+                currency.setPolity("Doesn't exist");
             }
 
             currenciesToSave.add(currency);

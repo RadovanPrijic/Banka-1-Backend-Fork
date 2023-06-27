@@ -8,7 +8,6 @@ import org.banka1.bankservice.domains.entities.user.BankUser;
 import javax.persistence.*;
 import java.time.LocalDate;
 
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

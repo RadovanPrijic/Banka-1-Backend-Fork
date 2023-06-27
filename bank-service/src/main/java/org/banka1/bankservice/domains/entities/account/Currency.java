@@ -9,12 +9,13 @@ import java.io.Serializable;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "bank_currencies")
+@Getter
+@Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "bank_currencies")
 public class Currency implements Serializable {
 
     @Serial
