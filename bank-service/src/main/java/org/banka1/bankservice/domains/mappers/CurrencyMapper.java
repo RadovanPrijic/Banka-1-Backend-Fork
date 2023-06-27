@@ -10,7 +10,9 @@ import org.mapstruct.factory.Mappers;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CurrencyMapper {
+
     CurrencyMapper INSTANCE = Mappers.getMapper(CurrencyMapper.class);
 
     CurrencyCsvBean currencyToCurrencyCsvBean(Currency currency);
+
 }
