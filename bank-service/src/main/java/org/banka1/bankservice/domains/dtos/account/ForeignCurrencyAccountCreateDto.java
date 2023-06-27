@@ -39,6 +39,6 @@ public class ForeignCurrencyAccountCreateDto {
     @DecimalMin(value="0.0", message="decimalField: positive number, min 0.0 is required")
     private Double maintenanceCost;
 
-    private List<ForeignCurrencyBalanceDto> foreignCurrencyBalances;
+    private List<String> foreignCurrencyBalances;
 
 }

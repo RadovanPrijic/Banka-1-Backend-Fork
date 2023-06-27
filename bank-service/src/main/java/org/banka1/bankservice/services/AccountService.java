@@ -90,8 +90,15 @@ public class AccountService {
         foreignCurrencyAccount.setAccountType(foreignCurrencyAccountCreateDto.getAccountType());
         foreignCurrencyAccount.setInterestRate(foreignCurrencyAccountCreateDto.getInterestRate());
         foreignCurrencyAccount.setMaintenanceCost(foreignCurrencyAccountCreateDto.getMaintenanceCost());
+        foreignCurrencyAccountRepository.saveAndFlush(foreignCurrencyAccount);
 
-//        foreignCurrencyAccount.getForeignCurrencyBalances() ???
+        foreignCurrencyAccountCreateDto.getForeignCurrencyBalances().forEach(foreignCurrency -> {
+            ForeignCurrencyBalance foreignCurrencyBalance = new ForeignCurrencyBalance();
+            foreignCurrencyBalance.setAccount(foreignCurrencyAccount);
+            foreignCurrencyBalance.setForeignCurrencyCode(foreignCurrency);
+            foreignCurrencyBalance.setAccountBalance(random.nextDouble(2500));
+            foreignCurrencyBalanceRepository.saveAndFlush(foreignCurrencyBalance);
+        });
 
         foreignCurrencyAccountRepository.save(foreignCurrencyAccount);
 
