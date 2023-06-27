@@ -18,10 +18,6 @@ import java.time.LocalDate;
 @Table(name = "current_accounts")
 public class CurrentAccount extends Account {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
 

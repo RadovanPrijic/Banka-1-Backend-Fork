@@ -20,10 +20,6 @@ import java.util.Set;
 @Table(name = "foreign_currency_accounts")
 public class ForeignCurrencyAccount extends Account {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
 

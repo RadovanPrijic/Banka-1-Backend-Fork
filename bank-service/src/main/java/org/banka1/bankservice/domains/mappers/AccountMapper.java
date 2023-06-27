@@ -4,6 +4,7 @@ import org.banka1.bankservice.domains.dtos.account.*;
 import org.banka1.bankservice.domains.entities.account.BusinessAccount;
 import org.banka1.bankservice.domains.entities.account.CurrentAccount;
 import org.banka1.bankservice.domains.entities.account.ForeignCurrencyAccount;
+import org.banka1.bankservice.domains.entities.account.ForeignCurrencyBalance;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -18,9 +19,10 @@ public interface AccountMapper {
     CurrentAccountDto currentAccountToCurrentAccountDto(CurrentAccount currentAccount);
     ForeignCurrencyAccountDto foreignCurrencyAccountToForeignCurrencyAccountDto(ForeignCurrencyAccount foreignCurrencyAccount);
     BusinessAccountDto businessAccountToBusinessAccountDto(BusinessAccount businessAccount);
+    ForeignCurrencyBalanceDto foreignCurrencyBalanceToForeignCurrencyBalanceDto(ForeignCurrencyBalance foreignCurrencyBalance);
 
-    CurrentAccount currentAccountCreateDtoToCurrentAccount(CurrentAccountCreateDto currentAccountCreateDto);
-    ForeignCurrencyAccount foreignCurrencyAccountCreateDtoToForeignCurrencyAccount(ForeignCurrencyAccountCreateDto foreignCurrencyAccountCreateDto);
-    BusinessAccount businessAccountCreateDtoToBusinessAccount(BusinessAccountCreateDto businessAccountCreateDto);
+//    CurrentAccount currentAccountCreateDtoToCurrentAccount(CurrentAccountCreateDto currentAccountCreateDto);
+//    ForeignCurrencyAccount foreignCurrencyAccountCreateDtoToForeignCurrencyAccount(ForeignCurrencyAccountCreateDto foreignCurrencyAccountCreateDto);
+//    BusinessAccount businessAccountCreateDtoToBusinessAccount(BusinessAccountCreateDto businessAccountCreateDto);
 
 }

@@ -19,10 +19,6 @@ import java.time.LocalDate;
 @Table(name = "business_accounts")
 public class BusinessAccount extends Account {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private Long companyId;
 
 }
