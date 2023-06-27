@@ -1,16 +1,22 @@
 package org.banka1.bankservice.bootstrap;
 
+import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.AllArgsConstructor;
+import org.banka1.bankservice.domains.dtos.currency.CurrencyCsvBean;
 import org.banka1.bankservice.domains.entities.BankUser;
 import org.banka1.bankservice.domains.entities.Department;
 import org.banka1.bankservice.domains.entities.Gender;
 import org.banka1.bankservice.domains.entities.Position;
 import org.banka1.bankservice.repositories.UserRepository;
+import org.banka1.bankservice.services.CurrencyService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,6 +27,7 @@ import java.util.List;
 public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final CurrencyService currencyService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -96,6 +103,26 @@ public class BootstrapData implements CommandLineRunner {
         userRepository.save(client2);
         userRepository.save(client3);
 
+        // CURRENCY DATA
+        List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
+        currencyService.persistCurrencies(currencyCsvBeanList);
+        System.out.println("Currency Data Loaded!");
+
         System.out.println("Data loaded");
+    }
+
+    public List<CurrencyCsvBean> getCurrencies() throws IOException {
+        FileReader fileReader;
+        try {
+            fileReader = new FileReader(ResourceUtils.getFile("bank-service/csv-files/currencies.csv"));
+        } catch (Exception e) {
+            fileReader = new FileReader(ResourceUtils.getFile("classpath:csv/currencies.csv"));
+        }
+
+        return new CsvToBeanBuilder<CurrencyCsvBean>(fileReader)
+                .withType(CurrencyCsvBean.class)
+                .withSkipLines(1)
+                .build()
+                .parse();
     }
 }
