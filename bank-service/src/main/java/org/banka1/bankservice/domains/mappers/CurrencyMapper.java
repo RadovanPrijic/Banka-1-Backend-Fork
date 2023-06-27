@@ -1,7 +1,7 @@
 package org.banka1.bankservice.domains.mappers;
 
 import org.banka1.bankservice.domains.dtos.currency.CurrencyCsvBean;
-import org.banka1.bankservice.domains.entities.Currency;
+import org.banka1.bankservice.domains.entities.account.Currency;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;

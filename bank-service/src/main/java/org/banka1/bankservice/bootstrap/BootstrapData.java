@@ -3,10 +3,10 @@ package org.banka1.bankservice.bootstrap;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.AllArgsConstructor;
 import org.banka1.bankservice.domains.dtos.currency.CurrencyCsvBean;
-import org.banka1.bankservice.domains.entities.BankUser;
-import org.banka1.bankservice.domains.entities.Department;
-import org.banka1.bankservice.domains.entities.Gender;
-import org.banka1.bankservice.domains.entities.Position;
+import org.banka1.bankservice.domains.entities.user.BankUser;
+import org.banka1.bankservice.domains.entities.user.Department;
+import org.banka1.bankservice.domains.entities.user.Gender;
+import org.banka1.bankservice.domains.entities.user.Position;
 import org.banka1.bankservice.repositories.UserRepository;
 import org.banka1.bankservice.services.CurrencyService;
 import org.springframework.boot.CommandLineRunner;
@@ -33,6 +33,11 @@ public class BootstrapData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
+        // CURRENCY DATA
+        List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
+        currencyService.persistCurrencies(currencyCsvBeanList);
+        System.out.println("Currency Data Loaded!");
+
         BankUser employee1 = BankUser.builder()
                 .firstName("Zoran")
                 .lastName("Stosic")
@@ -52,7 +57,7 @@ public class BootstrapData implements CommandLineRunner {
                 .lastName("Lukacevic")
                 .birthDate(LocalDate.of(1983, 6, 1))
                 .gender(Gender.MALE)
-                .email("luka.lukacevic@gmail.com")
+                .email("luka.lukacevic@useremail.com")
                 .phoneNumber("0651452580")
                 .homeAddress("Bulevar Despota Stefana 37")
                 .password(passwordEncoder.encode("lukalukacevic"))
@@ -66,7 +71,7 @@ public class BootstrapData implements CommandLineRunner {
                 .lastName("Markovic")
                 .birthDate(LocalDate.of(1990, 10, 5))
                 .gender(Gender.MALE)
-                .email("marko.markovic@gmail.com")
+                .email("marko.markovic@useremail.com")
                 .phoneNumber("0651678989")
                 .homeAddress("Njegoseva 25")
                 .password(passwordEncoder.encode("markomarkovic"))
@@ -78,7 +83,7 @@ public class BootstrapData implements CommandLineRunner {
                 .lastName("Petrovic")
                 .birthDate(LocalDate.of(1986, 3, 17))
                 .gender(Gender.MALE)
-                .email("petar.petrovic@gmail.com")
+                .email("petar.petrovic@useremail.com")
                 .phoneNumber("0651224390")
                 .homeAddress("Kralja Milana 34")
                 .password(passwordEncoder.encode("petarpetrovic"))
@@ -90,7 +95,7 @@ public class BootstrapData implements CommandLineRunner {
                 .lastName("Jovanovic")
                 .birthDate(LocalDate.of(1988, 9, 11))
                 .gender(Gender.FEMALE)
-                .email("jovana.jovanovic@gmail.com")
+                .email("jovana.jovanovic@useremail.com")
                 .phoneNumber("0633456751")
                 .homeAddress("Budimska 12")
                 .password(passwordEncoder.encode("jovanajovanovic"))
@@ -102,11 +107,6 @@ public class BootstrapData implements CommandLineRunner {
         userRepository.save(client1);
         userRepository.save(client2);
         userRepository.save(client3);
-
-        // CURRENCY DATA
-        List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
-        currencyService.persistCurrencies(currencyCsvBeanList);
-        System.out.println("Currency Data Loaded!");
 
         System.out.println("Data loaded");
     }

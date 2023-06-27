@@ -2,8 +2,8 @@ package org.banka1.bankservice.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.banka1.bankservice.domains.dtos.currency.CurrencyCsvBean;
-import org.banka1.bankservice.domains.entities.Currency;
-import org.banka1.bankservice.domains.entities.Status;
+import org.banka1.bankservice.domains.entities.account.Currency;
+import org.banka1.bankservice.domains.entities.account.AccountStatus;
 import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.mappers.CurrencyMapper;
 import org.banka1.bankservice.repositories.CurrencyRepository;
@@ -17,6 +17,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class CurrencyService {
+
     private final CurrencyRepository currencyRepository;
 
     public CurrencyService(CurrencyRepository currencyRepository) {
@@ -41,7 +42,7 @@ public class CurrencyService {
 
                 Locale locale = new Locale("", currency.getCurrencyCode().substring(0, 2));
                 currency.setCountry(locale.getDisplayCountry(Locale.US));
-                currency.setStatus(Status.ACTIVE);
+                currency.setStatus(AccountStatus.ACTIVE);
 
             } catch (Exception e) {
                 currency.setCurrencySymbol("Doesn't exist");
@@ -56,6 +57,7 @@ public class CurrencyService {
 
     public CurrencyCsvBean findCurrencyByCurrencyName(String currencyName) {
         Optional<Currency> currency = currencyRepository.findByCurrencyName(currencyName);
-        return currency.map(CurrencyMapper.INSTANCE::currencyToCurrencyCsvBean).orElseThrow(() -> new NotFoundException("currency not found"));
+        return currency.map(CurrencyMapper.INSTANCE::currencyToCurrencyCsvBean).orElseThrow(() -> new NotFoundException("Currency has not been found."));
     }
+
 }

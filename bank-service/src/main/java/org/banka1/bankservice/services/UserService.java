@@ -3,7 +3,7 @@ package org.banka1.bankservice.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.bankservice.domains.dtos.user.*;
-import org.banka1.bankservice.domains.entities.BankUser;
+import org.banka1.bankservice.domains.entities.user.BankUser;
 import org.banka1.bankservice.domains.exceptions.BadRequestException;
 import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
