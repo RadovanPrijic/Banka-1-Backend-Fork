@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.banka1.bankservice.domains.dtos.user.*;
 import org.banka1.bankservice.domains.entities.user.BankUser;
+import org.banka1.bankservice.domains.entities.user.UserRole;
 import org.banka1.bankservice.domains.exceptions.BadRequestException;
 import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
@@ -17,6 +18,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -121,9 +124,21 @@ public class UserService implements UserDetailsService {
         return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("User has not been found."));
     }
 
-    public UserDto returnUserProfile(){
+    public List<UserDto> findAllClients() {
+        List<UserDto> userDtos = new ArrayList<>();
+        List<BankUser> users = userRepository.findAll();
+
+        users.forEach(user -> {
+            if(user.getRoles().contains("ROLE_CLIENT"))
+                userDtos.add(UserMapper.INSTANCE.userToUserDto(user));
+        });
+
+        return userDtos;
+    }
+
+    public UserMyProfileDto returnUserProfile(){
         Optional<BankUser> user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
-        return user.map(UserMapper.INSTANCE::userToUserDto).orElseThrow(() -> new NotFoundException("User has not been found."));
+        return user.map(UserMapper.INSTANCE::userToUserMyProfileDto).orElseThrow(() -> new NotFoundException("User has not been found."));
     }
 
     @Override

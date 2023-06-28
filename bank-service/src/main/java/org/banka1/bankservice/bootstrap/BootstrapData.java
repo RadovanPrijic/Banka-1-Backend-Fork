@@ -3,10 +3,8 @@ package org.banka1.bankservice.bootstrap;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.AllArgsConstructor;
 import org.banka1.bankservice.domains.dtos.currency.CurrencyCsvBean;
-import org.banka1.bankservice.domains.entities.user.BankUser;
-import org.banka1.bankservice.domains.entities.user.Department;
-import org.banka1.bankservice.domains.entities.user.Gender;
-import org.banka1.bankservice.domains.entities.user.Position;
+import org.banka1.bankservice.domains.entities.user.*;
+import org.banka1.bankservice.repositories.CompanyRepository;
 import org.banka1.bankservice.repositories.UserRepository;
 import org.banka1.bankservice.services.CurrencyService;
 import org.springframework.boot.CommandLineRunner;
@@ -27,6 +25,7 @@ import java.util.List;
 public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
     private final CurrencyService currencyService;
     private final PasswordEncoder passwordEncoder;
 
@@ -52,19 +51,19 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_EMPLOYEE"))
                 .build();
 
-        BankUser employee2 = BankUser.builder()
-                .firstName("Luka")
-                .lastName("Lukacevic")
-                .birthDate(LocalDate.of(1983, 6, 1))
-                .gender(Gender.MALE)
-                .email("luka.lukacevic@useremail.com")
-                .phoneNumber("0651452580")
-                .homeAddress("Bulevar Despota Stefana 37")
-                .password(passwordEncoder.encode("lukalukacevic"))
-                .position(Position.MANAGER)
-                .department(Department.FINANCE)
-                .roles(List.of("ROLE_EMPLOYEE"))
-                .build();
+//        BankUser employee2 = BankUser.builder()
+//                .firstName("Luka")
+//                .lastName("Lukacevic")
+//                .birthDate(LocalDate.of(1983, 6, 1))
+//                .gender(Gender.MALE)
+//                .email("luka.lukacevic@useremail.com")
+//                .phoneNumber("0651452580")
+//                .homeAddress("Bulevar Despota Stefana 37")
+//                .password(passwordEncoder.encode("lukalukacevic"))
+//                .position(Position.MANAGER)
+//                .department(Department.FINANCE)
+//                .roles(List.of("ROLE_EMPLOYEE"))
+//                .build();
 
         BankUser client1 = BankUser.builder()
                 .firstName("Marko")
@@ -78,35 +77,46 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_CLIENT"))
                 .build();
 
-        BankUser client2 = BankUser.builder()
-                .firstName("Petar")
-                .lastName("Petrovic")
-                .birthDate(LocalDate.of(1986, 3, 17))
-                .gender(Gender.MALE)
-                .email("petar.petrovic@useremail.com")
-                .phoneNumber("0651224390")
-                .homeAddress("Kralja Milana 34")
-                .password(passwordEncoder.encode("petarpetrovic"))
-                .roles(List.of("ROLE_CLIENT"))
-                .build();
+//        BankUser client2 = BankUser.builder()
+//                .firstName("Petar")
+//                .lastName("Petrovic")
+//                .birthDate(LocalDate.of(1986, 3, 17))
+//                .gender(Gender.MALE)
+//                .email("petar.petrovic@useremail.com")
+//                .phoneNumber("0651224390")
+//                .homeAddress("Kralja Milana 34")
+//                .password(passwordEncoder.encode("petarpetrovic"))
+//                .roles(List.of("ROLE_CLIENT"))
+//                .build();
+//
+//        BankUser client3 = BankUser.builder()
+//                .firstName("Jovana")
+//                .lastName("Jovanovic")
+//                .birthDate(LocalDate.of(1988, 9, 11))
+//                .gender(Gender.FEMALE)
+//                .email("jovana.jovanovic@useremail.com")
+//                .phoneNumber("0633456751")
+//                .homeAddress("Budimska 12")
+//                .password(passwordEncoder.encode("jovanajovanovic"))
+//                .roles(List.of("ROLE_CLIENT"))
+//                .build();
 
-        BankUser client3 = BankUser.builder()
-                .firstName("Jovana")
-                .lastName("Jovanovic")
-                .birthDate(LocalDate.of(1988, 9, 11))
-                .gender(Gender.FEMALE)
-                .email("jovana.jovanovic@useremail.com")
-                .phoneNumber("0633456751")
-                .homeAddress("Budimska 12")
-                .password(passwordEncoder.encode("jovanajovanovic"))
-                .roles(List.of("ROLE_CLIENT"))
+        Company company1 = Company.builder()
+                .companyName("Monsanto")
+                .phoneNumber("0621586732")
+                .faxNumber("6347642835")
+                .vatIdNumber(342243)
+                .identificationNumber(343242)
+                .activityCode(121)
+                .registryNumber(233)
                 .build();
 
         userRepository.save(employee1);
-        userRepository.save(employee2);
+//        userRepository.save(employee2);
         userRepository.save(client1);
-        userRepository.save(client2);
-        userRepository.save(client3);
+//        userRepository.save(client2);
+//        userRepository.save(client3);
+        companyRepository.save(company1);
 
         System.out.println("Data loaded");
     }

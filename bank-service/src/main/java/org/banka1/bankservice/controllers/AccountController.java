@@ -38,7 +38,13 @@ public class AccountController {
 
     @GetMapping("/user_accounts")
     public ResponseEntity<?> getAllAccountsForUser() {
-        return ResponseEntity.ok(accountService.findAllAccountsForUser());
+        return ResponseEntity.ok(accountService.findAllAccountsForLoggedInUser());
+    }
+
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/user_accounts/{id}")
+    public ResponseEntity<?> getAllAccountsForUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.findAllAccountsForUserById(id));
     }
 
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
@@ -59,34 +65,15 @@ public class AccountController {
         return ResponseEntity.ok(accountService.openBusinessAccount(businessAccountCreateDto));
     }
 
-    @PutMapping("/current_acc/update_name/{id}/{name}")
-    public ResponseEntity<?> updateCurrentAccountName(@PathVariable Long id, @PathVariable String name) {
-        return ResponseEntity.ok(accountService.updateCurrentAccountName(id, name));
+    @PutMapping("/{accountType}/update_name/{id}/{name}")
+    public ResponseEntity<?> updateAccountName(@PathVariable String accountType, @PathVariable Long id, @PathVariable String name) {
+        return ResponseEntity.ok(accountService.updateAccountName(accountType, id, name));
     }
 
-    @PutMapping("/current_acc/update_status/{id}")
-    public ResponseEntity<?> updateCurrentAccountStatus(@PathVariable Long id) {
-        return ResponseEntity.ok(accountService.updateCurrentAccountStatus(id));
-    }
-
-    @PutMapping("/foreign_currency_acc/update_name/{id}/{name}")
-    public ResponseEntity<?> updateForeignCurrencyAccountName(@PathVariable Long id, @PathVariable String name) {
-        return ResponseEntity.ok(accountService.updateForeignCurrencyAccountName(id, name));
-    }
-
-    @PutMapping("/foreign_currency_acc/update_status/{id}")
-    public ResponseEntity<?> updateForeignCurrencyAccountStatus(@PathVariable Long id) {
-        return ResponseEntity.ok(accountService.updateForeignCurrencyAccountStatus(id));
-    }
-
-    @PutMapping("/business_acc/update_name/{id}/{name}")
-    public ResponseEntity<?> updateBusinessAccountName(@PathVariable Long id, @PathVariable String name) {
-        return ResponseEntity.ok(accountService.updateBusinessAccountName(id, name));
-    }
-
-    @PutMapping("/business_acc/update_status/{id}")
-    public ResponseEntity<?> updateBusinessAccountStatus(@PathVariable Long id) {
-        return ResponseEntity.ok(accountService.updateBusinessAccountStatus(id));
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @PutMapping("/{accountType}/update_status/{id}")
+    public ResponseEntity<?> updateAccountStatus(@PathVariable String accountType, @PathVariable Long id) {
+        return ResponseEntity.ok(accountService.updateAccountStatus(accountType, id));
     }
 
 }
