@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AccountService {
+
     private final CurrentAccountRepository currentAccountRepository;
     private final ForeignCurrencyAccountRepository foreignCurrencyAccountRepository;
     private final BusinessAccountRepository businessAccountRepository;
@@ -60,8 +61,8 @@ public class AccountService {
 
         CurrentAccount currentAccount = new CurrentAccount();
 
-        currentAccount.setAccountNumber(generateAccountNumber(11));
-        currentAccount.setAccountBalance(random.nextDouble(10001));
+        currentAccount.setAccountNumber(generateAccountNumber(12));
+        currentAccount.setAccountBalance(random.nextDouble(500001));
         currentAccount.setOwnerId(currentAccountCreateDto.getOwnerId());
         currentAccount.setAccountName(currentAccountCreateDto.getAccountName());
         currentAccount.setEmployeeId(currentAccountCreateDto.getEmployeeId());
@@ -82,7 +83,7 @@ public class AccountService {
 
         ForeignCurrencyAccount foreignCurrencyAccount = new ForeignCurrencyAccount();
 
-        foreignCurrencyAccount.setAccountNumber(generateAccountNumber(11));
+        foreignCurrencyAccount.setAccountNumber(generateAccountNumber(12));
 //        foreignCurrencyAccount.setAccountBalance(random.nextDouble(10001));
         foreignCurrencyAccount.setOwnerId(foreignCurrencyAccountCreateDto.getOwnerId());
         foreignCurrencyAccount.setAccountName(foreignCurrencyAccountCreateDto.getAccountName());
@@ -102,7 +103,12 @@ public class AccountService {
 
             foreignCurrencyBalance.setAccount(foreignCurrencyAccount);
             foreignCurrencyBalance.setForeignCurrencyCode(foreignCurrency);
-            foreignCurrencyBalance.setAccountBalance(random.nextDouble(5001));
+
+            if(foreignCurrency.equalsIgnoreCase("RSD"))
+                foreignCurrencyBalance.setAccountBalance(random.nextDouble(500001));
+            else
+                foreignCurrencyBalance.setAccountBalance(random.nextDouble(2501));
+
             foreignCurrencyBalanceRepository.saveAndFlush(foreignCurrencyBalance);
 
             foreignCurrencyBalancesList.add(foreignCurrencyBalance);
@@ -119,8 +125,8 @@ public class AccountService {
 
         BusinessAccount businessAccount = new BusinessAccount();
 
-        businessAccount.setAccountNumber(generateAccountNumber(11));
-        businessAccount.setAccountBalance(random.nextDouble(10001));
+        businessAccount.setAccountNumber(generateAccountNumber(12));
+        businessAccount.setAccountBalance(random.nextDouble(5000001));
         businessAccount.setOwnerId(businessAccountCreateDto.getOwnerId());
         businessAccount.setAccountName(businessAccountCreateDto.getAccountName());
         businessAccount.setEmployeeId(businessAccountCreateDto.getEmployeeId());
