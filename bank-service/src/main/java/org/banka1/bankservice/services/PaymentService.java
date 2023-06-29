@@ -2,11 +2,19 @@ package org.banka1.bankservice.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.banka1.bankservice.domains.dtos.payment.*;
+import org.banka1.bankservice.domains.entities.payment.Payment;
 import org.banka1.bankservice.domains.entities.payment.PaymentReceiver;
+import org.banka1.bankservice.domains.entities.user.BankUser;
+import org.banka1.bankservice.domains.exceptions.NotFoundException;
+import org.banka1.bankservice.domains.mappers.PaymentMapper;
 import org.banka1.bankservice.repositories.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -33,12 +41,29 @@ public class PaymentService {
         this.userRepository = userRepository;
     }
 
-    public void makePayment(PaymentCreateDto paymentCreateDto) {
+    public String makePayment(PaymentCreateDto paymentCreateDto) {
+        validatePayment(paymentCreateDto.getSenderAccountNumber(),
+                        paymentCreateDto.getReceiverAccountNumber(),
+                        paymentCreateDto.getAmount());
 
+        subtractAmountFromAccount(paymentCreateDto.getSenderAccountNumber(), paymentCreateDto.getAmount());
+        addAmountToAccount(paymentCreateDto.getReceiverAccountNumber(), paymentCreateDto.getAmount());
+
+        return "The payment from account " + paymentCreateDto.getSenderAccountNumber() + " to account " +
+                paymentCreateDto.getReceiverAccountNumber() + " has been successfully completed.";
     }
 
-    public void transferMoney(MoneyTransferDto moneyTransferDto) {
+    public String transferMoney(MoneyTransferDto moneyTransferDto) {
+        validateMoneyTransfer(moneyTransferDto.getSenderAccountNumber(),
+                              moneyTransferDto.getReceiverAccountNumber(),
+                              moneyTransferDto.getAmount(),
+                              moneyTransferDto.getCurrencySymbol());
 
+        subtractAmountFromAccount(moneyTransferDto.getSenderAccountNumber(), moneyTransferDto.getAmount());
+        addAmountToAccount(moneyTransferDto.getReceiverAccountNumber(), moneyTransferDto.getAmount());
+
+        return "The transfer of funds from account " + moneyTransferDto.getSenderAccountNumber() + " to account " +
+                moneyTransferDto.getReceiverAccountNumber() + " has been successfully completed.";
     }
 
     public void subtractAmountFromAccount(String accountNumber, Double amount) {
@@ -53,51 +78,65 @@ public class PaymentService {
 
     }
 
-    public void validateTransfer(String senderAccountNumber, String receiverAccountNumber, Double amount, String currencySymbol) {
+    public void validateMoneyTransfer(String senderAccountNumber, String receiverAccountNumber, Double amount, String currencySymbol) {
 
     }
 
-    public PaymentDto getPaymentById(Long id) {
+    public PaymentDto findPaymentById(Long id) {
+        Optional<Payment> payment = paymentRepository.findById(id);
 
-        return null;
+        return payment.map(PaymentMapper.INSTANCE::paymentToPaymentDto).orElseThrow(() -> new NotFoundException("Payment has not been found."));
     }
 
-    public List<PaymentDto> getAllPaymentsForLoggedInUser() {
+    public List<PaymentDto> findAllPaymentsForLoggedInUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankUser user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User has not been found."));
+        Long userId = user.getId();
 
-        return null;
+        return paymentRepository.findAllBySenderId(userId).stream().map(PaymentMapper.INSTANCE::paymentToPaymentDto).collect(Collectors.toList());
     }
 
-    public List<PaymentDto> getAllPaymentsForAccount(String accountNumber) {
+    public List<PaymentDto> findAllPaymentsForAccount(String accountNumber) {
 
-        return null;
+        return paymentRepository.findAllBySenderAccountNumber(accountNumber).stream().map(PaymentMapper.INSTANCE::paymentToPaymentDto).collect(Collectors.toList());
     }
 
-    public PaymentReceiverDto getPaymentReceiverById(Long id) {
+    public PaymentReceiverDto findPaymentReceiverById(Long id) {
+        Optional<PaymentReceiver> paymentReceiver = paymentReceiverRepository.findById(id);
 
-        return null;
+        return paymentReceiver.map(PaymentMapper.INSTANCE::paymentReceiverToPaymentReceiverDto).orElseThrow(() -> new NotFoundException("Payment receiver has not been found."));
     }
 
-    public List<PaymentReceiverDto> getAllPaymentReceivers() {
+    public List<PaymentReceiverDto> findAllPaymentReceiversForLoggedInUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankUser user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User has not been found."));
+        Long userId = user.getId();
 
-        return null;
+        return paymentReceiverRepository.findAllBySenderId(userId).stream().map(PaymentMapper.INSTANCE::paymentReceiverToPaymentReceiverDto).collect(Collectors.toList());
     }
 
     public PaymentReceiverDto createPaymentReceiver(PaymentReceiverCreateDto paymentReceiverCreateDto){
+        PaymentReceiver paymentReceiver = PaymentMapper.INSTANCE.paymentReceiverCreateDtoToPaymentReceiver(paymentReceiverCreateDto);
+        paymentReceiverRepository.save(paymentReceiver);
 
-        return null;
+        return PaymentMapper.INSTANCE.paymentReceiverToPaymentReceiverDto(paymentReceiver);
     }
 
-    public PaymentReceiverDto updatePaymentReceiver(PaymentReceiverUpdateDto paymentReceiverUpdateDto){
+    public PaymentReceiverDto updatePaymentReceiver(PaymentReceiverUpdateDto paymentReceiverUpdateDto, Long id){
+        PaymentReceiver paymentReceiver = paymentReceiverRepository.findById(id).orElseThrow(() -> new NotFoundException("Payment receiver has not been found."));
 
-        return null;
+        PaymentMapper.INSTANCE.updatePaymentReceiverFromPaymentReceiverUpdateDto(paymentReceiver, paymentReceiverUpdateDto);
+        paymentReceiverRepository.save(paymentReceiver);
+
+        return PaymentMapper.INSTANCE.paymentReceiverToPaymentReceiverDto(paymentReceiver);
     }
 
-    public void deletePaymentReceiver(Long id) {
-//        UserContract userContract = userContractRepository.findByContractId(contractId);
-//        BankAccount bankAccount = bankAccountRepository.findAll().get(0);
-//        bankAccount.setReservedAsset(bankAccount.getReservedAsset() - userContract.getPrice());
-//        bankAccountRepository.save(bankAccount);
-//        userContractRepository.delete(userContract);
+    public String deletePaymentReceiver(Long id) {
+        PaymentReceiver paymentReceiver = paymentReceiverRepository.findById(id).orElseThrow(() -> new NotFoundException("Payment receiver has not been found."));
+
+        paymentReceiverRepository.delete(paymentReceiver);
+
+        return "Payment receiver has been successfully deleted.";
     }
 
 }

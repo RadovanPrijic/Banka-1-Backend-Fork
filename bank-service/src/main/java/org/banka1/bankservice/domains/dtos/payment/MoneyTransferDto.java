@@ -18,7 +18,7 @@ public class MoneyTransferDto {
     @NotBlank
     private String receiverAccountNumber;
 
-    @DecimalMin(value="0.0", message="decimalField: positive number, min 0.0 is required")
+    @DecimalMin(value="0.01", message="decimalField: positive number, min 0.0 is required")
     private Double amount;
 
     @NotBlank

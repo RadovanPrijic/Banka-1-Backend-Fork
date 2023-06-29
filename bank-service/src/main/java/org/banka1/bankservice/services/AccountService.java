@@ -141,21 +141,21 @@ public class AccountService {
     }
 
     public CurrentAccountDto findCurrentAccountById(Long id) {
-        validateAccountOwnership(id);
+//        validateAccountOwnership(id);
         Optional<CurrentAccount> currentAccount = currentAccountRepository.findById(id);
 
         return currentAccount.map(AccountMapper.INSTANCE::currentAccountToCurrentAccountDto).orElseThrow(() -> new NotFoundException("Current account has not been found."));
     }
 
     public ForeignCurrencyAccountDto findForeignCurrencyAccountById(Long id) {
-        validateAccountOwnership(id);
+//        validateAccountOwnership(id);
         Optional<ForeignCurrencyAccount> foreignCurrencyAccount = foreignCurrencyAccountRepository.findById(id);
 
         return foreignCurrencyAccount.map(AccountMapper.INSTANCE::foreignCurrencyAccountToForeignCurrencyAccountDto).orElseThrow(() -> new NotFoundException("Foreign currency account has not been found."));
     }
 
     public BusinessAccountDto findBusinessAccountById(Long id) {
-        validateAccountOwnership(id);
+//        validateAccountOwnership(id);
         Optional<BusinessAccount> businessAccount = businessAccountRepository.findById(id);
 
         return businessAccount.map(AccountMapper.INSTANCE::businessAccountToBusinessAccountDto).orElseThrow(() -> new NotFoundException("Business account has not been found."));
@@ -196,7 +196,7 @@ public class AccountService {
     }
 
     public AccountDto updateAccountName(String accountType, Long id, String name){
-        validateAccountOwnership(id);
+//        validateAccountOwnership(id);
 
         switch (accountType) {
 
@@ -266,20 +266,20 @@ public class AccountService {
         }
     }
 
-    public void validateAccountOwnership(Long id) {
-        List<AccountDto> userAccounts = findAllAccountsForLoggedInUser();
-        boolean owned = false;
-
-        for(AccountDto account : userAccounts) {
-            if (account.getId().equals(id)) {
-                owned = true;
-                break;
-            }
-        }
-
-        if(!owned)
-            throw new ForbiddenException("This account is owned by another user");
-    }
+//    public void validateAccountOwnership(Long id) {
+//        List<AccountDto> userAccounts = findAllAccountsForLoggedInUser();
+//        boolean owned = false;
+//
+//        for(AccountDto account : userAccounts) {
+//            if (account.getId().equals(id)) {
+//                owned = true;
+//                break;
+//            }
+//        }
+//
+//        if(!owned)
+//            throw new ForbiddenException("This account is owned by another user");
+//    }
 
     public void validateAccountName(Long id, String name) {
         List<AccountDto> userAccounts = findAllAccountsForUserById(id);
