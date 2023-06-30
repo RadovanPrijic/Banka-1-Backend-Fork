@@ -161,6 +161,21 @@ public class AccountService {
         return businessAccount.map(AccountMapper.INSTANCE::businessAccountToBusinessAccountDto).orElseThrow(() -> new NotFoundException("Business account has not been found."));
     }
 
+    public AccountDto findAccountByAccountNumber(String accountNumber) {
+        Optional<CurrentAccount> currentAccount = currentAccountRepository.findByAccountNumber(accountNumber);
+        Optional<ForeignCurrencyAccount> foreignCurrencyAccount = foreignCurrencyAccountRepository.findByAccountNumber(accountNumber);
+        Optional<BusinessAccount> businessAccount = businessAccountRepository.findByAccountNumber(accountNumber);
+
+        if(currentAccount.isPresent())
+            return AccountMapper.INSTANCE.currentAccountToCurrentAccountDto(currentAccount.get());
+        else if (foreignCurrencyAccount.isPresent())
+            return AccountMapper.INSTANCE.foreignCurrencyAccountToForeignCurrencyAccountDto(foreignCurrencyAccount.get());
+        else if (businessAccount.isPresent())
+            return AccountMapper.INSTANCE.businessAccountToBusinessAccountDto(businessAccount.get());
+        else
+            return null;
+    }
+
     public List<AccountDto> findAllAccountsForLoggedInUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<BankUser> user = userRepository.findByEmail(email);

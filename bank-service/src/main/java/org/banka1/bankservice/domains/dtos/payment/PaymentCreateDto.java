@@ -29,9 +29,6 @@ public class PaymentCreateDto {
     @DecimalMin(value="0.01", message="decimalField: positive number, min 0.0 is required")
     private Double amount;
 
-    @JsonFormat(pattern="dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime paymentTime;
-
     private String referenceNumber;
 
     @NotBlank

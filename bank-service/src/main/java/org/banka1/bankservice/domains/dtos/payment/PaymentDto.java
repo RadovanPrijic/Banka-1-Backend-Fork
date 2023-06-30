@@ -28,5 +28,6 @@ public class PaymentDto {
     private String referenceNumber;
     private String paymentNumber;
     private String paymentPurpose;
+    private String currencySymbol;
 
 }

@@ -36,5 +36,6 @@ public class Payment {
     private String referenceNumber;
     private String paymentNumber;
     private String paymentPurpose;
+    private String currencySymbol;
 
 }

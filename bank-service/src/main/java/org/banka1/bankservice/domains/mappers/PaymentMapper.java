@@ -17,6 +17,7 @@ public interface PaymentMapper {
 
     PaymentDto paymentToPaymentDto(Payment payment);
     Payment paymentCreateDtoToPayment(PaymentCreateDto paymentCreateDto);
+    Payment moneyTransferDtoToPayment(MoneyTransferDto moneyTransferDto);
 
     PaymentReceiverDto paymentReceiverToPaymentReceiverDto(PaymentReceiver paymentReceiver);
     PaymentReceiver paymentReceiverCreateDtoToPaymentReceiver(PaymentReceiverCreateDto paymentReceiverCreateDto);
