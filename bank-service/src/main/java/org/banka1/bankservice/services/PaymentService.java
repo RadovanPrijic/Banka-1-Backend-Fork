@@ -49,7 +49,8 @@ public class PaymentService {
 
     public PaymentDto makePayment(PaymentCreateDto paymentCreateDto) {
         String[] accountTypes = validatePayment(paymentCreateDto.getSenderAccountNumber(),
-                                                paymentCreateDto.getReceiverAccountNumber());
+                                                paymentCreateDto.getReceiverAccountNumber(),
+                                                paymentCreateDto.getAmount());
 
         changeAccountBalance(accountTypes[0],
                              paymentCreateDto.getSenderAccountNumber(),
@@ -79,6 +80,7 @@ public class PaymentService {
     public PaymentDto transferMoney(MoneyTransferDto moneyTransferDto) {
         String[] accountTypes = validateMoneyTransfer(moneyTransferDto.getSenderAccountNumber(),
                                                       moneyTransferDto.getReceiverAccountNumber(),
+                                                      moneyTransferDto.getAmount(),
                                                       moneyTransferDto.getCurrencySymbol());
 
         changeAccountBalance(accountTypes[0],
@@ -161,7 +163,7 @@ public class PaymentService {
         }
     }
 
-    public String[] validatePayment(String senderAccountNumber, String receiverAccountNumber) {
+    public String[] validatePayment(String senderAccountNumber, String receiverAccountNumber, Double amount) {
         List<AccountDto> userAccounts = accountService.findAllAccountsForLoggedInUser();
         AccountDto senderAccount = null, receiverAccount;
 
@@ -173,14 +175,14 @@ public class PaymentService {
         receiverAccount = accountService.findAccountByAccountNumber(receiverAccountNumber);
 
         if(senderAccount == null)
-            throw new NotFoundException("Sender account has not been found.");
+            throw new NotFoundException("Sender account has not been found among user's accounts.");
         if(receiverAccount == null)
             throw new NotFoundException("Receiver account has not been found.");
 
-        return declareAccountTypes(senderAccount, receiverAccount, "RSD");
+        return validateBalanceAndCurrencyAndDeclareTypes(senderAccount, receiverAccount, amount,"RSD");
     }
 
-    public String[] validateMoneyTransfer(String senderAccountNumber, String receiverAccountNumber, String currencySymbol) {
+    public String[] validateMoneyTransfer(String senderAccountNumber, String receiverAccountNumber, Double amount, String currencySymbol) {
         List<AccountDto> userAccounts = accountService.findAllAccountsForLoggedInUser();
         AccountDto senderAccount = null, receiverAccount = null;
 
@@ -192,11 +194,11 @@ public class PaymentService {
         }
 
         if(senderAccount == null)
-            throw new NotFoundException("Sender account has not been found.");
+            throw new NotFoundException("Sender account has not been found among user's accounts.");
         if(receiverAccount == null)
-            throw new NotFoundException("Receiver account has not been found.");
+            throw new NotFoundException("Receiver account has not been found among user's accounts.");
 
-        return declareAccountTypes(senderAccount, receiverAccount, currencySymbol);
+        return validateBalanceAndCurrencyAndDeclareTypes(senderAccount, receiverAccount, amount, currencySymbol);
     }
 
     public PaymentDto findPaymentById(Long id) {
@@ -234,6 +236,11 @@ public class PaymentService {
 
     public PaymentReceiverDto createPaymentReceiver(PaymentReceiverCreateDto paymentReceiverCreateDto){
         PaymentReceiver paymentReceiver = PaymentMapper.INSTANCE.paymentReceiverCreateDtoToPaymentReceiver(paymentReceiverCreateDto);
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        BankUser user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User has not been found."));
+        paymentReceiver.setSenderId(user.getId());
+
         paymentReceiverRepository.save(paymentReceiver);
 
         return PaymentMapper.INSTANCE.paymentReceiverToPaymentReceiverDto(paymentReceiver);
@@ -256,12 +263,14 @@ public class PaymentService {
         return "Payment receiver has been successfully deleted.";
     }
 
-    public String[] declareAccountTypes(AccountDto senderAccount, AccountDto receiverAccount, String currencySymbol){
+    public String[] validateBalanceAndCurrencyAndDeclareTypes(AccountDto senderAccount, AccountDto receiverAccount, Double amount, String currencySymbol){
         String[] accountTypes = new String[2];
+        Double accountBalance = 0.0;
 
-        if(senderAccount instanceof CurrentAccountDto)
+        if(senderAccount instanceof CurrentAccountDto) {
             accountTypes[0] = "CURRENT";
-        else if(senderAccount instanceof ForeignCurrencyAccountDto){
+            accountBalance = senderAccount.getAccountBalance();
+        } else if(senderAccount instanceof ForeignCurrencyAccountDto) {
             accountTypes[0] = "FOREIGN_CURRENCY";
 
             boolean currencyPresentOnAccount = false;
@@ -270,6 +279,7 @@ public class PaymentService {
             for(ForeignCurrencyBalanceDto balance : balances) {
                 if (balance.getForeignCurrencyCode().equals(currencySymbol)) {
                     currencyPresentOnAccount = true;
+                    accountBalance = balance.getAccountBalance();
                     break;
                 }
             }
@@ -277,13 +287,18 @@ public class PaymentService {
             if(!currencyPresentOnAccount)
                 throw new ValidationException("Currency " + currencySymbol + " is not present on sender foreign currency account.");
 
-        } else if(senderAccount instanceof BusinessAccountDto)
+        } else if(senderAccount instanceof BusinessAccountDto) {
             accountTypes[0] = "BUSINESS";
+            accountBalance = senderAccount.getAccountBalance();
+        }
+
+        if(accountBalance < amount)
+            throw new ValidationException("The amount of funds on the sender account is not high enough to successfully complete the transaction.");
 
         if(receiverAccount instanceof CurrentAccountDto)
             accountTypes[1] = "CURRENT";
-        else if(receiverAccount instanceof ForeignCurrencyAccountDto){
-            accountTypes[0] = "FOREIGN_CURRENCY";
+        else if(receiverAccount instanceof ForeignCurrencyAccountDto) {
+            accountTypes[1] = "FOREIGN_CURRENCY";
 
             boolean currencyPresentOnAccount = false;
             List<ForeignCurrencyBalanceDto> balances = ((ForeignCurrencyAccountDto) receiverAccount).getForeignCurrencyBalances();

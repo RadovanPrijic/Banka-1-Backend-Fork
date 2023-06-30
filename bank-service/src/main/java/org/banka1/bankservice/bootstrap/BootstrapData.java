@@ -77,29 +77,29 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_CLIENT"))
                 .build();
 
-//        BankUser client2 = BankUser.builder()
-//                .firstName("Petar")
-//                .lastName("Petrovic")
-//                .birthDate(LocalDate.of(1986, 3, 17))
-//                .gender(Gender.MALE)
-//                .email("petar.petrovic@useremail.com")
-//                .phoneNumber("0651224390")
-//                .homeAddress("Kralja Milana 34")
-//                .password(passwordEncoder.encode("petarpetrovic"))
-//                .roles(List.of("ROLE_CLIENT"))
-//                .build();
-//
-//        BankUser client3 = BankUser.builder()
-//                .firstName("Jovana")
-//                .lastName("Jovanovic")
-//                .birthDate(LocalDate.of(1988, 9, 11))
-//                .gender(Gender.FEMALE)
-//                .email("jovana.jovanovic@useremail.com")
-//                .phoneNumber("0633456751")
-//                .homeAddress("Budimska 12")
-//                .password(passwordEncoder.encode("jovanajovanovic"))
-//                .roles(List.of("ROLE_CLIENT"))
-//                .build();
+        BankUser client2 = BankUser.builder()
+                .firstName("Petar")
+                .lastName("Petrovic")
+                .birthDate(LocalDate.of(1986, 3, 17))
+                .gender(Gender.MALE)
+                .email("petar.petrovic@useremail.com")
+                .phoneNumber("0651224390")
+                .homeAddress("Kralja Milana 34")
+                .password(passwordEncoder.encode("petarpetrovic"))
+                .roles(List.of("ROLE_CLIENT"))
+                .build();
+
+        BankUser client3 = BankUser.builder()
+                .firstName("Jovana")
+                .lastName("Jovanovic")
+                .birthDate(LocalDate.of(1988, 9, 11))
+                .gender(Gender.FEMALE)
+                .email("jovana.jovanovic@useremail.com")
+                .phoneNumber("0633456751")
+                .homeAddress("Budimska 12")
+                .password(passwordEncoder.encode("jovanajovanovic"))
+                .roles(List.of("ROLE_CLIENT"))
+                .build();
 
         Company company1 = Company.builder()
                 .companyName("Monsanto")
@@ -114,8 +114,8 @@ public class BootstrapData implements CommandLineRunner {
         userRepository.save(employee1);
 //        userRepository.save(employee2);
         userRepository.save(client1);
-//        userRepository.save(client2);
-//        userRepository.save(client3);
+        userRepository.save(client2);
+        userRepository.save(client3);
         companyRepository.save(company1);
 
         System.out.println("Data loaded");

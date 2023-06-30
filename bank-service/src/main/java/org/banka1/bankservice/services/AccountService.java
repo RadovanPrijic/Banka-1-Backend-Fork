@@ -178,36 +178,29 @@ public class AccountService {
 
     public List<AccountDto> findAllAccountsForLoggedInUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<BankUser> user = userRepository.findByEmail(email);
+        BankUser user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User has not been found."));
 
-        if(user.isPresent()){
-            Long userId = user.get().getId();
-            List<AccountDto> userAccounts = new ArrayList<>();
+        Long userId = user.getId();
+        List<AccountDto> userAccounts = new ArrayList<>();
 
-            userAccounts.addAll(currentAccountRepository.findAllByOwnerId(userId).stream().map(AccountMapper.INSTANCE::currentAccountToCurrentAccountDto).collect(Collectors.toList()));
-            userAccounts.addAll(foreignCurrencyAccountRepository.findAllByOwnerId(userId).stream().map(AccountMapper.INSTANCE::foreignCurrencyAccountToForeignCurrencyAccountDto).collect(Collectors.toList()));
-            userAccounts.addAll(businessAccountRepository.findAllByOwnerId(userId).stream().map(AccountMapper.INSTANCE::businessAccountToBusinessAccountDto).collect(Collectors.toList()));
+        userAccounts.addAll(currentAccountRepository.findAllByOwnerId(userId).stream().map(AccountMapper.INSTANCE::currentAccountToCurrentAccountDto).collect(Collectors.toList()));
+        userAccounts.addAll(foreignCurrencyAccountRepository.findAllByOwnerId(userId).stream().map(AccountMapper.INSTANCE::foreignCurrencyAccountToForeignCurrencyAccountDto).collect(Collectors.toList()));
+        userAccounts.addAll(businessAccountRepository.findAllByOwnerId(userId).stream().map(AccountMapper.INSTANCE::businessAccountToBusinessAccountDto).collect(Collectors.toList()));
 
-            return userAccounts;
-        }
-
-        return null;
+        return userAccounts;
     }
 
     public List<AccountDto> findAllAccountsForUserById(Long id) {
-        Optional<BankUser> user = userRepository.findById(id);
+        BankUser user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User has not been found."));
 
-        if(user.isPresent()){
-            List<AccountDto> userAccounts = new ArrayList<>();
+        List<AccountDto> userAccounts = new ArrayList<>();
 
-            userAccounts.addAll(currentAccountRepository.findAllByOwnerId(id).stream().map(AccountMapper.INSTANCE::currentAccountToCurrentAccountDto).collect(Collectors.toList()));
-            userAccounts.addAll(foreignCurrencyAccountRepository.findAllByOwnerId(id).stream().map(AccountMapper.INSTANCE::foreignCurrencyAccountToForeignCurrencyAccountDto).collect(Collectors.toList()));
-            userAccounts.addAll(businessAccountRepository.findAllByOwnerId(id).stream().map(AccountMapper.INSTANCE::businessAccountToBusinessAccountDto).collect(Collectors.toList()));
+        userAccounts.addAll(currentAccountRepository.findAllByOwnerId(id).stream().map(AccountMapper.INSTANCE::currentAccountToCurrentAccountDto).collect(Collectors.toList()));
+        userAccounts.addAll(foreignCurrencyAccountRepository.findAllByOwnerId(id).stream().map(AccountMapper.INSTANCE::foreignCurrencyAccountToForeignCurrencyAccountDto).collect(Collectors.toList()));
+        userAccounts.addAll(businessAccountRepository.findAllByOwnerId(id).stream().map(AccountMapper.INSTANCE::businessAccountToBusinessAccountDto).collect(Collectors.toList()));
 
-            return userAccounts;
-        }
+        return userAccounts;
 
-        return null;
     }
 
     public AccountDto updateAccountName(String accountType, Long id, String name){
