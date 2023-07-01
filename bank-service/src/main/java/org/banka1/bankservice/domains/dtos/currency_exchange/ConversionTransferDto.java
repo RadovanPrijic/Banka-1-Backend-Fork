@@ -1,26 +1,18 @@
-package org.banka1.bankservice.domains.entities.currency_exchange;
+package org.banka1.bankservice.domains.dtos.currency_exchange;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "conversion_transfers")
-public class ConversionTransfer {
+public class ConversionTransferDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long senderId;
     private String senderAccountNumber;
     private String receiverAccountNumber;
