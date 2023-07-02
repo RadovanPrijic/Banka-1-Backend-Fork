@@ -1,36 +1,21 @@
-package org.banka1.bankservice.domains.entities.user;
+package org.banka1.bankservice.domains.dtos.account;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-
-@Entity
-@Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "bank_companies")
-public class Company {
+public class CompanyDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String companyName;
-
     private String phoneNumber;
-
     private String faxNumber;
-
     private Integer vatIdNumber; // Poreski identifikacioni broj
-
     private Integer identificationNumber; // Maticni broj
-
     private Integer activityCode; // Sifra delatnosti
-
     private Integer registryNumber; // Registarski broj
 
 }

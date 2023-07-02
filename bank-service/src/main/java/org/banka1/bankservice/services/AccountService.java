@@ -270,6 +270,10 @@ public class AccountService {
         }
     }
 
+    public List<CompanyDto> findAllCompanies() {
+        return new ArrayList<>(companyRepository.findAll().stream().map(AccountMapper.INSTANCE::companyToCompanyDto).collect(Collectors.toList()));
+    }
+
     public void validateAccountName(Long id, String name) {
         List<AccountDto> userAccounts = findAllAccountsForUserById(id);
 

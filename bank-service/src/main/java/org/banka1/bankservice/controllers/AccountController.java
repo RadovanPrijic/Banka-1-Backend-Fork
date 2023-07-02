@@ -76,4 +76,10 @@ public class AccountController {
         return ResponseEntity.ok(accountService.updateAccountStatus(accountType, id));
     }
 
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/companies")
+    public ResponseEntity<?> getAllCompanies() {
+        return ResponseEntity.ok(accountService.findAllCompanies());
+    }
+
 }

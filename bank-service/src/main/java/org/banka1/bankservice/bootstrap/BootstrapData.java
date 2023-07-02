@@ -1,21 +1,16 @@
 package org.banka1.bankservice.bootstrap;
 
-import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.AllArgsConstructor;
-import org.banka1.bankservice.domains.dtos.currency.CurrencyCsvBean;
+import org.banka1.bankservice.domains.entities.account.Company;
 import org.banka1.bankservice.domains.entities.user.*;
 import org.banka1.bankservice.repositories.CompanyRepository;
 import org.banka1.bankservice.repositories.UserRepository;
 import org.banka1.bankservice.services.CurrencyExchangeService;
-import org.banka1.bankservice.services.CurrencyService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,20 +22,14 @@ public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
-    private final CurrencyService currencyService;
     private final CurrencyExchangeService currencyExchangeService;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
 
-//        // CURRENCY DATA
-//        List<CurrencyCsvBean> currencyCsvBeanList = getCurrencies();
-//        currencyService.persistCurrencies(currencyCsvBeanList);
-//        System.out.println("Currency Data Loaded!");
-
         currencyExchangeService.loadForex();
-        System.out.println("Forexes loaded");
+        System.out.println("Exchange pairs loaded");
 
         BankUser employee1 = BankUser.builder()
                 .firstName("Zoran")
@@ -94,50 +83,58 @@ public class BootstrapData implements CommandLineRunner {
                 .roles(List.of("ROLE_CLIENT"))
                 .build();
 
-//        BankUser client3 = BankUser.builder()
-//                .firstName("Jovana")
-//                .lastName("Jovanovic")
-//                .birthDate(LocalDate.of(1988, 9, 11))
-//                .gender(Gender.FEMALE)
-//                .email("jovana.jovanovic@useremail.com")
-//                .phoneNumber("0633456751")
-//                .homeAddress("Budimska 12")
-//                .password(passwordEncoder.encode("jovanajovanovic"))
-//                .roles(List.of("ROLE_CLIENT"))
-//                .build();
+        BankUser client3 = BankUser.builder()
+                .firstName("Jovana")
+                .lastName("Jovanovic")
+                .birthDate(LocalDate.of(1988, 9, 11))
+                .gender(Gender.FEMALE)
+                .email("jovana.jovanovic@useremail.com")
+                .phoneNumber("0633456751")
+                .homeAddress("Budimska 12")
+                .password(passwordEncoder.encode("jovanajovanovic"))
+                .roles(List.of("ROLE_CLIENT"))
+                .build();
 
-//        Company company1 = Company.builder()
-//                .companyName("Monsanto")
-//                .phoneNumber("0621586732")
-//                .faxNumber("6347642835")
-//                .vatIdNumber(342243)
-//                .identificationNumber(343242)
-//                .activityCode(121)
-//                .registryNumber(233)
-//                .build();
+        Company company1 = Company.builder()
+                .companyName("YourHome Real Estate Agency")
+                .phoneNumber("0621586732")
+                .faxNumber("0112030402")
+                .vatIdNumber(203045644)
+                .identificationNumber(12289156)
+                .activityCode(6831)
+                .registryNumber(173240122)
+                .build();
+
+        Company company2 = Company.builder()
+                .companyName("Inspirex IT Solutions")
+                .phoneNumber("0657235934")
+                .faxNumber("0212295621")
+                .vatIdNumber(101017533)
+                .identificationNumber(17328905)
+                .activityCode(6201)
+                .registryNumber(330602854)
+                .build();
+
+        Company company3 = Company.builder()
+                .companyName("Ivanovic & Partners Legal Services")
+                .phoneNumber("0636628513")
+                .faxNumber("0118904768")
+                .vatIdNumber(521037997)
+                .identificationNumber(34152290)
+                .activityCode(6910)
+                .registryNumber(130501701)
+                .build();
 
         userRepository.save(employee1);
 //        userRepository.save(employee2);
         userRepository.save(client1);
         userRepository.save(client2);
-//        userRepository.save(client3);
-//        companyRepository.save(company1);
+        userRepository.save(client3);
+        companyRepository.save(company1);
+        companyRepository.save(company2);
+        companyRepository.save(company3);
 
         System.out.println("Data loaded");
     }
 
-    public List<CurrencyCsvBean> getCurrencies() throws IOException {
-        FileReader fileReader;
-        try {
-            fileReader = new FileReader(ResourceUtils.getFile("bank-service/csv-files/currencies.csv"));
-        } catch (Exception e) {
-            fileReader = new FileReader(ResourceUtils.getFile("classpath:csv/currencies.csv"));
-        }
-
-        return new CsvToBeanBuilder<CurrencyCsvBean>(fileReader)
-                .withType(CurrencyCsvBean.class)
-                .withSkipLines(1)
-                .build()
-                .parse();
-    }
 }
