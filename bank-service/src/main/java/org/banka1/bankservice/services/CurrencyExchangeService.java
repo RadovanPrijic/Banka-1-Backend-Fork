@@ -49,7 +49,7 @@ public class CurrencyExchangeService {
     private final ObjectMapper objectMapper;
 
 //    @Value("${flask.api.forex.exchange}")
-    private String baseForexUrl;
+    private final String baseForexUrl;
 
     public CurrencyExchangeService(ExchangePairRepository exchangePairRepository, ConversionTransferRepository conversionTransferRepository,
                                    UserRepository userRepository, PaymentService paymentService, AccountService accountService,
@@ -65,9 +65,18 @@ public class CurrencyExchangeService {
 
     public ConversionTransferConfirmDto convertMoney(ConversionTransferCreateDto conversionTransferCreateDto) {
         ExchangePair exchangePair = exchangePairRepository.findByExchangePairSymbol(conversionTransferCreateDto.getExchangePairSymbol()).orElseThrow(() -> new NotFoundException("Exchange pair has not been found."));
+        String fromCurrency = conversionTransferCreateDto.getExchangePairSymbol().split("/")[0];
+        Double convertedAmount, commissionFee;
+
         Double exchangeRate = exchangePair.getExchangeRate();
-        Double convertedAmount = conversionTransferCreateDto.getAmount() * exchangeRate;
-        Double commissionFee = ((100 * convertedAmount.doubleValue()) / 99) - convertedAmount.doubleValue();
+
+        if(fromCurrency.equals("RSD")) {
+            convertedAmount = conversionTransferCreateDto.getAmount() * ( 1 / exchangeRate );
+            commissionFee = calculateCommissionFee(conversionTransferCreateDto.getExchangePairSymbol(), convertedAmount * exchangeRate);
+        } else {
+            convertedAmount = conversionTransferCreateDto.getAmount() * exchangeRate;
+            commissionFee = calculateCommissionFee(conversionTransferCreateDto.getExchangePairSymbol(), convertedAmount);
+        }
 
         return new ConversionTransferConfirmDto(
                 conversionTransferCreateDto.getSenderAccountNumber(),
@@ -145,8 +154,7 @@ public class CurrencyExchangeService {
         if(!(currencySymbolTwo.equals("RSD")) && !(receiverAccount instanceof ForeignCurrencyAccountDto))
             throw new ValidationException("Receiver account is not a foreign currency account.");
 
-//        return paymentService.validateBalanceAndCurrencyAndDeclareTypes(senderAccount, receiverAccount, amount, currencySymbolOne, currencySymbolTwo);
-        return null;
+        return paymentService.validateFurtherAndReturnTypes(senderAccount, receiverAccount, amount, true, currencySymbolOne, currencySymbolTwo);
     }
 
     public ConversionTransferDto findConversionTransferById(Long id) {
@@ -196,15 +204,44 @@ public class CurrencyExchangeService {
 
             ExchangePair exchangePair = new ExchangePair();
             exchangePair.setExchangePairSymbol(from + "/" + to);
-
-            //TODO Ovde uraditi foru da se napravi prodajni i kupovni kurs banke za valute
-            exchangePair.setExchangeRate(flaskResponse.getExchangeRate());
-
+            exchangePair.setExchangeRate(calculateExchangeRate(from, to, flaskResponse.getExchangeRate()));
             exchangePairsToSave.add(exchangePair);
         }
 
         exchangePairRepository.saveAll(exchangePairsToSave);
     }
+
+    public Double calculateExchangeRate(String fromCurrency, String toCurrency, Double flaskExchangeRate) {
+        Double exchangeRate = 0.0;
+
+        // Prodajni kurs
+
+        if(fromCurrency.equals("RSD") && toCurrency.equals("EUR")) { // Za euro 0.5%
+            exchangeRate = ( 1 / flaskExchangeRate ) * 1.005;
+
+        } else if(fromCurrency.equals("RSD") && !toCurrency.equals("EUR")){ // Za ostale valute 1%
+            exchangeRate = ( 1 / flaskExchangeRate ) * 1.01;
+        }
+
+        //Kupovni kurs
+
+        if(fromCurrency.equals("EUR") && toCurrency.equals("RSD")) { // Za euro 0.5%
+            exchangeRate = flaskExchangeRate * 0.995;
+
+        } else if(!fromCurrency.equals("EUR") && toCurrency.equals("RSD")){ // Za ostale valute 1%
+            exchangeRate = flaskExchangeRate * 0.99;
+        }
+
+        return exchangeRate;
+    }
+
+    public Double calculateCommissionFee(String exchangePairSymbol, Double convertedAmount) {
+        if(exchangePairSymbol.contains("EUR"))
+            return ((100 * convertedAmount) / 99.5) - convertedAmount;
+        else
+            return ((100 * convertedAmount) / 99) - convertedAmount;
+    }
+
 
     private <T> T getForexFromFlask(String url, Class<T> clazz) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()

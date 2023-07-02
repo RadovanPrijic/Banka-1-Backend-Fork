@@ -37,7 +37,7 @@ public class AccountController {
     }
 
     @GetMapping("/user_accounts")
-    public ResponseEntity<?> getAllAccountsForUser() {
+    public ResponseEntity<?> getAllAccountsForLoggedInUser() {
         return ResponseEntity.ok(accountService.findAllAccountsForLoggedInUser());
     }
 
