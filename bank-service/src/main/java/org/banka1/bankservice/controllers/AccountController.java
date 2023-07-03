@@ -37,7 +37,7 @@ public class AccountController {
     }
 
     @GetMapping("/user_accounts")
-    public ResponseEntity<?> getAllAccountsForUser() {
+    public ResponseEntity<?> getAllAccountsForLoggedInUser() {
         return ResponseEntity.ok(accountService.findAllAccountsForLoggedInUser());
     }
 
@@ -74,6 +74,12 @@ public class AccountController {
     @PutMapping("/{accountType}/update_status/{id}")
     public ResponseEntity<?> updateAccountStatus(@PathVariable String accountType, @PathVariable Long id) {
         return ResponseEntity.ok(accountService.updateAccountStatus(accountType, id));
+    }
+
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/companies")
+    public ResponseEntity<?> getAllCompanies() {
+        return ResponseEntity.ok(accountService.findAllCompanies());
     }
 
 }

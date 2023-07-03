@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
-import java.io.Serial;
-import java.io.Serializable;
 
-@EqualsAndHashCode(callSuper = false)
 @Entity
 @Builder
 @AllArgsConstructor
@@ -15,23 +12,25 @@ import java.io.Serializable;
 @Getter
 @Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "bank_currencies")
-public class Currency implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Table(name = "bank_companies")
+public class Company {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String currencyName;
+    private String companyName;
 
-    @Column(unique = true)
-    private String currencyCode;
+    private String phoneNumber;
 
-    private String currencySymbol;
+    private String faxNumber;
 
-    private String polity;
+    private Integer vatIdNumber; // Poreski identifikacioni broj
+
+    private Integer identificationNumber; // Maticni broj
+
+    private Integer activityCode; // Sifra delatnosti
+
+    private Integer registryNumber; // Registarski broj
 
 }

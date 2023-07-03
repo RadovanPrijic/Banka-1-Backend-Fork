@@ -179,7 +179,7 @@ public class PaymentService {
         if(receiverAccount == null)
             throw new NotFoundException("Receiver account has not been found.");
 
-        return validateBalanceAndCurrencyAndDeclareTypes(senderAccount, receiverAccount, amount,"RSD");
+        return validateFurtherAndReturnTypes(senderAccount, receiverAccount, amount, false,"RSD", null);
     }
 
     public String[] validateMoneyTransfer(String senderAccountNumber, String receiverAccountNumber, Double amount, String currencySymbol) {
@@ -198,7 +198,7 @@ public class PaymentService {
         if(receiverAccount == null)
             throw new NotFoundException("Receiver account has not been found among user's accounts.");
 
-        return validateBalanceAndCurrencyAndDeclareTypes(senderAccount, receiverAccount, amount, currencySymbol);
+        return validateFurtherAndReturnTypes(senderAccount, receiverAccount, amount, false, currencySymbol, null);
     }
 
     public PaymentDto findPaymentById(Long id) {
@@ -263,7 +263,8 @@ public class PaymentService {
         return "Payment receiver has been successfully deleted.";
     }
 
-    public String[] validateBalanceAndCurrencyAndDeclareTypes(AccountDto senderAccount, AccountDto receiverAccount, Double amount, String currencySymbol){
+    public String[] validateFurtherAndReturnTypes(AccountDto senderAccount, AccountDto receiverAccount, Double amount,
+                                                  boolean conversion, String currencySymbolOne, String currencySymbolTwo){
         String[] accountTypes = new String[2];
         Double accountBalance = 0.0;
 
@@ -272,21 +273,7 @@ public class PaymentService {
             accountBalance = senderAccount.getAccountBalance();
         } else if(senderAccount instanceof ForeignCurrencyAccountDto) {
             accountTypes[0] = "FOREIGN_CURRENCY";
-
-            boolean currencyPresentOnAccount = false;
-            List<ForeignCurrencyBalanceDto> balances = ((ForeignCurrencyAccountDto) senderAccount).getForeignCurrencyBalances();
-
-            for(ForeignCurrencyBalanceDto balance : balances) {
-                if (balance.getForeignCurrencyCode().equals(currencySymbol)) {
-                    currencyPresentOnAccount = true;
-                    accountBalance = balance.getAccountBalance();
-                    break;
-                }
-            }
-
-            if(!currencyPresentOnAccount)
-                throw new ValidationException("Currency " + currencySymbol + " is not present on sender foreign currency account.");
-
+            accountBalance = validateCurrencyOnForeignCurrencyAccount(senderAccount, currencySymbolOne);
         } else if(senderAccount instanceof BusinessAccountDto) {
             accountTypes[0] = "BUSINESS";
             accountBalance = senderAccount.getAccountBalance();
@@ -300,23 +287,34 @@ public class PaymentService {
         else if(receiverAccount instanceof ForeignCurrencyAccountDto) {
             accountTypes[1] = "FOREIGN_CURRENCY";
 
-            boolean currencyPresentOnAccount = false;
-            List<ForeignCurrencyBalanceDto> balances = ((ForeignCurrencyAccountDto) receiverAccount).getForeignCurrencyBalances();
-
-            for(ForeignCurrencyBalanceDto balance : balances) {
-                if (balance.getForeignCurrencyCode().equals(currencySymbol)) {
-                    currencyPresentOnAccount = true;
-                    break;
-                }
-            }
-
-            if(!currencyPresentOnAccount)
-                throw new ValidationException("Currency " + currencySymbol + " is not present on receiver foreign currency account.");
+            if(conversion)
+                validateCurrencyOnForeignCurrencyAccount(receiverAccount, currencySymbolTwo);
+            else
+                validateCurrencyOnForeignCurrencyAccount(receiverAccount, currencySymbolOne);
 
         } else if(receiverAccount instanceof BusinessAccountDto)
             accountTypes[1] = "BUSINESS";
 
         return accountTypes;
+    }
+
+    public Double validateCurrencyOnForeignCurrencyAccount(AccountDto account, String currencySymbol) {
+        boolean currencyPresentOnAccount = false;
+        Double accountBalance = 0.0;
+        List<ForeignCurrencyBalanceDto> accountBalances = ((ForeignCurrencyAccountDto) account).getForeignCurrencyBalances();
+
+        for(ForeignCurrencyBalanceDto balance : accountBalances) {
+            if (balance.getForeignCurrencyCode().equals(currencySymbol)) {
+                currencyPresentOnAccount = true;
+                accountBalance = balance.getAccountBalance();
+                break;
+            }
+        }
+
+        if(!currencyPresentOnAccount)
+            throw new ValidationException("Currency " + currencySymbol + " is not present on foreign currency account.");
+
+        return accountBalance;
     }
 
 }
