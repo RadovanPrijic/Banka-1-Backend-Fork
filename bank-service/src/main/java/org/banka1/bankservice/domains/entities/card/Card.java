@@ -58,10 +58,10 @@ public class Card {
     @Enumerated(EnumType.STRING)
     private AccountStatus cardStatus;
 
-    @OneToMany(mappedBy = "card")
+    @OneToMany()
     private List<Payment> cardPayments;
 
-    @OneToMany(mappedBy = "card")
+    @OneToMany()
     private List<ConversionTransfer> cardConversions;
 
 

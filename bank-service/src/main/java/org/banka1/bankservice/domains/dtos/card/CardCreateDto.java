@@ -40,7 +40,4 @@ public class CardCreateDto {
     @DecimalMin(value="50.0", message="decimalField: positive number, min 50.0 is required")
     private Double cardLimit;
 
-    @NotNull
-    private AccountStatus cardStatus;
-
 }

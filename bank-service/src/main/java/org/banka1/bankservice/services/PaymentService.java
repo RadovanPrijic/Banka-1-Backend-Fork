@@ -179,7 +179,7 @@ public class PaymentService {
         if(receiverAccount == null)
             throw new NotFoundException("Receiver account has not been found.");
 
-        return validateFurtherAndReturnTypes(senderAccount, receiverAccount, amount, false,"RSD", null);
+        return validateFurtherAndReturnTypes(senderAccount, receiverAccount, amount, false, "RSD", null);
     }
 
     public String[] validateMoneyTransfer(String senderAccountNumber, String receiverAccountNumber, Double amount, String currencySymbol) {

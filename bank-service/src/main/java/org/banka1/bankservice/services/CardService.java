@@ -57,6 +57,7 @@ public class CardService {
         card.setExpiryDate(card.getCreationDate().plusYears(5));
         card.setRemainingUntilLimit(card.getCardLimit());
         card.setLastLimitDate(card.getCreationDate());
+        card.setCardStatus(AccountStatus.ACTIVE);
 
         cardRepository.save(card);
 
@@ -66,7 +67,15 @@ public class CardService {
     public CardDto payWithCard(CardPaymentDto cardPaymentDto) {
         Card card = cardRepository.findById(cardPaymentDto.getCardId()).orElseThrow(() -> new NotFoundException("Card has not been found."));
 
-        if(card.getCardCurrencySymbol().equals(cardPaymentDto.getCurrencySymbol())){
+        if(LocalDate.now().isAfter(card.getLastLimitDate()))
+            card.setRemainingUntilLimit(card.getCardLimit()); // Resetuj dnevni limit ako je novi dan
+
+        if(card.getRemainingUntilLimit() < cardPaymentDto.getAmount())
+            throw new ValidationException("This card payment would have exceeded your daily limit, therefore it was not executed.");
+        else
+            card.setRemainingUntilLimit(card.getRemainingUntilLimit() - cardPaymentDto.getAmount());
+
+        if(card.getCardCurrencySymbol().equals("RSD") && cardPaymentDto.getCurrencySymbol().equals("RSD")){ // Sa dinarskog na dinarski
             PaymentCreateDto paymentCreateDto = new PaymentCreateDto(
                     "Nepoznat primalac",
                     cardPaymentDto.getSenderAccountNumber(),
@@ -74,16 +83,15 @@ public class CardService {
                     cardPaymentDto.getAmount(),
                     null,
                     "184",
-                    "Standardna transakcija karticom"
+                    "Transakcija karticom"
             );
 
             PaymentDto paymentDto = paymentService.makePayment(paymentCreateDto);
             card.getCardPayments().add(PaymentMapper.INSTANCE.paymentDtoToPayment(paymentDto));
 
             cardRepository.save(card);
-        }
 
-        else {
+        } else if(card.getCardCurrencySymbol().equals("RSD") || cardPaymentDto.getCurrencySymbol().equals("RSD")){ // Konverzija RSD/XYZ ili XYZ/RSD
             String cardTransactionExchangePair = card.getCardCurrencySymbol() + "/" + cardPaymentDto.getCurrencySymbol();
 
             ConversionTransferCreateDto conversionTransferCreateDto = new ConversionTransferCreateDto(
@@ -98,7 +106,8 @@ public class CardService {
             card.getCardConversions().add(CurrencyExchangeMapper.INSTANCE.conversionTransferDtoToConversionTransfer(conversionTransferDto));
 
             cardRepository.save(card);
-        }
+        } else
+            throw new ValidationException("Your card transaction has invalid transaction currencies.");
 
         return CardMapper.INSTANCE.cardToCardDto(card);
     }
@@ -125,7 +134,9 @@ public class CardService {
     public CardDto updateCardLimit(Long id, Double newLimit) {
         Card card = cardRepository.findById(id).orElseThrow(() -> new NotFoundException("Card has not been found."));
 
+        card.setRemainingUntilLimit(newLimit - (card.getCardLimit() - card.getRemainingUntilLimit()));
         card.setCardLimit(newLimit);
+
         cardRepository.save(card);
 
         return CardMapper.INSTANCE.cardToCardDto(card);
