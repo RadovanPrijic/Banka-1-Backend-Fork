@@ -44,7 +44,7 @@ public class CurrencyExchangeController {
 
     @PostMapping("/confirm_conversion")
     public ResponseEntity<?> confirmConversionTransfer(@Valid @RequestBody ConversionTransferConfirmDto conversionTransferConfirmDto) {
-        return ResponseEntity.ok(currencyExchangeService.confirmConversionTransfer(conversionTransferConfirmDto));
+        return ResponseEntity.ok(currencyExchangeService.confirmConversionTransfer(conversionTransferConfirmDto, false));
     }
 
 }

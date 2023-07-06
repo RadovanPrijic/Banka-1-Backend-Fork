@@ -89,7 +89,7 @@ public class CurrencyExchangeService {
         );
     }
 
-    public ConversionTransferDto confirmConversionTransfer(ConversionTransferConfirmDto conversionTransferConfirmDto) {
+    public ConversionTransferDto confirmConversionTransfer(ConversionTransferConfirmDto conversionTransferConfirmDto, boolean cardConversion) {
         String fromCurrency = conversionTransferConfirmDto.getExchangePairSymbol().split("/")[0];
         String toCurrency = conversionTransferConfirmDto.getExchangePairSymbol().split("/")[1];
 
@@ -97,7 +97,8 @@ public class CurrencyExchangeService {
                                                            conversionTransferConfirmDto.getReceiverAccountNumber(),
                                                            conversionTransferConfirmDto.getAmount(),
                                                            fromCurrency,
-                                                           toCurrency);
+                                                           toCurrency,
+                                                           cardConversion);
 
         paymentService.changeAccountBalance(accountTypes[0],
                                             conversionTransferConfirmDto.getSenderAccountNumber(),
@@ -124,7 +125,7 @@ public class CurrencyExchangeService {
     }
 
     public String[] validateConversionTransfer(String senderAccountNumber, String receiverAccountNumber, Double amount,
-                                               String currencySymbolOne, String currencySymbolTwo) {
+                                               String currencySymbolOne, String currencySymbolTwo, boolean cardConversion) {
 
         List<AccountDto> userAccounts = accountService.findAllAccountsForLoggedInUser();
         AccountDto senderAccount = null, receiverAccount = null;
@@ -132,15 +133,21 @@ public class CurrencyExchangeService {
         for(AccountDto account : userAccounts){
             if(account.getAccountNumber().equals(senderAccountNumber))
                 senderAccount = account;
-            else if (account.getAccountNumber().equals(receiverAccountNumber))
+            else if (!cardConversion && account.getAccountNumber().equals(receiverAccountNumber))
                 receiverAccount = account;
         }
 
         if(senderAccount == null)
             throw new NotFoundException("Sender account has not been found among user's accounts.");
 
-        if(receiverAccount == null)
-            throw new NotFoundException("Receiver account has not been found among user's accounts.");
+        if(cardConversion){
+            receiverAccount = accountService.findAccountByAccountNumber(receiverAccountNumber);
+            if(receiverAccount == null)
+                throw new NotFoundException("Receiver account has not been found.");
+        } else {
+            if(receiverAccount == null)
+                throw new NotFoundException("Receiver account has not been found among user's accounts.");
+        }
 
         if(currencySymbolOne.equals("RSD") && !(senderAccount instanceof CurrentAccountDto))
             throw new ValidationException("Sender account is not a current account.");

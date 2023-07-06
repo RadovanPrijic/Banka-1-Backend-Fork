@@ -16,6 +16,7 @@ public interface PaymentMapper {
     PaymentMapper INSTANCE = Mappers.getMapper(PaymentMapper.class);
 
     PaymentDto paymentToPaymentDto(Payment payment);
+    Payment paymentDtoToPayment(PaymentDto paymentDto);
     Payment paymentCreateDtoToPayment(PaymentCreateDto paymentCreateDto);
     Payment moneyTransferDtoToPayment(MoneyTransferDto moneyTransferDto);
 
