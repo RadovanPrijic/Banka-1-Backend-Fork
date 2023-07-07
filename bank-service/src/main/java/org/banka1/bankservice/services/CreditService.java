@@ -8,19 +8,18 @@ import org.banka1.bankservice.domains.dtos.account.ForeignCurrencyAccountDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditRequestCreateDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditRequestDto;
-import org.banka1.bankservice.domains.dtos.credit.InterestRatePaymentDto;
+import org.banka1.bankservice.domains.dtos.credit.CreditInstallmentDto;
 import org.banka1.bankservice.domains.entities.credit.Credit;
+import org.banka1.bankservice.domains.entities.credit.CreditInstallment;
 import org.banka1.bankservice.domains.entities.credit.CreditRequest;
 import org.banka1.bankservice.domains.entities.credit.CreditRequestStatus;
-import org.banka1.bankservice.domains.entities.credit.InterestRatePayment;
-import org.banka1.bankservice.domains.entities.payment.Payment;
 import org.banka1.bankservice.domains.entities.user.BankUser;
 import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.domains.mappers.CreditMapper;
 import org.banka1.bankservice.repositories.CreditRepository;
 import org.banka1.bankservice.repositories.CreditRequestRepository;
-import org.banka1.bankservice.repositories.InterestRatePaymentRepository;
+import org.banka1.bankservice.repositories.CreditInstallmentRepository;
 import org.banka1.bankservice.repositories.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,17 +36,17 @@ public class CreditService {
 
     private final CreditRepository creditRepository;
     private final CreditRequestRepository creditRequestRepository;
-    private final InterestRatePaymentRepository interestRatePaymentRepository;
+    private final CreditInstallmentRepository creditInstallmentRepository;
     private final UserRepository userRepository;
     private final AccountService accountService;
     private final PaymentService paymentService;
 
     public CreditService(CreditRepository creditRepository, CreditRequestRepository creditRequestRepository,
-                         InterestRatePaymentRepository interestRatePaymentRepository, UserRepository userRepository,
+                         CreditInstallmentRepository creditInstallmentRepository, UserRepository userRepository,
                          AccountService accountService, PaymentService paymentService) {
         this.creditRepository = creditRepository;
         this.creditRequestRepository = creditRequestRepository;
-        this.interestRatePaymentRepository = interestRatePaymentRepository;
+        this.creditInstallmentRepository = creditInstallmentRepository;
         this.userRepository = userRepository;
         this.accountService = accountService;
         this.paymentService = paymentService;
@@ -71,9 +70,6 @@ public class CreditService {
         if(creditRequest.getCreditRequestStatus() != CreditRequestStatus.WAITING)
             throw new ValidationException("The status of this credit request is not WAITING.");
 
-        creditRequest.setCreditRequestStatus(CreditRequestStatus.APPROVED);
-        creditRequestRepository.save(creditRequest);
-
         BankUser user = userRepository.findByEmail(creditRequest.getClientEmail()).orElseThrow(() -> new NotFoundException("User has not been found."));
         AccountDto account = accountService.findAccountByAccountNumber(creditRequest.getAccountNumber());
 
@@ -84,14 +80,17 @@ public class CreditService {
                 .creditAmount(creditRequest.getCreditAmount())
                 .amortisationLength(creditRequest.getMonthsToPayOff())
                 .interestRate(creditRequest.getInterestRate())
-                .rateAmount((creditRequest.getCreditAmount() * (creditRequest.getInterestRate() / 100)) / creditRequest.getMonthsToPayOff())
+                .creditInstallmentAmount((creditRequest.getCreditAmount() * (1.0 + creditRequest.getInterestRate() / 100)) / creditRequest.getMonthsToPayOff())
                 .creationDate(LocalDate.now())
                 .dueDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(creditRequest.getMonthsToPayOff() + 1), 25))
-                .nextRateFirstDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(1), 1))
-                .nextRateLastDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(1), 15))
-                .leftToPay(creditRequest.getCreditAmount() * (creditRequest.getInterestRate() / 100))
+                .nextInstallmentFirstDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(1), 1))
+                .nextInstallmentLastDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(1), 15))
+                .leftToPay(creditRequest.getCreditAmount() * (1.0 + creditRequest.getInterestRate() / 100))
                 .currencyCode(account.getDefaultCurrencyCode())
                 .build();
+
+        creditRequest.setCreditRequestStatus(CreditRequestStatus.APPROVED);
+        creditRequestRepository.save(creditRequest);
 
         creditRepository.save(credit);
         doCreditTransaction(account, creditRequest.getCreditAmount(), "addition");
@@ -108,61 +107,47 @@ public class CreditService {
         return CreditMapper.INSTANCE.creditRequestToCreditRequestDto(creditRequest);
     }
 
-    public InterestRatePaymentDto payCreditInstallment(Long id) {
+    public CreditInstallmentDto payCreditInstallment(Long id) {
         Credit credit = creditRepository.findById(id).orElseThrow(() -> new NotFoundException("Credit has not been found."));
         AccountDto account = accountService.findAccountByAccountNumber(credit.getAccountNumber());
-        InterestRatePayment interestRatePayment;
+        CreditInstallment creditInstallment;
 
         if(credit.getLeftToPay() == 0.0)
-            throw new ValidationException("This credit has been fully paid off.");
+            throw new ValidationException("This credit has already been fully paid off.");
 
-        if(LocalDate.now().isEqual(credit.getNextRateFirstDate()) || LocalDate.now().isAfter(credit.getNextRateFirstDate())
-            || LocalDate.now().isBefore(credit.getNextRateLastDate()) || LocalDate.now().isEqual(credit.getNextRateLastDate())) {
+        if(LocalDate.now().isEqual(credit.getNextInstallmentFirstDate()) || LocalDate.now().isAfter(credit.getNextInstallmentFirstDate())
+            || LocalDate.now().isBefore(credit.getNextInstallmentLastDate()) || LocalDate.now().isEqual(credit.getNextInstallmentLastDate())) {
 
-            if(credit.getRateAmount() > account.getAccountBalance())
+            if(credit.getCreditInstallmentAmount() > account.getAccountBalance())
                 throw new ValidationException("You don't have enough funds on your bank account to pay this credit installment.");
 
-            doCreditTransaction(account, credit.getRateAmount(), "subtraction");
-            credit.setLeftToPay(credit.getLeftToPay() - credit.getRateAmount());
+            doCreditTransaction(account, credit.getCreditInstallmentAmount(), "subtraction");
+            credit.setLeftToPay(credit.getLeftToPay() - credit.getCreditInstallmentAmount());
 
-            interestRatePayment = InterestRatePayment.builder()
+            creditInstallment = CreditInstallment.builder()
                     .creditId(credit.getId())
                     .clientId(credit.getClientId())
-                    .interestRatePaymentTime(LocalDateTime.now())
-                    .paymentAmount(credit.getRateAmount())
-                    .interestRateAmount(credit.getRateAmount() * (credit.getInterestRate() / 100))
+                    .creditInstallmentPaymentTime(LocalDateTime.now())
+                    .creditInstallmentAmount(credit.getCreditInstallmentAmount())
+                    .interestRateAmount(credit.getCreditInstallmentAmount() * (credit.getInterestRate() / 100))
                     .build();
 
-            interestRatePaymentRepository.save(interestRatePayment);
+            creditInstallmentRepository.save(creditInstallment);
 
-            if(credit.getNextRateFirstDate().plusMonths(1).isAfter(credit.getDueDate()))
+            if(credit.getNextInstallmentFirstDate().plusMonths(1).isAfter(credit.getDueDate()))
                 credit.setLeftToPay(0.0);
             else {
-                credit.setNextRateFirstDate(credit.getNextRateFirstDate().plusMonths(1));
-                credit.setNextRateLastDate(credit.getNextRateLastDate().plusMonths(1));
+                credit.setNextInstallmentFirstDate(credit.getNextInstallmentFirstDate().plusMonths(1));
+                credit.setNextInstallmentLastDate(credit.getNextInstallmentLastDate().plusMonths(1));
             }
 
             creditRepository.save(credit);
 
         } else
-            throw new ValidationException("Your next rate must be paid between " + credit.getNextRateFirstDate() + " and " + credit.getNextRateLastDate() + ".");
+            throw new ValidationException("Your next credit installment can only be paid between " + credit.getNextInstallmentFirstDate() + " and " + credit.getNextInstallmentLastDate() + ".");
 
-        return CreditMapper.INSTANCE.interestRateToInterestRatePaymentDto(interestRatePayment);
+        return CreditMapper.INSTANCE.creditInstallmentToCreditInstallmentDto(creditInstallment);
     }
-
-    /*
-     public CommunicationDto payOffOneMonthsInterest(String creditId) {
-
-        double monthlyRate = credit.get().getMonthlyRate();
-
-        increaseOrDecreaseUserBalance(monthlyRate, credit.get().getAccountRegNumber(), true);
-        credit.get().setRemainingAmount(credit.get().getRemainingAmount() - monthlyRate);
-        creditRepository.save(credit.get());
-        payedInterestRepository.save(new PayedInterest("Kamata", creditId, dtf.format(LocalDate.now()), monthlyRate));
-
-        return new CommunicationDto(200, "Mesecna kamata je placena");
-    }
-    */
 
     public CreditRequestDto findCreditRequestById(Long id) {
         Optional<CreditRequest> creditRequest = creditRequestRepository.findById(id);
@@ -205,9 +190,9 @@ public class CreditService {
         return creditRepository.findAllByAccountNumberOrderByCreditAmountDesc(accountNumber).stream().map(CreditMapper.INSTANCE::creditToCreditDto).collect(Collectors.toList());
     }
 
-    public List<InterestRatePaymentDto> findAllInterestRatePaymentsForCredit(Long id) {
+    public List<CreditInstallmentDto> findAllCreditInstallmentsForCredit(Long id) {
 
-        return interestRatePaymentRepository.findAllByCreditId(id).stream().map(CreditMapper.INSTANCE::interestRateToInterestRatePaymentDto).collect(Collectors.toList());
+        return creditInstallmentRepository.findAllByCreditId(id).stream().map(CreditMapper.INSTANCE::creditInstallmentToCreditInstallmentDto).collect(Collectors.toList());
     }
 
     public void validateCreditRequest(CreditRequestCreateDto creditRequestCreateDto) {
@@ -227,8 +212,8 @@ public class CreditService {
             throw new ValidationException("This account does not belong to the user specified in credit request creation form.");
 
         List<CreditRequest> userCreditRequests = creditRequestRepository.findAllByClientEmailAndCreditRequestStatus(email, CreditRequestStatus.WAITING);
-        if(userCreditRequests.size() == 4)
-            throw new ValidationException("User has already reached a maximum of 4 waiting credit requests per user.");
+        if(userCreditRequests.size() == 5)
+            throw new ValidationException("User has already reached a maximum of 5 waiting credit requests per user.");
     }
 
     public void doCreditTransaction(AccountDto creditAccount, Double amount, String operation) {

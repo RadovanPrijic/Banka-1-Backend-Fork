@@ -10,16 +10,16 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InterestRatePaymentDto {
+public class CreditInstallmentDto {
 
     private Long id;
     private Long creditId;
     private Long clientId;
 
     @JsonFormat(pattern="dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime interestRatePaymentTime;
+    private LocalDateTime creditInstallmentPaymentTime;
 
-    private Double paymentAmount;
+    private Double creditInstallmentAmount;
     private Double interestRateAmount;
 
 }

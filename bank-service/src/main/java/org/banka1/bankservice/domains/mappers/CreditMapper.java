@@ -3,10 +3,10 @@ package org.banka1.bankservice.domains.mappers;
 import org.banka1.bankservice.domains.dtos.credit.CreditDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditRequestCreateDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditRequestDto;
-import org.banka1.bankservice.domains.dtos.credit.InterestRatePaymentDto;
+import org.banka1.bankservice.domains.dtos.credit.CreditInstallmentDto;
 import org.banka1.bankservice.domains.entities.credit.Credit;
+import org.banka1.bankservice.domains.entities.credit.CreditInstallment;
 import org.banka1.bankservice.domains.entities.credit.CreditRequest;
-import org.banka1.bankservice.domains.entities.credit.InterestRatePayment;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
@@ -21,6 +21,6 @@ public interface CreditMapper {
     CreditRequestDto creditRequestToCreditRequestDto(CreditRequest creditRequest);
     CreditRequest creditRequestCreateDtoToCreditRequest(CreditRequestCreateDto creditRequestCreateDto);
     CreditDto creditToCreditDto(Credit credit);
-    InterestRatePaymentDto interestRateToInterestRatePaymentDto(InterestRatePayment interestRatePayment);
+    CreditInstallmentDto creditInstallmentToCreditInstallmentDto(CreditInstallment creditInstallment);
 
 }

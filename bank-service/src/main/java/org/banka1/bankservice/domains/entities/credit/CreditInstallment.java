@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "interest_rate_payments")
-public class InterestRatePayment {
+@Table(name = "credit_installments")
+public class CreditInstallment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +25,9 @@ public class InterestRatePayment {
     private Long clientId;
 
     @JsonFormat(pattern="dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime interestRatePaymentTime;
+    private LocalDateTime creditInstallmentPaymentTime;
 
-    private Double paymentAmount;
+    private Double creditInstallmentAmount;
     private Double interestRateAmount;
 
 }

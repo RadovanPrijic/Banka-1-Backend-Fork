@@ -19,7 +19,7 @@ public class CreditDto {
     private Double creditAmount;
     private Integer amortisationLength;
     private Double interestRate;
-    private Double rateAmount;
+    private Double creditInstallmentAmount;
 
     @JsonFormat(pattern="dd-MM-yyyy")
     private LocalDate creationDate;
@@ -28,10 +28,10 @@ public class CreditDto {
     private LocalDate dueDate;
 
     @JsonFormat(pattern="dd-MM-yyyy")
-    private LocalDate nextRateFirstDate;
+    private LocalDate nextInstallmentFirstDate;
 
     @JsonFormat(pattern="dd-MM-yyyy")
-    private LocalDate nextRateLastDate;
+    private LocalDate nextInstallmentLastDate;
 
     private Double leftToPay;
     private String currencyCode;

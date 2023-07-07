@@ -26,11 +26,11 @@ public class Credit {
     private Double creditAmount;
     private Integer amortisationLength; // Broj meseci za otplacivanje kredita
     private Double interestRate; // Kamatna stopa u %
-    private Double rateAmount;
+    private Double creditInstallmentAmount;
     private LocalDate creationDate;
     private LocalDate dueDate;
-    private LocalDate nextRateFirstDate; // Kamatu treba platiti u periodu od nextRateFirstDate
-    private LocalDate nextRateLastDate; //  do nextRateLastDate
+    private LocalDate nextInstallmentFirstDate; // Kamatu treba platiti u periodu od nextRateFirstDate
+    private LocalDate nextInstallmentLastDate; //  do nextRateLastDate
     private Double leftToPay;
     private String currencyCode;
 
