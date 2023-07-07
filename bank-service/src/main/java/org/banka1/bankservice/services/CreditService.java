@@ -82,7 +82,7 @@ public class CreditService {
                 .interestRate(creditRequest.getInterestRate())
                 .creditInstallmentAmount((creditRequest.getCreditAmount() * (1.0 + creditRequest.getInterestRate() / 100)) / creditRequest.getMonthsToPayOff())
                 .creationDate(LocalDate.now())
-                .dueDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(creditRequest.getMonthsToPayOff() + 1), 25))
+                .dueDate(LocalDate.of(LocalDate.now().plusMonths(creditRequest.getMonthsToPayOff() + 1).getYear(), LocalDate.now().getMonth().plus(creditRequest.getMonthsToPayOff() + 1), 25))
                 .nextInstallmentFirstDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(1), 1))
                 .nextInstallmentLastDate(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth().plus(1), 15))
                 .leftToPay(creditRequest.getCreditAmount() * (1.0 + creditRequest.getInterestRate() / 100))
@@ -101,6 +101,9 @@ public class CreditService {
     public CreditRequestDto denyCreditRequest(Long id) {
         CreditRequest creditRequest = creditRequestRepository.findById(id).orElseThrow(() -> new NotFoundException("Credit request has not been found."));
 
+        if(creditRequest.getCreditRequestStatus() != CreditRequestStatus.WAITING)
+            throw new ValidationException("The status of this credit request is not WAITING.");
+
         creditRequest.setCreditRequestStatus(CreditRequestStatus.DENIED);
         creditRequestRepository.save(creditRequest);
 
@@ -115,8 +118,8 @@ public class CreditService {
         if(credit.getLeftToPay() == 0.0)
             throw new ValidationException("This credit has already been fully paid off.");
 
-        if(LocalDate.now().isEqual(credit.getNextInstallmentFirstDate()) || LocalDate.now().isAfter(credit.getNextInstallmentFirstDate())
-            || LocalDate.now().isBefore(credit.getNextInstallmentLastDate()) || LocalDate.now().isEqual(credit.getNextInstallmentLastDate())) {
+        if((LocalDate.now().isEqual(credit.getNextInstallmentFirstDate()) || LocalDate.now().isAfter(credit.getNextInstallmentFirstDate()))
+            && (LocalDate.now().isBefore(credit.getNextInstallmentLastDate()) || LocalDate.now().isEqual(credit.getNextInstallmentLastDate()))) {
 
             if(credit.getCreditInstallmentAmount() > account.getAccountBalance())
                 throw new ValidationException("You don't have enough funds on your bank account to pay this credit installment.");

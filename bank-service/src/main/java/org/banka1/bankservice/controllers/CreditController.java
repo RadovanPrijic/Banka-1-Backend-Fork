@@ -17,7 +17,6 @@ public class CreditController {
 
     private final CreditService creditService;
 
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PostMapping("/create_credit_request")
     public ResponseEntity<?> createCreditRequest(@Valid @RequestBody CreditRequestCreateDto creditRequestCreateDto) {
         return ResponseEntity.ok(creditService.createCreditRequest(creditRequestCreateDto));
