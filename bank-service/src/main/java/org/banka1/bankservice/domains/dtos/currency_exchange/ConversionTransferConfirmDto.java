@@ -1,13 +1,11 @@
 package org.banka1.bankservice.domains.dtos.currency_exchange;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
