@@ -18,6 +18,7 @@ public interface CurrencyExchangeMapper {
 
     ExchangePairDto exchangePairToExchangePairDto(ExchangePair exchangePair);
     ConversionTransferDto conversionTransferToConversionTransferDto(ConversionTransfer conversionTransfer);
+    ConversionTransfer conversionTransferDtoToConversionTransfer(ConversionTransferDto conversionTransferDto);
     ConversionTransfer conversionTransferConfirmDtoToConversionTransfer(ConversionTransferConfirmDto conversionTransferConfirmDto);
 
 }

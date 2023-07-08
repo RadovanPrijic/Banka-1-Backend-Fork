@@ -69,6 +69,7 @@ public class AccountService {
         currentAccount.setDefaultCurrencyCode("RSD");
         currentAccount.setAccountStatus(AccountStatus.ACTIVE);
         currentAccount.setCreationDate(LocalDate.now());
+        currentAccount.setExpiryDate(LocalDate.now().plusYears(5));
         currentAccount.setAccountType(currentAccountCreateDto.getAccountType());
         currentAccount.setInterestRate(currentAccountCreateDto.getInterestRate());
         currentAccount.setMaintenanceCost(currentAccountCreateDto.getMaintenanceCost());
@@ -91,6 +92,7 @@ public class AccountService {
         foreignCurrencyAccount.setDefaultCurrencyCode(foreignCurrencyAccountCreateDto.getDefaultCurrencyCode());
         foreignCurrencyAccount.setAccountStatus(AccountStatus.ACTIVE);
         foreignCurrencyAccount.setCreationDate(LocalDate.now());
+        foreignCurrencyAccount.setExpiryDate(LocalDate.now().plusYears(5));
         foreignCurrencyAccount.setAccountType(foreignCurrencyAccountCreateDto.getAccountType());
         foreignCurrencyAccount.setInterestRate(foreignCurrencyAccountCreateDto.getInterestRate());
         foreignCurrencyAccount.setMaintenanceCost(foreignCurrencyAccountCreateDto.getMaintenanceCost());
@@ -134,6 +136,7 @@ public class AccountService {
         businessAccount.setDefaultCurrencyCode("RSD");
         businessAccount.setAccountStatus(AccountStatus.ACTIVE);
         businessAccount.setCreationDate(LocalDate.now());
+        businessAccount.setExpiryDate(LocalDate.now().plusYears(5));
 
         businessAccountRepository.save(businessAccount);
 
@@ -294,20 +297,5 @@ public class AccountService {
 
         return "2650000" + sb;
     }
-
-//        public void validateAccountOwnership(Long id) {
-//        List<AccountDto> userAccounts = findAllAccountsForLoggedInUser();
-//        boolean owned = false;
-//
-//        for(AccountDto account : userAccounts) {
-//            if (account.getId().equals(id)) {
-//                owned = true;
-//                break;
-//            }
-//        }
-//
-//        if(!owned)
-//            throw new ForbiddenException("This account is owned by another user");
-//    }
 
 }
