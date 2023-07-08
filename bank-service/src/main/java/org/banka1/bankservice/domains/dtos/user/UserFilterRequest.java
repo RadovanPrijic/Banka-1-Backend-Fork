@@ -1,11 +1,9 @@
 package org.banka1.bankservice.domains.dtos.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.querydsl.core.BooleanBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.banka1.bankservice.domains.entities.Position;
+import org.banka1.bankservice.domains.entities.user.Position;
 //import org.banka1.userservice.domains.entities.QUser;
 
 @Data

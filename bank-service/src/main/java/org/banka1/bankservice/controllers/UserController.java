@@ -54,6 +54,12 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(userUpdateDto, id));
     }
 
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/clients")
+    public ResponseEntity<?> getAllClients() {
+        return ResponseEntity.ok(userService.findAllClients());
+    }
+
     @GetMapping("/my-profile")
     public ResponseEntity<?> aboutMe() {
         return ResponseEntity.ok(userService.returnUserProfile());
