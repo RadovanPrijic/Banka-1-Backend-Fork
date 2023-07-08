@@ -149,14 +149,14 @@ public class CurrencyExchangeService {
                 throw new NotFoundException("Receiver account has not been found among user's accounts.");
         }
 
-        if(currencySymbolOne.equals("RSD") && !(senderAccount instanceof CurrentAccountDto))
-            throw new ValidationException("Sender account is not a current account.");
+//        if(currencySymbolOne.equals("RSD") && !(senderAccount instanceof CurrentAccountDto))
+//            throw new ValidationException("Sender account is not a current account.");
 
         if(!(currencySymbolOne.equals("RSD")) && !(senderAccount instanceof ForeignCurrencyAccountDto))
             throw new ValidationException("Sender account is not a foreign currency account.");
 
-        if(currencySymbolTwo.equals("RSD") && !(receiverAccount instanceof CurrentAccountDto))
-            throw new ValidationException("Receiver account is not a current account.");
+//        if(currencySymbolTwo.equals("RSD") && !(receiverAccount instanceof CurrentAccountDto))
+//            throw new ValidationException("Receiver account is not a current account.");
 
         if(!(currencySymbolTwo.equals("RSD")) && !(receiverAccount instanceof ForeignCurrencyAccountDto))
             throw new ValidationException("Receiver account is not a foreign currency account.");
