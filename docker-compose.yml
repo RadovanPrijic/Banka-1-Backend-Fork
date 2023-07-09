@@ -24,7 +24,7 @@ services:
       MYSQL_DB: mysql
 #    volumes:
 #      - db-user:/var/lib/mysql/data
-    profiles: ["all", "exchange", "ufe"]
+    profiles: ["all", "exchange", "ufe", "flask"]
 
   mongo-db:
     image: mongo
@@ -57,7 +57,7 @@ services:
     build: ./flask-api-service
     ports:
       - "8888:8888"
-    profiles: ["all", "exchange", "ufe"]
+    profiles: ["all", "exchange", "ufe", "flask"]
 
   exchange-service:
     image: harbor.k8s.elab.rs/banka-1/exchange-service:latest
@@ -78,6 +78,22 @@ services:
       - redis
     restart: on-failure
     profiles: [ "all", "ufe"]
+
+  bank-service:
+    image: harbor.k8s.elab.rs/banka-1/bank-service:latest
+    build: ./bank-service
+    environment:
+      spring.datasource.hikari.jdbcUrl: jdbc:mysql://mysql-db:3306/db_banka1
+    ports:
+      - "8074:8074"
+    links:
+      - mysql-db
+      - flask-api-service
+    depends_on:
+      - mysql-db
+      - flask-api-service
+    restart: on-failure
+    profiles: ["all"]
 
   contracts-service:
     image: harbor.k8s.elab.rs/banka-1/contracts-service:latest
