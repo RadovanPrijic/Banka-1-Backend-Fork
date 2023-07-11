@@ -1,9 +1,7 @@
 package org.banka1.bankservice.controllers;
 
 import lombok.AllArgsConstructor;
-import org.banka1.bankservice.domains.dtos.account.BusinessAccountCreateDto;
-import org.banka1.bankservice.domains.dtos.account.CurrentAccountCreateDto;
-import org.banka1.bankservice.domains.dtos.account.ForeignCurrencyAccountCreateDto;
+import org.banka1.bankservice.domains.dtos.account.*;
 import org.banka1.bankservice.domains.dtos.user.UserCreateDto;
 import org.banka1.bankservice.domains.dtos.user.UserUpdateDto;
 import org.banka1.bankservice.services.AccountService;
@@ -80,6 +78,18 @@ public class AccountController {
     @GetMapping("/companies")
     public ResponseEntity<?> getAllCompanies() {
         return ResponseEntity.ok(accountService.findAllCompanies());
+    }
+
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/companies_filtered")
+    public ResponseEntity<?> getAllCompaniesFiltered(@RequestBody CompanyFilterRequest companyFilterRequest) {
+        return ResponseEntity.ok(accountService.findAllCompaniesFiltered(companyFilterRequest));
+    }
+
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @PostMapping("/create_company")
+    public ResponseEntity<?> createCompany(@Valid @RequestBody CompanyCreateDto companyCreateDto) {
+        return ResponseEntity.ok(accountService.createCompany(companyCreateDto));
     }
 
 }
