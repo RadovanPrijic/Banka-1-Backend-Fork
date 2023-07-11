@@ -19,5 +19,6 @@ public interface AccountMapper {
     ForeignCurrencyBalanceDto foreignCurrencyBalanceToForeignCurrencyBalanceDto(ForeignCurrencyBalance foreignCurrencyBalance);
 
     CompanyDto companyToCompanyDto(Company company);
+    Company companyCreateDtoToCompany(CompanyCreateDto companyCreateDto);
 
 }
