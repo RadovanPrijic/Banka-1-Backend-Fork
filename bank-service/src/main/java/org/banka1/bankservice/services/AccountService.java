@@ -17,6 +17,9 @@ import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.domains.mappers.AccountMapper;
 import org.banka1.bankservice.domains.mappers.UserMapper;
 import org.banka1.bankservice.repositories.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -275,6 +278,22 @@ public class AccountService {
 
     public List<CompanyDto> findAllCompanies() {
         return new ArrayList<>(companyRepository.findAll().stream().map(AccountMapper.INSTANCE::companyToCompanyDto).collect(Collectors.toList()));
+    }
+
+    public List<CompanyDto> findAllCompaniesFiltered(CompanyFilterRequest companyFilterRequest) {
+        Iterable<Company> result = companyRepository.findAll(companyFilterRequest.getPredicate());
+
+        List<Company> filteredCompaniesList = new ArrayList<>();
+        result.forEach(filteredCompaniesList::add);
+
+        return filteredCompaniesList.stream().map(AccountMapper.INSTANCE::companyToCompanyDto).collect(Collectors.toList());
+    }
+
+    public CompanyDto createCompany(CompanyCreateDto companyCreateDto){
+        Company company = AccountMapper.INSTANCE.companyCreateDtoToCompany(companyCreateDto);
+        companyRepository.save(company);
+
+        return AccountMapper.INSTANCE.companyToCompanyDto(company);
     }
 
     public void validateAccountName(Long id, String name) {

@@ -5,6 +5,7 @@ import org.banka1.bankservice.domains.dtos.login.LoginRequest;
 import org.banka1.bankservice.domains.dtos.login.LoginResponse;
 import org.banka1.bankservice.domains.dtos.user.PasswordDto;
 import org.banka1.bankservice.domains.dtos.user.UserCreateDto;
+import org.banka1.bankservice.domains.dtos.user.UserFilterRequest;
 import org.banka1.bankservice.domains.dtos.user.UserUpdateDto;
 import org.banka1.bankservice.services.UserService;
 import org.banka1.bankservice.utils.JwtUtil;
@@ -58,6 +59,12 @@ public class UserController {
     @GetMapping("/clients")
     public ResponseEntity<?> getAllClients() {
         return ResponseEntity.ok(userService.findAllClients());
+    }
+
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/clients_filtered")
+    public ResponseEntity<?> getAllClientsFiltered(@RequestBody UserFilterRequest userFilterRequest) {
+        return ResponseEntity.ok(userService.findAllClientsFiltered(userFilterRequest));
     }
 
     @GetMapping("/my-profile")
