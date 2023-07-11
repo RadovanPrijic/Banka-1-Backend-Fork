@@ -86,14 +86,12 @@ public class UserService implements UserDetailsService {
     }
 
     public void resetUserPassword(PasswordDto passwordDto, Long id) {
-        BankUser bankUser = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User has not been found."));
-
         if(!passwordPattern.matcher(passwordDto.getPassword()).matches()) {
             throw new ValidationException("Invalid password format. Password has to contain" +
                     " at least one of each: uppercase letter, lowercase letter, number, and special character. " +
                     "It also has to be at least 8 characters long.");
         }
-
+        BankUser bankUser = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User has not been found."));
         if(bankUser.getSecretKey() == null || !bankUser.getSecretKey().equals(passwordDto.getSecretKey())) {
             throw new BadRequestException("Invalid secret key.");
         }
