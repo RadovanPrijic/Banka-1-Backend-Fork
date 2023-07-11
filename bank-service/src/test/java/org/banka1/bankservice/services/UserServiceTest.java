@@ -37,12 +37,12 @@ public class UserServiceTest {
 
     @Test
     void findAllClientsSuccesfully(){
-//        //given
-//        when(userRepository.findAll()).thenReturn(getClients());
-//        //when
-//        var result = userService.findAllClients();
-//        //then
-//        assertEquals(3,result.size());
+        //given
+        when(userRepository.findAll()).thenReturn(getClients());
+        //when
+        var result = userService.findAllClients();
+        //then
+        assertEquals(3,result.size());
     }
 
     List<BankUser> getClients(){
