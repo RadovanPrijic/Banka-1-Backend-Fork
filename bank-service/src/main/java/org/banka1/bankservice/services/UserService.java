@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -134,6 +135,18 @@ public class UserService implements UserDetailsService {
         });
 
         return userDtos;
+    }
+
+    public List<UserDto> findAllClientsFiltered(UserFilterRequest userFilterRequest) {
+        Iterable<BankUser> result = userRepository.findAll(userFilterRequest.getPredicate());
+
+        List<BankUser> filteredUsersList = new ArrayList<>();
+        result.forEach(user -> {
+            if(user.getRoles().contains("ROLE_CLIENT"))
+                filteredUsersList.add(user);
+        });
+
+        return filteredUsersList.stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList());
     }
 
     public UserMyProfileDto returnUserProfile(){
