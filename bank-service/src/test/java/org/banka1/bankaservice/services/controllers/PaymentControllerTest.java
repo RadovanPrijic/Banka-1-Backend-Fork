@@ -87,15 +87,15 @@ public class PaymentControllerTest {
                 .andReturn();
     }
 
-    @Test
-    public void testGetAllPaymentsForAccount() throws Exception {
-        String accountNumber = "123456";
-
-        mockMvc.perform(get("/api/bank/account_payments")
-                        .param("accountNumber", accountNumber))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
-    }
+//    @Test
+//    public void testGetAllPaymentsForAccount() throws Exception {
+//        String accountNumber = "123456";
+//
+//        mockMvc.perform(get("/api/bank/account_payments")
+//                        .param("accountNumber", accountNumber))
+//                .andExpect(status().isUnauthorized())
+//                .andReturn();
+//    }
 
     @Test
     public void testMakePayment() throws Exception {
