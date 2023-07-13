@@ -81,7 +81,7 @@ public class AccountController {
     }
 
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
-    @GetMapping("/companies_filtered")
+    @PostMapping("/companies_filtered")
     public ResponseEntity<?> getAllCompaniesFiltered(@RequestBody CompanyFilterRequest companyFilterRequest) {
         return ResponseEntity.ok(accountService.findAllCompaniesFiltered(companyFilterRequest));
     }

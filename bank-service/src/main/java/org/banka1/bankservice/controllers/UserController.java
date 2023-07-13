@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
-    @GetMapping("/clients_filtered")
+    @PostMapping("/clients_filtered")
     public ResponseEntity<?> getAllClientsFiltered(@RequestBody UserFilterRequest userFilterRequest) {
         return ResponseEntity.ok(userService.findAllClientsFiltered(userFilterRequest));
     }
