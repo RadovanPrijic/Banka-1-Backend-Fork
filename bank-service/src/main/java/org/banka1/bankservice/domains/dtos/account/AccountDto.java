@@ -2,7 +2,6 @@ package org.banka1.bankservice.domains.dtos.account;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.banka1.bankservice.domains.entities.account.AccountStatus;
@@ -10,7 +9,6 @@ import org.banka1.bankservice.domains.entities.account.AccountStatus;
 import java.time.LocalDate;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountDto {

@@ -254,30 +254,18 @@ public class CardServiceTest {
     }
     List<AccountDto> getAllAccountsForUserByIdValidationException(){
         List<AccountDto> list = new ArrayList<>();
-        AccountDto acc1 = AccountDto.builder()
-                .id(1L)
-                .accountNumber("36488031")
-                .ownerId(1L)
-                .accountBalance(20000D)
-                .accountName("Savings")
-                .employeeId(3L)
-                .defaultCurrencyCode("RSD")
-                .accountStatus(AccountStatus.ACTIVE).build();
+        AccountDto acc1 = new AccountDto(1L,"36488031",1L,20000D,"Savings",3L
+                ,"RSD",AccountStatus.ACTIVE,LocalDate.now(),LocalDate.now().plusYears(5));
+
 
         list.add(acc1);
         return list;
     }
     List<AccountDto> getAllAccountsForUserById(){
         List<AccountDto> list = new ArrayList<>();
-        AccountDto acc1 = AccountDto.builder()
-                .id(1L)
-                .accountNumber("36488030")
-                .ownerId(1L)
-                .accountBalance(20000D)
-                .accountName("Savings")
-                .employeeId(3L)
-                .defaultCurrencyCode("RSD")
-                .accountStatus(AccountStatus.ACTIVE).build();
+        AccountDto acc1 = new AccountDto(1L,"36488030",1L,20000D,"Savings",3L
+                ,"RSD",AccountStatus.ACTIVE,LocalDate.now(),LocalDate.now().plusYears(5));
+
 
         list.add(acc1);
         return list;
