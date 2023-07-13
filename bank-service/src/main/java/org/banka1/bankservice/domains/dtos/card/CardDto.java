@@ -2,6 +2,7 @@ package org.banka1.bankservice.domains.dtos.card;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.banka1.bankservice.domains.dtos.currency_exchange.ConversionTransferDto;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CardDto {
