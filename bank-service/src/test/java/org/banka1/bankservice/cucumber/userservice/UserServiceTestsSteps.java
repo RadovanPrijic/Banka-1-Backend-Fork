@@ -322,7 +322,7 @@ public class UserServiceTestsSteps {
 //        System.out.println("REQUEST: "+url);
         try {
             MvcResult mvcResult = mockMvc.perform(
-                            get("/api/bank/clients_filtered")
+                            post("/api/bank/clients_filtered")
                                     .contentType("application/json")
                                     .content("""
                                                 {
