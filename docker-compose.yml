@@ -71,11 +71,13 @@ services:
       - flask-api-service
       - rabbitmq
       - redis
+      - user-service
     depends_on:
       - mysql-db
       - flask-api-service
       - rabbitmq
       - redis
+      - user-service
     restart: on-failure
     profiles: [ "all", "ufe"]
 
