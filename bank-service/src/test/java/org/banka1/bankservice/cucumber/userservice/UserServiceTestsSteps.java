@@ -49,21 +49,19 @@ public class UserServiceTestsSteps {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
     private String token;
-    private Long userId;
-    private Long updateId;
 
 
 
     @Given("Postoji zaposleni")
     public void employeeExists(){
-        Optional<BankUser> testClient = userRepository.findByEmail("admin@admin.com");
+        Optional<BankUser> testClient = userRepository.findByEmail("admin2@admin.com");
         if (testClient.isEmpty()) {
             var user =   BankUser.builder()
                     .firstName("Zoran")
                     .lastName("Stosic")
                     .birthDate(LocalDate.of(1981, 1, 29))
                     .gender(Gender.MALE)
-                    .email("admin@admin.com")
+                    .email("admin2@admin.com")
                     .phoneNumber("0622495678")
                     .homeAddress("Bulevar Kralja Aleksandra 52")
                     .password(passwordEncoder.encode("Admin123!"))
@@ -94,7 +92,7 @@ public class UserServiceTestsSteps {
 //
 //        token = Jwts.builder()
 //                .setClaims(claims)
-//                .setSubject("admin@admin.com")
+//                .setSubject("admin2@admin.com")
 //                .setIssuedAt(new Date(System.currentTimeMillis()))
 //                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
 //                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
@@ -106,7 +104,7 @@ public class UserServiceTestsSteps {
                                     .content(
                                             """
                                                     {
-                                                      "email": "admin@admin.com",
+                                                      "email": "admin2@admin.com",
                                                       "password": "Admin123!"
                                                     }
                                                     """))
@@ -130,7 +128,7 @@ public class UserServiceTestsSteps {
                 .lastName("Markovic")
                 .birthDate(LocalDate.of(1990, 10, 5))
                 .gender(Gender.MALE)
-                .email("marko.markovic@useremail.com")
+                .email("marko2.markovic@useremail.com")
                 .phoneNumber("0651678989")
                 .homeAddress("Njegoseva 25")
                 .roles(List.of("ROLE_CLIENT"))
@@ -139,9 +137,8 @@ public class UserServiceTestsSteps {
         var result = userService.createUser(client1);
 
         assertNotNull(result);
-        assertEquals("marko.markovic@useremail.com",result.getEmail());
+        assertEquals("marko2.markovic@useremail.com",result.getEmail());
         assertEquals("Markovic",result.getLastName());
-        updateId = result.getId();
     }
     @And("Azurira klijenta preko servisa")
     public void updateClient() {
@@ -149,7 +146,7 @@ public class UserServiceTestsSteps {
         var userUpdateDto = new UserUpdateDto("Stosic", Gender.MALE, "0622495689",
                 "Bulevar Kralja Aleksandra 52", "Marko1234!", List.of("ROLE_CLIENT"));
 
-        var emailResult = userService.findUserByEmail("marko.markovic@useremail.com");
+        var emailResult = userService.findUserByEmail("marko2.markovic@useremail.com");
         var result = userService.updateUser(userUpdateDto,emailResult.getId());
         assertNotNull(result);
         assertEquals(emailResult.getId(),result.getId());
@@ -161,7 +158,7 @@ public class UserServiceTestsSteps {
 
     @Then("Trazi klijenta preko servisa")
     public void findClient() {
-        var result = userService.findUserByEmail("marko.markovic@useremail.com");
+        var result = userService.findUserByEmail("marko2.markovic@useremail.com");
         assertNotNull(result);
         assertNotNull(result.getId());
         assertEquals("Stosic",result.getLastName());
@@ -200,7 +197,7 @@ public class UserServiceTestsSteps {
                                     .content(
                                             """
                                                     {
-                                                      "email": "admin@admin.com",
+                                                      "email": "admin2@admin.com",
                                                       "password": "Admin123!"
                                                     }
                                                     """))
@@ -228,7 +225,7 @@ public class UserServiceTestsSteps {
                                                 "lastName": "Petrovic",
                                                 "birthDate": "29-01-1981",
                                                 "gender": "MALE",
-                                                "email": "petar.petrovic@useremail.com",
+                                                "email": "petar2.petrovic@useremail.com",
                                                 "phoneNumber": "0651224390",
                                                 "homeAddress": "Kralja Milana 34",
                                                 "roles": ["ROLE_CLIENT"]
@@ -300,7 +297,7 @@ public class UserServiceTestsSteps {
                                     .content(
                                             """
                                                     {
-                                                      "email": "petar.petrovic@useremail.com",
+                                                      "email": "petar2.petrovic@useremail.com",
                                                       "password": "Marko1234!"
                                                     }
                                                     """))
@@ -389,7 +386,7 @@ public class UserServiceTestsSteps {
 //        System.out.println("REQUEST: "+url);
         try {
             MvcResult mvcResult = mockMvc.perform(
-                            get("/api/bank/forgot-password?email={email}","admin@admin.com")
+                            get("/api/bank/forgot-password?email={email}","admin2@admin.com")
                                     .contentType("application/json"))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -438,7 +435,7 @@ public class UserServiceTestsSteps {
                                     .content(
                                             """
                                                     {
-                                                      "email": "admin@admin.com",
+                                                      "email": "admin2@admin.com",
                                                       "password": "NovaSifra123!"
                                                     }
                                                     """))
