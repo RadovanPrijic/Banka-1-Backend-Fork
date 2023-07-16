@@ -13,11 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -729,5 +732,68 @@ public class AccountServiceTest {
             assertEquals(true, Character.isDigit(digit));
         }
     }
+
+    @Test
+    public void testFindAllAccountsForLoggedInUser_Success() {
+        // Prepare test data
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        BankUser user = new BankUser();
+        user.setId(1L);
+
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(user));
+
+        when(currentAccountRepository.findAllByOwnerId(1L)).thenReturn(Collections.singletonList(new CurrentAccount()));
+        when(foreignCurrencyAccountRepository.findAllByOwnerId(1L)).thenReturn(Collections.singletonList(new ForeignCurrencyAccount()));
+        when(businessAccountRepository.findAllByOwnerId(1L)).thenReturn(Collections.singletonList(new BusinessAccount()));
+
+        // Call the method to be tested
+        List<AccountDto> result = accountService.findAllAccountsForLoggedInUser();
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(3, result.size()); // Assuming there are 3 different account types
+
+        // Verify the mock interactions
+        verify(userRepository, times(1)).findByEmail(any());
+        verify(currentAccountRepository, times(1)).findAllByOwnerId(1L);
+        verify(foreignCurrencyAccountRepository, times(1)).findAllByOwnerId(1L);
+        verify(businessAccountRepository, times(1)).findAllByOwnerId(1L);
+    }
+
+    @Test
+    public void testCreateCompany_Success() {
+        // Prepare test data
+        CompanyCreateDto companyCreateDto = new CompanyCreateDto();
+        Company company = new Company();
+        when(companyRepository.save(any(Company.class))).thenReturn(company);
+
+        // Call the method to be tested
+        CompanyDto result = accountService.createCompany(companyCreateDto);
+
+        // Assertions
+        assertNotNull(result);
+        // Add additional assertions as needed
+
+        // Verify the mock interactions
+        verify(companyRepository, times(1)).save(any(Company.class));
+    }
+
+    @Test()
+    public void testCreateCompany_Exception() {
+        // Prepare test data
+        CompanyCreateDto companyCreateDto = new CompanyCreateDto();
+        //when(companyRepository.save(any(Company.class))).thenThrow(new Exception("Error saving company."));
+
+        // Call the method to be tested (should throw Exception)
+        accountService.createCompany(companyCreateDto);
+
+        // Verify the mock interactions (optional in this case)
+        verify(companyRepository, times(1)).save(any(Company.class));
+    }
+
+
 
 }

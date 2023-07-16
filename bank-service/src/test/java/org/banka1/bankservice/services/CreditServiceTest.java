@@ -8,6 +8,7 @@ import org.banka1.bankservice.domains.dtos.credit.CreditDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditInstallmentDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditRequestCreateDto;
 import org.banka1.bankservice.domains.dtos.credit.CreditRequestDto;
+import org.banka1.bankservice.domains.entities.account.AccountStatus;
 import org.banka1.bankservice.domains.entities.credit.*;
 import org.banka1.bankservice.domains.entities.user.BankUser;
 import org.banka1.bankservice.domains.exceptions.NotFoundException;
@@ -27,6 +28,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -654,6 +656,101 @@ public class CreditServiceTest {
 
         // Assert
         verify(paymentService, times(1)).changeAccountBalance("BUSINESS", businessAccount.getAccountNumber(), amount, operation, businessAccount.getDefaultCurrencyCode());
+    }
+
+
+    @Test
+    public void testValidateCreditRequest_Success() {
+        // Prepare test data
+        String email = "test@example.com";
+        CreditRequestCreateDto creditRequestCreateDto = new CreditRequestCreateDto();
+        creditRequestCreateDto.setAccountNumber("123456789"); // Specify the correct account number
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        BankUser user = new BankUser();
+        user.setId(1L);
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(user));
+
+        List<AccountDto> userAccounts = new ArrayList<>();
+        userAccounts.add(new AccountDto(1L, "123456789", 1L, 1000.0, "Account 1", 1L, "USD", AccountStatus.ACTIVE, LocalDate.now(), LocalDate.now().plusYears(1)));
+        userAccounts.add(new AccountDto(2L, "987654321", 1L, 2000.0, "Account 2", 2L, "EUR", AccountStatus.ACTIVE, LocalDate.now(), LocalDate.now().plusYears(1)));
+        when(accountService.findAllAccountsForUserById(user.getId())).thenReturn(userAccounts);
+
+        List<CreditRequest> userCreditRequests = new ArrayList<>();
+        // Add existing credit requests for the user
+        // ...
+        when(creditRequestRepository.findAllByClientEmailAndCreditRequestStatus(any(), eq(CreditRequestStatus.WAITING))).thenReturn(userCreditRequests);
+
+        // Call the method to be tested
+        creditService.validateCreditRequest(creditRequestCreateDto);
+
+        // No exceptions thrown, test passes
+
+        // Verify the mock interactions
+        verify(userRepository, times(1)).findByEmail(any());
+        verify(accountService, times(1)).findAllAccountsForUserById(user.getId());
+        verify(creditRequestRepository, times(1)).findAllByClientEmailAndCreditRequestStatus(any(), eq(CreditRequestStatus.WAITING));
+    }
+
+    @Test
+    public void testFindAllCreditsForLoggedInUser_Success() {
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        // Prepare test data
+        BankUser user = new BankUser();
+        user.setId(1L);
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(user));
+
+        List<Credit> userCredits = new ArrayList<>();
+        // Add user credits to the list
+        // ...
+        when(creditRepository.findAllByClientIdOrderByCreditAmountDesc(user.getId())).thenReturn(userCredits);
+
+        // Call the method to be tested
+        List<CreditDto> result = creditService.findAllCreditsForLoggedInUser();
+
+        // Assertions
+        assertNotNull(result);
+        // Add additional assertions as needed
+
+        // Verify the mock interactions
+        verify(userRepository, times(1)).findByEmail(any());
+        verify(creditRepository, times(1)).findAllByClientIdOrderByCreditAmountDesc(user.getId());
+    }
+
+    @Test
+    public void testCreateCreditRequest_Success() {
+        var authenticationToken = new UsernamePasswordAuthenticationToken("test", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+        CreditRequestCreateDto creditRequestCreateDto = new CreditRequestCreateDto();
+
+
+        BankUser user = new BankUser();
+        user.setId(1L);
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(user));
+
+        List<AccountDto> userAccounts = new ArrayList<>();
+        userAccounts.add(new AccountDto(1L, "123456789", 1L, 1000.0, "Account 1", 1L, "USD", AccountStatus.ACTIVE, LocalDate.now(), LocalDate.now().plusYears(1)));
+        userAccounts.add(new AccountDto(2L, "987654321", 1L, 2000.0, "Account 2", 2L, "EUR", AccountStatus.ACTIVE, LocalDate.now(), LocalDate.now().plusYears(1)));
+        when(accountService.findAllAccountsForUserById(user.getId())).thenReturn(userAccounts);
+
+        creditRequestCreateDto.setAccountNumber("123456789");
+
+
+        CreditRequestDto result = creditService.createCreditRequest(creditRequestCreateDto);
+
+
+        assertNotNull(result);
+
+
+        verify(userRepository, times(1)).findByEmail(any());
+        verify(accountService, times(1)).findAllAccountsForUserById(user.getId());
+        verify(creditRequestRepository, times(1)).save(any(CreditRequest.class));
     }
 
 }
