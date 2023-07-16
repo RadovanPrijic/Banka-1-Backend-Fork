@@ -230,10 +230,7 @@ public class UserServiceTestsSteps {
                                                 "homeAddress": "Kralja Milana 34",
                                                 "roles": ["ROLE_CLIENT"]
                                             }
-                                            """)
-                                    .header("Content-Type", "application/json")
-                                    .header("Access-Control-Allow-Origin", "*")
-                                    .header("Authorization", "Bearer " + token))
+                                            """))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andReturn();
@@ -403,7 +400,7 @@ public class UserServiceTestsSteps {
     @Then("Resetuje sifru")
     public void resetPassword() {
 //        System.out.println("REQUEST: "+url);
-        Optional<BankUser> user = userRepository.findById(1L);
+        Optional<BankUser> user = userRepository.findByEmail("admin2@admin.com");
         StringBuilder sb = new StringBuilder();
         sb.append('{')
                 .append("\"password\": \"NovaSifra123!\", \"secretKey\": \"")
