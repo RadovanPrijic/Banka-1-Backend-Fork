@@ -244,7 +244,8 @@ public class UserServiceTestsSteps {
 
     @Then("Pronadje korisnika")
     public void findUserById() {
-        String url = "/api/bank/user/"+ 3;
+        var result = userService.findUserByEmail("petar2.petrovic@useremail.com");
+        String url = "/api/bank/user/"+ result.getId();
 //        System.out.println("REQUEST: "+url);
         try {
             MvcResult mvcResult = mockMvc.perform(
@@ -408,7 +409,7 @@ public class UserServiceTestsSteps {
         String body = sb.toString();
         try {
             MvcResult mvcResult = mockMvc.perform(
-                            post("/api/bank/reset-password/{id}",1L)
+                            post("/api/bank/reset-password/{id}",user.get().getId())
                                     .contentType("application/json")
                                     .content(body)
                                     .header("Content-Type", "application/json"))
