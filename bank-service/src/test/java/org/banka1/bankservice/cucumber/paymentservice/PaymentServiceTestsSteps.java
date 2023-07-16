@@ -180,9 +180,6 @@ public class PaymentServiceTestsSteps {
 //                .setIssuedAt(new Date(System.currentTimeMillis()))
 //                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
 //                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
-
-
-
         String body = "{\"email\": \""+loggingUser.getEmail()+"\",\"password\": \"Markomarkovic123!\"}";
         System.out.println("BODY: " + body);
         try {
@@ -210,13 +207,41 @@ public class PaymentServiceTestsSteps {
             fail("User failed to login");
         }
     }
+    public void firstEmployeeIsLoggingIn(BankUser loggingUser){
+        String body = "{\"email\": \""+loggingUser.getEmail()+"\",\"password\": \"Admin123!\"}";
+        System.out.println("BODY: " + body);
+        try {
+            MvcResult mvcResult = mockMvc.perform(
+                            post("/api/bank/login")
+                                    .contentType("application/json")
+                                    .content(body))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+            token = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.jwtToken");
 
-    @Given("Harold je otvorio dva tekuca racuna i Harold se ulogovao")
+            System.out.println("TOKEN: " + token);
+
+            UserDetails userDetails = new User(loggingUser.getEmail(), loggingUser.getPassword(), loggingUser.getAuthorities());
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+            usernamePasswordAuthenticationToken
+                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(mvcResult.getRequest()));
+
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("User failed to login");
+        }
+    }
+
+    @Given("Zaposleni se uloguje i otvara Marku dva tekuca racuna")
     public void two_clients_open_current_account(){
 
-        Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
+        Optional<BankUser> user = userRepository.findByEmail("admin@admin.com");
         assertNotNull(user.get());
-        firstClientIsLoggingIn(user.get());
+        firstEmployeeIsLoggingIn(user.get());
 //        assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
 
 
@@ -252,8 +277,11 @@ public class PaymentServiceTestsSteps {
 
     }
 
-    @When("Harold radi transfer iz prvog u drugi racun")
-    public void harold_does_transfer_payment(){
+    @When("Marko se uloguje i radi transfer iz prvog tekuceg racuna u drugi tekuci racun")
+    public void marko_does_transfer_payment(){
+        Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
+        assertNotNull(user.get());
+        firstClientIsLoggingIn(user.get());
 
         MoneyTransferDto moneyTransferDto = new MoneyTransferDto(currentAcc1.getAccountNumber(), currentacc2.getAccountNumber(),50000D,"RSD");
         var result = paymentService.transferMoney(moneyTransferDto);
@@ -270,11 +298,11 @@ public class PaymentServiceTestsSteps {
 
     }
 
-    @Given("Harold pravi devizni racun jedan za EUR drugi za EUR")
-    public void harold_makes_foreign_account(){
-        Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
+    @Given("Zaposleni se uloguje i otvara Marku devizni racun jedan za EUR drugi za EUR")
+    public void marko_makes_foreign_account(){
+        Optional<BankUser> user = userRepository.findByEmail("admin@admin.com");
         assertNotNull(user.get());
-        firstClientIsLoggingIn(user.get());
+        firstEmployeeIsLoggingIn(user.get());
 //        assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
 
         ForeignCurrencyAccountCreateDto foreignCurrencyAccountCreateDto =
@@ -318,8 +346,11 @@ public class PaymentServiceTestsSteps {
         foreignAcc2 = res2;
     }
 
-    @When("Harold radi transfer iz prvog deviznog racuna u drugi devizni racun")
-    public void harold_does_foreign_transfer_payment(){
+    @When("Marko se uloguje i radi transfer iz prvog deviznog racuna u drugi devizni racun")
+    public void marko_does_foreign_transfer_payment(){
+        Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
+        assertNotNull(user.get());
+        firstClientIsLoggingIn(user.get());
 
         MoneyTransferDto moneyTransferDto = new MoneyTransferDto(foreignAcc1.getAccountNumber(), foreignAcc2.getAccountNumber(),500D,"EUR");
         var result = paymentService.transferMoney(moneyTransferDto);
@@ -338,11 +369,11 @@ public class PaymentServiceTestsSteps {
 
     private BusinessAccountDto company1;
     private BusinessAccountDto company2;
-    @Given("Postoje dve kompanije, Mirko.doo i Rajko.doo respektivno")
+    @Given("Zaposleni pravi dve kompanije Mirko.doo i Rajko.doo respektivno")
     public void two_companies_are_made(){
-        Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
+        Optional<BankUser> user = userRepository.findByEmail("admin@admin.com");
         assertNotNull(user.get());
-        firstClientIsLoggingIn(user.get());
+        firstEmployeeIsLoggingIn(user.get());
 //        assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
 
 
@@ -359,8 +390,12 @@ public class PaymentServiceTestsSteps {
         company2 = result1;
     }
 
-    @When("Mirko.doo uplacuje iznos novca Rajko.doo")
+    @When("Marko,Vlasnik kompanije Mirko.doo, se uloguje i uplacuje iznos novca kompaniji Rajko.doo")
     public void first_company_pays_to_second_company(){
+        Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
+        assertNotNull(user.get());
+        firstClientIsLoggingIn(user.get());
+
         PaymentCreateDto paymentCreateDto =
                 new PaymentCreateDto(company1.getAccountName(),company1.getAccountNumber(),company2.getAccountNumber(),company1.getAccountBalance(),"123451","123553","Uplata po hitnoj transakciji");
         var result = paymentService.makePayment(paymentCreateDto);
