@@ -1,12 +1,10 @@
 package org.banka1.bankservice.cucumber.paymentservice;
 
-import io.cucumber.java.Before;
+import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.BeforeStep;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.banka1.bankservice.domains.dtos.account.*;
 import org.banka1.bankservice.domains.dtos.payment.MoneyTransferDto;
 import org.banka1.bankservice.domains.dtos.payment.PaymentCreateDto;
@@ -26,13 +24,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class PaymentServiceTestsSteps {
 
@@ -139,8 +141,7 @@ public class PaymentServiceTestsSteps {
 
 
             //Token initialization
-            logInForUser(this.client1);
-            assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
+
 //            List<String> role = new ArrayList<>();
 //            role.add("ROLE_EMPLOYEE");
 //
@@ -161,29 +162,53 @@ public class PaymentServiceTestsSteps {
         }
     }
 
-    public void logInForUser(BankUser loggingUser){
-        UserDetails userDetails = new User(loggingUser.getEmail(), loggingUser.getPassword(), loggingUser.getAuthorities());
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    public void firstClientIsLoggingIn(BankUser loggingUser){
 
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+//
+//
+//
+//        List<String> role = loggingUser.getRoles();
+////        role.add("ROLE_EMPLOYEE");
+//
+//        Map<String, Object> claims = new HashMap<>();
+//        claims.put("userId", loggingUser.getId());
+//        claims.put("roles", role);
+//
+//        token = Jwts.builder()
+//                .setClaims(claims)
+//                .setSubject(loggingUser.getEmail())
+//                .setIssuedAt(new Date(System.currentTimeMillis()))
+//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+//                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
 
 
 
-        List<String> role = loggingUser.getRoles();
-//        role.add("ROLE_EMPLOYEE");
+        String body = "{\"email\": \""+loggingUser.getEmail()+"\",\"password\": \"Markomarkovic123!\"}";
+        System.out.println("BODY: " + body);
+        try {
+            MvcResult mvcResult = mockMvc.perform(
+                            post("/api/bank/login")
+                                    .contentType("application/json")
+                                    .content(body))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+            token = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.jwtToken");
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", loggingUser.getId());
-        claims.put("roles", role);
+            System.out.println("TOKEN: " + token);
 
-        token = Jwts.builder()
-                .setClaims(claims)
-                .setSubject(loggingUser.getEmail())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
+            UserDetails userDetails = new User(loggingUser.getEmail(), loggingUser.getPassword(), loggingUser.getAuthorities());
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
+            usernamePasswordAuthenticationToken
+                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(mvcResult.getRequest()));
+
+            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("User failed to login");
+        }
     }
 
     @Given("Harold je otvorio dva tekuca racuna i Harold se ulogovao")
@@ -191,7 +216,9 @@ public class PaymentServiceTestsSteps {
 
         Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
         assertNotNull(user.get());
-        logInForUser(user.get());
+        firstClientIsLoggingIn(user.get());
+//        assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
+
 
         CurrentAccountCreateDto currentAccountCreateDto =
                 new CurrentAccountCreateDto(2L,"My first saving account",1L, AccountType.SAVINGS,5D,1000D);
@@ -247,7 +274,8 @@ public class PaymentServiceTestsSteps {
     public void harold_makes_foreign_account(){
         Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
         assertNotNull(user.get());
-        logInForUser(user.get());
+        firstClientIsLoggingIn(user.get());
+//        assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
 
         ForeignCurrencyAccountCreateDto foreignCurrencyAccountCreateDto =
                 new ForeignCurrencyAccountCreateDto(2L,"My first foreign account",1L
@@ -314,7 +342,9 @@ public class PaymentServiceTestsSteps {
     public void two_companies_are_made(){
         Optional<BankUser> user = userRepository.findByEmail("marko.markovic@useremail.com");
         assertNotNull(user.get());
-        logInForUser(user.get());
+        firstClientIsLoggingIn(user.get());
+//        assertEquals("marko.markovic@useremail.com",SecurityContextHolder.getContext().getAuthentication().getName());
+
 
         BusinessAccountCreateDto businessAccountCreateDto =
                 new BusinessAccountCreateDto(2L,"Mirko.doo", 1L,1L);
