@@ -27,7 +27,7 @@ public class ForeignCurrencyAccount extends Account {
 
     private Double maintenanceCost;
 
-    @OneToMany(mappedBy = "account")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "account")
     private List<ForeignCurrencyBalance> foreignCurrencyBalances;
 
 }
