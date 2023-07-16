@@ -85,20 +85,40 @@ public class UserServiceTestsSteps {
 
     @And("Zaposleni se uloguje")
     public void userLoggedIn() {
-        List<String> role = new ArrayList<>();
-        role.add("ROLE_EMPLOYEE");
+//        List<String> role = new ArrayList<>();
+//        role.add("ROLE_EMPLOYEE");
+//
+//        Map<String, Object> claims = new HashMap<>();
+//        claims.put("userId", 1L);
+//        claims.put("roles", role);
+//
+//        token = Jwts.builder()
+//                .setClaims(claims)
+//                .setSubject("admin@admin.com")
+//                .setIssuedAt(new Date(System.currentTimeMillis()))
+//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+//                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", 1L);
-        claims.put("roles", role);
+        try {
+            MvcResult mvcResult = mockMvc.perform(
+                            post("/api/bank/login")
+                                    .contentType("application/json")
+                                    .content(
+                                            """
+                                                    {
+                                                      "email": "admin@admin.com",
+                                                      "password": "Admin123!"
+                                                    }
+                                                    """))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+            token = JsonPath.read(mvcResult.getResponse().getContentAsString(), "$.jwtToken");
 
-        token = Jwts.builder()
-                .setClaims(claims)
-                .setSubject("admin@admin.com")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
-
+            System.out.println("TOKEN: " + token);
+        } catch (Exception e) {
+            fail("User failed to login");
+        }
     }
 
 
