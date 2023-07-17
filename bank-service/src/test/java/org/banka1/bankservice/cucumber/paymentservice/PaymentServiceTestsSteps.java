@@ -266,7 +266,7 @@ public class PaymentServiceTestsSteps {
 
     @Given("Zaposleni se uloguje i otvara Marku dva tekuca racuna")
     public void two_clients_open_current_account(){
-
+        Optional<BankUser> r = userRepository.findByEmail("admin1@admin.com");
         Optional<BankUser> optEmployee = userRepository.findByEmail("admin1@admin.com");
         assertNotNull(optEmployee.get());
         userIsLoggingIn(optEmployee.get());
