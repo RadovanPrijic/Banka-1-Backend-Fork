@@ -269,10 +269,12 @@ public class UserServiceTestsSteps {
         String body = new io.cucumber.core.internal.com.fasterxml.jackson.databind.ObjectMapper()
                 .writeValueAsString(userUpdateDto);
 
+        var result = userService.findUserByEmail("petar2.petrovic@useremail.com");
+        String url = "/api/bank/update/"+ result.getId();
 //        System.out.println("UPDATEID: " + updateId);
         try {
             MvcResult mvcResult = mockMvc.perform(
-                            put("/api/bank/update/"+3)
+                            put(url)
                                     .contentType("application/json")
                                     .content(body)
                                     .header("Content-Type", "application/json")
