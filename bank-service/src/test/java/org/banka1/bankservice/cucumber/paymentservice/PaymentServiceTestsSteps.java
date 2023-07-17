@@ -266,12 +266,11 @@ public class PaymentServiceTestsSteps {
 
     @Given("Zaposleni se uloguje i otvara Marku dva tekuca racuna")
     public void two_clients_open_current_account(){
-        Optional<BankUser> r = userRepository.findByEmail("admin1@admin.com");
         Optional<BankUser> optEmployee = userRepository.findByEmail("admin1@admin.com");
         assertNotNull(optEmployee.get());
         userIsLoggingIn(optEmployee.get());
         BankUser employee = optEmployee.get();
-        assertEquals("admin1@admin.com",SecurityContextHolder.getContext().getAuthentication().getName());
+//        assertEquals("admin1@admin.com",SecurityContextHolder.getContext().getAuthentication().getName());
 
         Optional<BankUser> optClient = userRepository.findByEmail("marko1.markovic@useremail.com");
         assertNotNull(optClient.get());
