@@ -13,8 +13,10 @@ import org.banka1.bankservice.domains.exceptions.BadRequestException;
 import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.repositories.UserRepository;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,6 +47,11 @@ public class UserServiceTest {
         this.emailService = mock(EmailService.class);
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.userService = new UserService(userRepository, emailService, passwordEncoder);
+    }
+
+    @AfterAll
+    public static void clearCache(){
+        Mockito.clearAllCaches();
     }
     @Test
     void createUserSuccessfully() {

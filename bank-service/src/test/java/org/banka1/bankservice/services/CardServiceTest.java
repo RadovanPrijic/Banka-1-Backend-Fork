@@ -20,8 +20,10 @@ import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.repositories.CardRepository;
 import org.banka1.bankservice.repositories.UserRepository;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -57,6 +59,10 @@ public class CardServiceTest {
         this.currencyExchangeService = mock(CurrencyExchangeService.class);
 
         this.cardService = new CardService(cardRepository, userRepository, accountService,paymentService,currencyExchangeService);
+    }
+    @AfterAll
+    public static void clearCache(){
+        Mockito.clearAllCaches();
     }
 
     @Test

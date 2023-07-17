@@ -8,10 +8,13 @@ import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.domains.mappers.AccountMapper;
 import org.banka1.bankservice.repositories.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -59,6 +62,10 @@ public class AccountServiceTest {
                 userRepository,
                 companyRepository
         );
+    }
+    @AfterAll
+    public static void clearCache(){
+        Mockito.clearAllCaches();
     }
 
     @Test

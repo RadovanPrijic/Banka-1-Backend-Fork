@@ -14,11 +14,14 @@ import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.repositories.*;
 import org.banka1.bankservice.services.AccountService;
 import org.banka1.bankservice.services.PaymentService;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,6 +61,10 @@ public class PaymentServiceTest {
                 userRepository, accountService);
     }
 
+    @AfterAll
+    public static void clearCache(){
+        Mockito.clearAllCaches();
+    }
     @Test
     public void makePayment_SuccessfulTest() {
         PaymentCreateDto paymentCreateDto = new PaymentCreateDto();
@@ -196,6 +203,7 @@ public class PaymentServiceTest {
             assertEquals("Payment has not been found.", ex.getMessage());
         }
     }
+
 
     @Test
     public void findAllPaymentsForLoggedInUser_SuccessfulTest() {
