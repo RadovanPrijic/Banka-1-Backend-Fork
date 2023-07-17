@@ -14,11 +14,14 @@ import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.repositories.*;
 import org.banka1.bankservice.services.AccountService;
 import org.banka1.bankservice.services.PaymentService;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,6 +61,10 @@ public class PaymentServiceTest {
                 userRepository, accountService);
     }
 
+    @AfterAll
+    public static void clearCache(){
+        Mockito.clearAllCaches();
+    }
     @Test
     public void makePayment_SuccessfulTest() {
         PaymentCreateDto paymentCreateDto = new PaymentCreateDto();
@@ -197,17 +204,22 @@ public class PaymentServiceTest {
         }
     }
 
+
     @Test
     public void findAllPaymentsForLoggedInUser_SuccessfulTest() {
         String email = "test@example.com";
         BankUser user = new BankUser();
         user.setId(1L);
 
-        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
-        Authentication authenticationMock = Mockito.mock(Authentication.class);
-        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
-        Mockito.when(authenticationMock.getName()).thenReturn(email);
-        SecurityContextHolder.setContext(securityContextMock);
+//        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
+//        Authentication authenticationMock = Mockito.mock(Authentication.class);
+//        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+//        Mockito.when(authenticationMock.getName()).thenReturn(email);
+//        SecurityContextHolder.setContext(securityContextMock);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@example.com", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
@@ -226,11 +238,15 @@ public class PaymentServiceTest {
     public void findAllPaymentsForLoggedInUser_UnsuccessfulTest() {
         String email = "test@example.com";
 
-        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
-        Authentication authenticationMock = Mockito.mock(Authentication.class);
-        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
-        Mockito.when(authenticationMock.getName()).thenReturn(email);
-        SecurityContextHolder.setContext(securityContextMock);
+//        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
+//        Authentication authenticationMock = Mockito.mock(Authentication.class);
+//        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+//        Mockito.when(authenticationMock.getName()).thenReturn(email);
+//        SecurityContextHolder.setContext(securityContextMock);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@example.com", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
@@ -304,11 +320,15 @@ public class PaymentServiceTest {
         BankUser user = new BankUser();
         user.setId(1L);
 
-        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
-        Authentication authenticationMock = Mockito.mock(Authentication.class);
-        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
-        Mockito.when(authenticationMock.getName()).thenReturn(email);
-        SecurityContextHolder.setContext(securityContextMock);
+//        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
+//        Authentication authenticationMock = Mockito.mock(Authentication.class);
+//        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+//        Mockito.when(authenticationMock.getName()).thenReturn(email);
+//        SecurityContextHolder.setContext(securityContextMock);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@example.com", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
@@ -328,11 +348,15 @@ public class PaymentServiceTest {
     public void findAllPaymentReceiversForLoggedInUser_UnsuccessfulTest() {
         String email = "test@example.com";
 
-        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
-        Authentication authenticationMock = Mockito.mock(Authentication.class);
-        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
-        Mockito.when(authenticationMock.getName()).thenReturn(email);
-        SecurityContextHolder.setContext(securityContextMock);
+//        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
+//        Authentication authenticationMock = Mockito.mock(Authentication.class);
+//        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+//        Mockito.when(authenticationMock.getName()).thenReturn(email);
+//        SecurityContextHolder.setContext(securityContextMock);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@example.com", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
@@ -350,11 +374,15 @@ public class PaymentServiceTest {
         PaymentReceiverCreateDto paymentReceiverCreateDto = new PaymentReceiverCreateDto();
 
         String email = "test@example.com";
-        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
-        Authentication authenticationMock = Mockito.mock(Authentication.class);
-        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
-        Mockito.when(authenticationMock.getName()).thenReturn(email);
-        SecurityContextHolder.setContext(securityContextMock);
+//        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
+//        Authentication authenticationMock = Mockito.mock(Authentication.class);
+//        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+//        Mockito.when(authenticationMock.getName()).thenReturn(email);
+//        SecurityContextHolder.setContext(securityContextMock);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@example.com", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         BankUser user = new BankUser();
         user.setId(1L);
@@ -370,11 +398,15 @@ public class PaymentServiceTest {
         PaymentReceiverCreateDto paymentReceiverCreateDto = new PaymentReceiverCreateDto();
 
         String email = "test@example.com";
-        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
-        Authentication authenticationMock = Mockito.mock(Authentication.class);
-        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
-        Mockito.when(authenticationMock.getName()).thenReturn(email);
-        SecurityContextHolder.setContext(securityContextMock);
+//        SecurityContext securityContextMock = Mockito.mock(SecurityContext.class);
+//        Authentication authenticationMock = Mockito.mock(Authentication.class);
+//        Mockito.when(securityContextMock.getAuthentication()).thenReturn(authenticationMock);
+//        Mockito.when(authenticationMock.getName()).thenReturn(email);
+//        SecurityContextHolder.setContext(securityContextMock);
+
+        var authenticationToken =
+                new UsernamePasswordAuthenticationToken("test@example.com", null, null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 

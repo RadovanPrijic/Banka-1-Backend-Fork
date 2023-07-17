@@ -17,10 +17,12 @@ import org.banka1.bankservice.repositories.CreditInstallmentRepository;
 import org.banka1.bankservice.repositories.CreditRepository;
 import org.banka1.bankservice.repositories.CreditRequestRepository;
 import org.banka1.bankservice.repositories.UserRepository;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -72,7 +74,10 @@ public class CreditServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-
+    @AfterAll
+    public static void clearCache(){
+        Mockito.clearAllCaches();
+    }
     @Test
     void createCreditRequest_InvalidCreditRequest_ThrowsValidationException() {
         // Arrange

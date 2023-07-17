@@ -11,6 +11,7 @@ import org.banka1.bankservice.domains.exceptions.NotFoundException;
 import org.banka1.bankservice.domains.exceptions.ValidationException;
 import org.banka1.bankservice.domains.mappers.PaymentMapper;
 import org.banka1.bankservice.repositories.*;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -137,8 +138,10 @@ public class PaymentService {
 
                 balances.remove(foreignCurrencyBalance);
 
-                if(operation.equals("subtraction"))
+                if(operation.equals("subtraction")) {
+                    assert foreignCurrencyBalance != null;
                     foreignCurrencyBalance.setAccountBalance(foreignCurrencyBalance.getAccountBalance() - amount);
+                }
                 else if(operation.equals("addition"))
                     foreignCurrencyBalance.setAccountBalance(foreignCurrencyBalance.getAccountBalance() + amount);
 
