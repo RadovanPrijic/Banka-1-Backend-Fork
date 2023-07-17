@@ -203,16 +203,22 @@ public class CurrencyExchangeService {
         List<ExchangePair> exchangePairsToSave = new ArrayList<>();
 
         for(CSVRecord record: csvRecords) {
-            String from = record.get("from");
-            String to = record.get("to");
+            try {
+                String from = record.get("from");
+                String to = record.get("to");
 
-            String url = baseForexUrl + "?from_currency=" + from + "&to_currency=" + to;
-            FlaskResponse flaskResponse = getForexFromFlask(url, FlaskResponse.class);
+                String url = baseForexUrl + "?from_currency=" + from + "&to_currency=" + to;
+                FlaskResponse flaskResponse = getForexFromFlask(url, FlaskResponse.class);
 
-            ExchangePair exchangePair = new ExchangePair();
-            exchangePair.setExchangePairSymbol(from + "/" + to);
-            exchangePair.setExchangeRate(calculateExchangeRate(from, to, flaskResponse.getExchangeRate()));
-            exchangePairsToSave.add(exchangePair);
+                if(flaskResponse != null) {
+                    ExchangePair exchangePair = new ExchangePair();
+                    exchangePair.setExchangePairSymbol(from + "/" + to);
+                    exchangePair.setExchangeRate(calculateExchangeRate(from, to, flaskResponse.getExchangeRate()));
+                    exchangePairsToSave.add(exchangePair);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         exchangePairRepository.saveAll(exchangePairsToSave);
