@@ -133,7 +133,7 @@ public class CurrencyExchangeService {
         for(AccountDto account : userAccounts){
             if(account.getAccountNumber().equals(senderAccountNumber))
                 senderAccount = account;
-            else if (!isCardConversion && account.getAccountNumber().equals(receiverAccountNumber))
+            if (!isCardConversion && account.getAccountNumber().equals(receiverAccountNumber))
                 receiverAccount = account;
         }
 
