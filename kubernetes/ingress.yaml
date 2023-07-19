@@ -5,14 +5,15 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
+  namespace: __NAMESPACE__
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "banka-1.k8s.elab.rs"
+        - __DOMAIN__
       secretName: banka-1-tls
   rules:
-    - host: "banka-1.k8s.elab.rs"
+    - host: __DOMAIN__
       http:
         paths:
           - pathType: Prefix
@@ -22,90 +23,73 @@ spec:
                 name: user-service
                 port:
                   number: 8080
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/user-listings(/|$)(.*)"
             backend:
               service:
                 name: user-service
                 port:
                   number: 8080
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/stocks(/|$)(.*)"
             backend:
               service:
                 name: exchange-service
                 port:
                   number: 8081
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/forexes(/|$)(.*)"
             backend:
               service:
                 name: exchange-service
                 port:
                   number: 8081
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/orders(/|$)(.*)"
             backend:
               service:
                 name: exchange-service
                 port:
                   number: 8081
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/options(/|$)(.*)"
             backend:
               service:
                 name: exchange-service
                 port:
                   number: 8081
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/contracts(/|$)(.*)"
             backend:
               service:
                 name: contracts-service
                 port:
                   number: 8082
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/companies(/|$)(.*)"
             backend:
               service:
                 name: companies-service
                 port:
                   number: 8083
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/contacts(/|$)(.*)"
             backend:
               service:
                 name: companies-service
                 port:
                   number: 8083
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/accounts(/|$)(.*)"
             backend:
               service:
                 name: companies-service
                 port:
                   number: 8083
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ingress-frontend
-  annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - "banka-1.k8s.elab.rs"
-      secretName: banka-1-tls
-  rules:
-    - host: "banka-1.k8s.elab.rs"
-      http:
-        paths:
-          - pathType: Prefix
-            path: "/"
+          - pathType: ImplementationSpecific
+            path: "/api/bank(/|$)(.*)"
             backend:
               service:
-                name: frontend
+                name: bank-service
                 port:
-                  number: 80
+                  number: 8074

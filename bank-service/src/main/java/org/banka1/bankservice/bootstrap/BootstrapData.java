@@ -27,6 +27,8 @@ public class BootstrapData implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!userRepository.findAll().isEmpty())
+            return;
 
         currencyExchangeService.loadForex();
         System.out.println("Exchange pairs loaded");
