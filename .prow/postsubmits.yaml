@@ -5,7 +5,7 @@ postsubmits:
     decorate: true
     always_run: true
     branches:
-      - ^cd-test$
+      - ^main$
     spec:
       serviceAccountName: prow-admin
       containers:
