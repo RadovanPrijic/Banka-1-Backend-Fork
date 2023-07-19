@@ -4,6 +4,7 @@ metadata:
   labels:
     app: user-service
   name: user-service
+  namespace: __NAMESPACE__
 spec:
   replicas: 1
   selector:
@@ -15,18 +16,18 @@ spec:
         app: user-service
     spec:
       containers:
-        - image: harbor.k8s.elab.rs/banka-1/user-service:latest
+        - image: harbor.k8s.elab.rs/banka-1/user-service:__COMMIT_HASH__
           imagePullPolicy: Always
           name: user-service
           env:
             - name: spring.datasource.hikari.jdbcUrl
-              value: jdbc:mysql://mysql-db:3306/db_banka1?createDatabaseIfNotExist=true
+              value: jdbc:mysql://primary-mariadb:3306/db_banka1?createDatabaseIfNotExist=true
             - name: spring.jpa.hibernate.ddl-auto
               value: update
             - name: password.reset.endpoint
-              value: https://banka-1.k8s.elab.rs/reset-password
+              value: https://__DOMAIN__/reset-password
             - name: password.activate.endpoint
-              value: https://banka-1.k8s.elab.rs/activate-password
+              value: https://__DOMAIN__/activate-password
           ports:
             - containerPort: 8080
 ---
@@ -36,6 +37,7 @@ metadata:
   labels:
     app: user-service
   name: user-service
+  namespace: __NAMESPACE__
 spec:
   ports:
     - port: 8080
