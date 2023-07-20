@@ -25,7 +25,7 @@ spec:
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mongo-db
+                  name: mongo
                   key: mongodb-root-password
           ports:
             - containerPort: 8083
