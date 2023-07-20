@@ -16,7 +16,7 @@ spec:
     - host: __DOMAIN__
       http:
         paths:
-          - pathType: Prefix
+          - pathType: ImplementationSpecific
             path: "/api/users(/|$)(.*)"
             backend:
               service:
