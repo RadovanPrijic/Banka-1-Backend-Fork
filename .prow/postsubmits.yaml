@@ -63,12 +63,8 @@ postsubmits:
               # Deployment na Kubernetes #
               ############################
 
-              namespace="banka-1-dev"
-              domain="banka-1-dev.k8s.elab.rs"
-              if [[ -n "${tag_name}" ]]; then
-                namespace="banka-1-prod"
-                domain="banka-1.k8s.elab.rs"
-              fi
+              namespace="banka-1-prod"
+              domain="banka-1.k8s.elab.rs"
               
               find . -type f -exec sed -i.bak "s;__COMMIT_HASH__;$commit_hash;g" {} \;
               find . -type f -exec sed -i.bak "s;__NAMESPACE__;$namespace;g" {} \;

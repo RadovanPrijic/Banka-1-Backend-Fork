@@ -6,7 +6,7 @@ export class Environment {
         if(this.isDev) {
             return 'mongodb://banka1_mongodb:banka1_mongodb@localhost:27017';
         }
-        else return 'mongodb://' + process.env.MONGODB_USER + ':' + process.env.MONGODB_PASSWORD  +'@mongo-db:27017';
+        else return 'mongodb://' + process.env.MONGODB_USER + ':' + process.env.MONGODB_PASSWORD  +'@mongo:27017';
     }
 
 }
