@@ -1,6 +1,7 @@
 # Banka-1-Backend
 
 [Specifikacija za berzu.pdf](https://github.com/RadovanPrijic/Banka-1-Backend-Fork/files/12702605/Specifikacija.za.berzu.pdf)
+
 [Specifikacija za banku.pdf](https://github.com/RadovanPrijic/Banka-1-Backend-Fork/files/12702606/Specifikacija.za.banku.pdf)
 
 
