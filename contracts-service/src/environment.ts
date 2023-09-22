@@ -4,9 +4,9 @@ export class Environment {
 
     public static getMongoUrl(){
         if(this.isDev) {
-            return 'mongodb://banka1_mongodb:banka1_mongodb@localhost:27017';
+            return 'mongodb://root:Z2ZPY1HLzM@mongodb:27017/';
         }
-        else return 'mongodb://banka1_mongodb:banka1_mongodb@mongo-db:27017';
+        else return 'mongodb://' + process.env.MONGODB_USER + ':' + process.env.MONGODB_PASSWORD  +'@mongo:27017';
     }
 
     public static getReserveTransactionsUrl(){

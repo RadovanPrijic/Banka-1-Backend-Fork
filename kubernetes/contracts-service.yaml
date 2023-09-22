@@ -4,6 +4,7 @@ metadata:
   labels:
     app: contracts-service
   name: contracts-service
+  namespace: __NAMESPACE__
 spec:
   replicas: 1
   selector:
@@ -15,9 +16,17 @@ spec:
         app: contracts-service
     spec:
       containers:
-        - image: harbor.k8s.elab.rs/banka-1/contracts-service:latest
+        - image: harbor.k8s.elab.rs/banka-1/contracts-service:__COMMIT_HASH__
           imagePullPolicy: Always
           name: contracts-service
+          env:
+            - name: MONGODB_USER
+              value: root
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo
+                  key: mongodb-root-password
           ports:
             - containerPort: 8082
 ---
@@ -27,6 +36,7 @@ metadata:
   labels:
     app: contracts-service
   name: contracts-service
+  namespace: __NAMESPACE__
 spec:
   ports:
     - port: 8082
